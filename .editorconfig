@@ -1,0 +1,26 @@
+root = true
+
+# Global settings that should act as default
+# indent_size and indent_style will be overridden for EVERY important file type
+# for documentation purpose
+[*]
+charset = utf-8
+indent_size = 4
+indent_style = space
+insert_final_newline = true
+max_line_length = 120
+trim_trailing_whitespace = false
+
+# Configuration files should use JSON/YAML standard
+[{.*rc,.*rc.*,*.json,*.yaml,*.yml}]
+indent_size = 2
+indent_style = space
+
+[*.scala]
+indent_size = 2
+indent_style = space
+
+# Gradle files are treated with the same rules of Java/Groovy
+[*.{java,gradle}]
+indent_size = 4
+indent_style = space
