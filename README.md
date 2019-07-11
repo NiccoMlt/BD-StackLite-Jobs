@@ -4,7 +4,7 @@ Elaborato di progetto per l'esame Big Data, anno 2018-2019.
 
 ## Requisiti
 
-Il progetto è pensato per studiare il contenuto del dataset [StackLile](https://www.kaggle.com/stackoverflow/stacklite).
+Il progetto è pensato per studiare il contenuto del dataset [StackLite](https://www.kaggle.com/stackoverflow/stacklite).
 
 Sono stati individuati due job:
 

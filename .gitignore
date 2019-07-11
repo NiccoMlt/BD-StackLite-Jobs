@@ -1,4 +1,3 @@
-
 # Created by https://www.gitignore.io/api/git,osx,java,scala,linux,macos,metals,gradle,windows,eclipse,intellij,visualstudiocode
 # Edit at https://www.gitignore.io/?templates=git,osx,java,scala,linux,macos,metals,gradle,windows,eclipse,intellij,visualstudiocode
 
@@ -308,3 +307,6 @@ gradle-app.setting
 **/build/
 
 # End of https://www.gitignore.io/api/git,osx,java,scala,linux,macos,metals,gradle,windows,eclipse,intellij,visualstudiocode
+.idea/markdown-navigator.xml
+.idea/markdown-navigator/
+.name

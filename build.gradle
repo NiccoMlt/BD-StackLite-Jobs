@@ -3,7 +3,7 @@ plugins {
     id 'com.github.johnrengelman.shadow' version '5.1.0'
 }
 
-group 'template.spark'
+group 'it.unibo.bd1819'
 version '1.0.0'
 
 // Versions enforced by Unversity environment
@@ -51,9 +51,9 @@ dependencies {
     implementation "org.apache.spark:spark-streaming_$scalaBinaryVersion:$sparkVersion"
     implementation "org.apache.spark:spark-core_$scalaBinaryVersion:$sparkVersion"
 
-    implementation("org.apache.hadoop:hadoop-common:$hadoopVersion")
-    implementation("org.apache.hadoop:hadoop-core:$hadoopCoreVersion")
-    implementation("org.apache.hadoop:hadoop-hdfs:$hadoopVersion")
+    implementation "org.apache.hadoop:hadoop-common:$hadoopVersion"
+    implementation "org.apache.hadoop:hadoop-core:$hadoopCoreVersion"
+    implementation "org.apache.hadoop:hadoop-hdfs:$hadoopVersion"
 }
 
 wrapper {
