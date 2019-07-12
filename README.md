@@ -26,3 +26,10 @@ Questo progetto utilizza le seguenti versioni delle piattaforme di sviluppo su c
 - **Spark** version: **2.1.0.cloudera2**
 - **Scala** version: **2.11.8**
 - **JVM** version: **1.7.0_67**
+
+## Scripts
+
+La cartella [./scripts](https://github.com/NiccoMlt/BigData-18-19-scripts) è un Git submodule contenente gli script per facilitare la connessione remota.
+
+Clonare il repo con `git clone --recursive` invece che con `git clone` per scaricare anch gli script bash.
+

@@ -1,0 +1,3 @@
+[submodule "scripts"]
+	path = scripts
+	url = https://github.com/NiccoMlt/BigData-18-19-scripts.git
