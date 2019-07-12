@@ -10,7 +10,15 @@ Sono stati individuati due job:
 
   - effettuare la proporzione tra post realizzati in giorni feriali e in giorni festivi per ciascun tag
     - ordinare i risultati per valore della proporzione e per quantità di post
-  - [...]
+  
+  - suddividere in 4 bin i dati in base a valori arbitrari su score e risposte: i 4 bin saranno
+	- score basso, numero di risposte basso
+	- score basso, numero di risposte alto
+	- score alto, numero di risposte basso
+	- score alto, numero di risposte alto
+
+    Per ogni score i risultati saranno i primi 10 tag in ordine di score e numero di risposte.
+  
   - [...]
 
 ## Team members
