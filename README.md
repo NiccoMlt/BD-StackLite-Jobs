@@ -17,7 +17,7 @@ Sono stati individuati due job:
 	- score alto, numero di risposte basso
 	- score alto, numero di risposte alto
 
-    Per ogni score i risultati saranno i primi 10 tag in ordine di score e numero di risposte.
+    Per ognuna delle 4 coppie score-risposte i risultati saranno i primi 10 tag in ordine di score e numero di risposte.
   
   - [...]
 
