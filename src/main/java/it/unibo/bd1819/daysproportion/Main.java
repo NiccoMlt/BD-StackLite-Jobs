@@ -7,6 +7,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.Job;
 
 public class Main {
+    
     /**
      * Launch the job.
      *
@@ -14,11 +15,11 @@ public class Main {
      *
      * @throws Exception if something goes wrong
      */
-    public static void main(String[] args) throws Exception {
+    public static void main(final String[] args) throws Exception {
         final List<Job> jobs = new ArrayList<>();
         final Configuration conf = new Configuration();
 
-        // jobs.add(createDirectorsMovieJoin(conf));
+        jobs.add(JobFactory.workdayHolidayJobFactory(conf));
 
         for (final Job job : jobs) {
             if (!job.waitForCompletion(true)) {
