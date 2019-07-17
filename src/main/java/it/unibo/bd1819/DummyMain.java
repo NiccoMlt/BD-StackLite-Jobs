@@ -35,9 +35,10 @@ public class DummyMain {
         }
 
         job.setJarByClass(DummyMain.class);
+        
         job.setMapperClass(DummyMapper.class);
-
         job.setReducerClass(IntSumReduce.class);
+        
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(IntWritable.class);
 

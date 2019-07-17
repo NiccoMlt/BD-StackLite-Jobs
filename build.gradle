@@ -72,7 +72,7 @@ shadowJar {
 task mapReduceJar(type: ShadowJar) {
     //noinspection GroovyAssignabilityCheck
     archiveClassifier.set('mr')
-    manifest.attributes 'Main-Class': 'it.unibo.bd1819.DummyMain'
+    manifest.attributes 'Main-Class': 'it.unibo.bd1819.daysproportion.Main'
     from(shadowJar.from())
     zip64 true
 }
