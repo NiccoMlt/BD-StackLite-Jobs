@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -12,13 +13,16 @@ import org.apache.log4j.Logger;
 import static it.unibo.bd1819.daysproportion.map.QuestionTagMap.QT_PREFIX;
 import static it.unibo.bd1819.daysproportion.map.WorkHolidayJoin.WHJ_PREFIX;
 
-public class WorkHolidayJoinReducer extends Reducer<LongWritable, Text, Text, Text> {
-    private Logger logger = Logger.getLogger(this.getClass());
+public class WorkHolidayJoinReducer extends Reducer<LongWritable, Text, Text, BooleanWritable> {
+    private final Logger logger = Logger.getLogger(this.getClass());
+    
+    private final Text tagKey = new Text();
+    private final BooleanWritable workdayValue = new BooleanWritable();
 
     @Override
     protected void reduce(final LongWritable key, final Iterable<Text> values, final Context context) throws IOException, InterruptedException {
         final List<String> tags = new ArrayList<>();
-        final List<String> data = new ArrayList<>();
+        final List<Boolean> workdays = new ArrayList<>();
 
         for (final Text value : values) {
             final String prefix = String.valueOf(value.toString().charAt(0));
@@ -28,16 +32,20 @@ public class WorkHolidayJoinReducer extends Reducer<LongWritable, Text, Text, Te
                     tags.add(value.toString().substring(1));
                     break;
                 case WHJ_PREFIX:
-                    data.add(value.toString().substring(1));
+                    workdays.add(Boolean.parseBoolean(value.toString().substring(1)));
                     break;
                 default:
                     logger.warn("Key " + key.toString() + " - Unexpected value: " + value.toString());
             }
         }
 
+        if (workdays.size() != 1) logger.warn("Unexpected WHJ boolean quantity: " + workdays.size());
+
         for (final String tag : tags) {
-            for (final String pair : data) {
-                context.write(new Text(tag), new Text(pair));
+            for (final Boolean workday : workdays) {
+                tagKey.set(tag);
+                workdayValue.set(workday);
+                context.write(tagKey, workdayValue);
             }
         }
     }

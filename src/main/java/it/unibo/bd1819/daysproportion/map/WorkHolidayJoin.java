@@ -12,8 +12,10 @@ public class WorkHolidayJoin extends Mapper<Text, Text, LongWritable, Text> {
 
     @Override
     protected void map(final Text key, final Text value, final Context context) throws IOException, InterruptedException {
-        final String[] keyStr = key.toString().split(",");
+        final String[] ids = value.toString().split(",");
 
-        context.write(new LongWritable(Long.parseLong(keyStr[0])), new Text(WHJ_PREFIX + keyStr[1] + "," + value.toString()));
+        for (final String id : ids) {
+            context.write(new LongWritable(Long.parseLong(id)), new Text(WHJ_PREFIX + key.toString()));
+        }
     }
 }

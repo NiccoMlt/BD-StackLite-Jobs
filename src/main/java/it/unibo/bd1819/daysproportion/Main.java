@@ -19,8 +19,8 @@ public class Main {
         final List<Job> jobs = new ArrayList<>();
         final Configuration conf = new Configuration();
 
-        jobs.add(JobFactory.workdayHolidayJobFactory(conf));
-//        jobs.add(JobFactory.workdayHolidayJoinJobFactory(conf));
+        jobs.add(JobFactory.getWorkdayHolidayJob(conf));
+        jobs.add(JobFactory.getWorkdayHolidayJoinJob(conf));
 
         for (final Job job : jobs) {
             if (!job.waitForCompletion(true)) {

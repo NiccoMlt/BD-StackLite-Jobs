@@ -36,11 +36,11 @@ public class JobFactory {
      *
      * @throws IOException if something goes wrong in the I/O process
      */
-    public static Job workdayHolidayJobFactory(final Configuration conf) throws IOException {
+    public static Job getWorkdayHolidayJob(final Configuration conf) throws IOException {
         final FileSystem fs = FileSystem.get(conf);
 
-        deleteOutputFolder(fs, JobUtils.OUTPUT_PATH);
-        deleteOutputFolder(fs, WORKDAY_HOLIDAY_PATH);
+        JobUtils.deleteOutputFolder(fs, JobUtils.OUTPUT_PATH);
+        JobUtils.deleteOutputFolder(fs, WORKDAY_HOLIDAY_PATH);
 
         final Job job = Job.getInstance(conf, "Map full questions to pair (id, isWorkday)");
 
@@ -50,38 +50,34 @@ public class JobFactory {
             TextInputFormat.class, WorkHolidayMapper.class, BooleanWritable.class, LongWritable.class,
             WorkHolidayGroup.class, BooleanWritable.class, Text.class, TextOutputFormat.class);
 
+        job.setNumReduceTasks(2);
+
         TextInputFormat.addInputPath(job, JobUtils.QUESTIONS_INPUT_PATH);
         TextOutputFormat.setOutputPath(job, WORKDAY_HOLIDAY_PATH);
 
         return job;
     }
 
-    public static Job workdayHolidayJoinJobFactory(final Configuration conf) throws IOException {
+    public static Job getWorkdayHolidayJoinJob(final Configuration conf) throws IOException {
         final FileSystem fs = FileSystem.get(conf);
 
-        deleteOutputFolder(fs, WORKDAY_HOLIDAY_JOIN_PATH);
+        JobUtils.deleteOutputFolder(fs, WORKDAY_HOLIDAY_JOIN_PATH);
 
         final Job job = Job.getInstance(conf, "Join questions and tags");
 
         job.setJarByClass(Main.class);
 
-//        MultipleInputs.addInputPath(job, QUESTION_TAGS_INPUT_PATH, KeyValueTextInputFormat.class, QuestionTagMap.class);
         MultipleInputs.addInputPath(job, QUESTION_TAGS_INPUT_PATH, TextInputFormat.class, QuestionTagMap.class);
         MultipleInputs.addInputPath(job, WORKDAY_HOLIDAY_PATH, KeyValueTextInputFormat.class, WorkHolidayJoin.class);
 
         job.setMapOutputKeyClass(LongWritable.class);
         job.setMapOutputValueClass(Text.class);
 
-        JobUtils.configureReducer(job, WorkHolidayJoinReducer.class, Text.class, Text.class, TextOutputFormat.class);
+        JobUtils.configureReducer(job, WorkHolidayJoinReducer.class, Text.class, BooleanWritable.class, TextOutputFormat.class);
 
         TextOutputFormat.setOutputPath(job, WORKDAY_HOLIDAY_JOIN_PATH);
 
         return job;
     }
 
-    private static void deleteOutputFolder(final FileSystem fs, final Path folderToDelete) throws IOException {
-        if (fs.exists(folderToDelete)) {
-            fs.delete(folderToDelete, true);
-        }
-    }
 }

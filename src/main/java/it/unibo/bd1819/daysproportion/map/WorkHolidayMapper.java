@@ -17,7 +17,7 @@ public class WorkHolidayMapper extends Mapper<LongWritable, Text, BooleanWritabl
 
     @Override
     protected void map(final LongWritable key, final Text value, final Context context) throws IOException, InterruptedException {
-        if (key.get() != LINE_NUM_TO_DROP || !value.toString().contains(TEXT_TO_DROP)) {
+        if (key.get() != LINE_NUM_TO_DROP || !value.toString().equals(TEXT_TO_DROP)) {
             final Question q = Question.parseText(key, value);
             workday.set(q.isCreatedInWorkday());
             id.set(q.getId());
