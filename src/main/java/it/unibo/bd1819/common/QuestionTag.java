@@ -2,12 +2,15 @@ package it.unibo.bd1819.common;
 
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 /** The class models the data contained in question_tags.csv file. */
 public class QuestionTag {
     private final long id;
     private final String tag;
 
+    @Contract(pure = true)
     private QuestionTag(final long id, final String tag) {
         this.id = id;
         this.tag = tag;
@@ -23,6 +26,8 @@ public class QuestionTag {
      *
      * @throws NumberFormatException if numeric data can't be parsed
      */
+    @NotNull
+    @Contract("_, _ -> new")
     public static QuestionTag parseText(final LongWritable id, final Text tag) {
         return new QuestionTag(id.get(), tag.toString());
     }

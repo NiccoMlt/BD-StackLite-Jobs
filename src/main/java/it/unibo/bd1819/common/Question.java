@@ -1,10 +1,10 @@
 package it.unibo.bd1819.common;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.joda.time.DateTime;
 
 import static it.unibo.bd1819.common.DateUtils.isWorkday;
@@ -25,6 +25,7 @@ public class Question {
     @Nullable
     private final Integer answerCount;
 
+    @Contract(pure = true)
     private Question(
         final long id,
         @Nullable final String creationDate, @Nullable final String closedDate, @Nullable final String deletionDate,
@@ -49,14 +50,10 @@ public class Question {
      * @throws IllegalArgumentException if data are not 6 elements, or dates can't be parsed
      * @throws NumberFormatException    if numeric data can't be parsed
      */
-    public static Question parseText(LongWritable id, Text text) {
+    @NotNull
+    @Contract("_, _ -> new")
+    public static Question parseText(final LongWritable id, final Text text) {
         final String[] line = text.toString().split(",");
-
-//        if (line.length != 6) throw new IllegalArgumentException("Unexpected line format: columns: " + line.length);
-//        
-//        return new Question(id.get(),
-//            line[0], parseNullableDate(line[1]), parseNullableDate(line[2]),
-//            Integer.parseInt(line[3]), Integer.parseInt(line[4]), Integer.parseInt(line[5]));
 
         if (line.length != 7) throw new IllegalArgumentException("Unexpected line format: columns: " + line.length);
 
@@ -80,7 +77,7 @@ public class Question {
      *
      * @return the creation date, or null if
      */
-    @Nonnull
+    @NotNull
     public String getCreationDate() {
         return this.creationDate.toString();
     }

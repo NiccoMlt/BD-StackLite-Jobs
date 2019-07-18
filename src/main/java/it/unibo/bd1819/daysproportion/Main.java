@@ -7,7 +7,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.Job;
 
 public class Main {
-    
+
     /**
      * Launch the job.
      *
@@ -20,6 +20,7 @@ public class Main {
         final Configuration conf = new Configuration();
 
         jobs.add(JobFactory.workdayHolidayJobFactory(conf));
+        jobs.add(JobFactory.workdayHolidayJoinJobFactory(conf));
 
         for (final Job job : jobs) {
             if (!job.waitForCompletion(true)) {
