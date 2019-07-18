@@ -6,12 +6,12 @@ import it.unibo.bd1819.common.JobUtils;
 import it.unibo.bd1819.daysproportion.map.QuestionTagMap;
 import it.unibo.bd1819.daysproportion.map.WorkHolidayJoin;
 import it.unibo.bd1819.daysproportion.map.WorkHolidayMapper;
-import it.unibo.bd1819.daysproportion.reduce.WorkHolidayCounter;
+import it.unibo.bd1819.daysproportion.reduce.WorkHolidayGroup;
 import it.unibo.bd1819.daysproportion.reduce.WorkHolidayJoinReducer;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
@@ -47,8 +47,8 @@ public class JobFactory {
         job.setJarByClass(Main.class);
 
         JobUtils.configureJobForKeyValue(job,
-            TextInputFormat.class, WorkHolidayMapper.class, Text.class, IntWritable.class,
-            WorkHolidayCounter.class, Text.class, IntWritable.class, TextOutputFormat.class);
+            TextInputFormat.class, WorkHolidayMapper.class, BooleanWritable.class, LongWritable.class,
+            WorkHolidayGroup.class, BooleanWritable.class, Text.class, TextOutputFormat.class);
 
         TextInputFormat.addInputPath(job, JobUtils.QUESTIONS_INPUT_PATH);
         TextOutputFormat.setOutputPath(job, WORKDAY_HOLIDAY_PATH);

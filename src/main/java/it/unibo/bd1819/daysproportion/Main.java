@@ -20,7 +20,7 @@ public class Main {
         final Configuration conf = new Configuration();
 
         jobs.add(JobFactory.workdayHolidayJobFactory(conf));
-        jobs.add(JobFactory.workdayHolidayJoinJobFactory(conf));
+//        jobs.add(JobFactory.workdayHolidayJoinJobFactory(conf));
 
         for (final Job job : jobs) {
             if (!job.waitForCompletion(true)) {
