@@ -28,6 +28,7 @@ public class Main {
             }
         }
 
-        JobFactory.getSortJob(conf).waitForCompletion(true);
+//        JobFactory.getSortJob(conf).waitForCompletion(true);
+        JobFactory.getFedeSortJob(conf).waitForCompletion(true);
     }
 }

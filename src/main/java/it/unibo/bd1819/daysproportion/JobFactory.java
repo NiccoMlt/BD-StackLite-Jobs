@@ -3,9 +3,11 @@ package it.unibo.bd1819.daysproportion;
 import java.io.IOException;
 
 import it.unibo.bd1819.common.JobUtils;
+import it.unibo.bd1819.daysproportion.map.FedeSortMapper;
 import it.unibo.bd1819.daysproportion.map.QuestionTagMap;
 import it.unibo.bd1819.daysproportion.map.SortMapper;
 import it.unibo.bd1819.daysproportion.map.WorkHolidayMap;
+import it.unibo.bd1819.daysproportion.reduce.FedeSortReducer;
 import it.unibo.bd1819.daysproportion.reduce.SortReducer;
 import it.unibo.bd1819.daysproportion.reduce.WorkHolidayJoin;
 import it.unibo.bd1819.daysproportion.reduce.WorkHolidayProportionReducer;
@@ -13,20 +15,17 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.BooleanWritable;
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.mapreduce.lib.input.KeyValueTextInputFormat;
-import org.apache.hadoop.mapreduce.lib.input.MultipleInputs;
-import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.*;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.mapreduce.lib.partition.InputSampler;
 import org.apache.hadoop.mapreduce.lib.partition.TotalOrderPartitioner;
 
-import static it.unibo.bd1819.common.JobUtils.GENERIC_OUTPUT_PATH;
-import static it.unibo.bd1819.common.JobUtils.OUTPUT_PATH;
-import static it.unibo.bd1819.common.JobUtils.QUESTIONS_INPUT_PATH;
-import static it.unibo.bd1819.common.JobUtils.QUESTION_TAGS_INPUT_PATH;
+import static it.unibo.bd1819.common.JobUtils.*;
 
 public class JobFactory {
 
@@ -48,7 +47,7 @@ public class JobFactory {
     public static Job getWorkdayHolidayJoinJob(final Configuration conf) throws IOException {
         final FileSystem fs = FileSystem.get(conf);
 
-        JobUtils.deleteOutputFolder(fs, WORKDAY_HOLIDAY_JOIN_PATH);
+        deleteOutputFolder(fs, WORKDAY_HOLIDAY_JOIN_PATH);
 
         final Job job = Job.getInstance(conf, "Join questions and tags");
 
@@ -70,7 +69,7 @@ public class JobFactory {
     public static Job getDayProportionsJob(final Configuration conf) throws IOException {
         final FileSystem fs = FileSystem.get(conf);
 
-        JobUtils.deleteOutputFolder(fs, WORKDAY_HOLIDAY_PROPORTION_PATH);
+        deleteOutputFolder(fs, WORKDAY_HOLIDAY_PROPORTION_PATH);
 
         final Job job = Job.getInstance(conf, "Get proportion between workdays and holidays by tags");
 
@@ -86,13 +85,13 @@ public class JobFactory {
         return job;
     }
 
-    public static Job getSortJob(final Configuration conf) throws IOException, InterruptedException, ClassNotFoundException {
+/*    public static Job getSortJob(final Configuration conf) throws IOException, InterruptedException, ClassNotFoundException {
         final FileSystem fs = FileSystem.get(conf);
 
         Path partitionPath = new Path(GENERIC_OUTPUT_PATH + "partition", "part.lst");
-        JobUtils.deleteOutputFolder(fs, OUTPUT_PATH);
+        deleteOutputFolder(fs, OUTPUT_PATH);
 //        JobUtils.deleteOutputFolder(fs, PARTITION_FOLDER_PATH);
-        JobUtils.deleteOutputFolder(fs, partitionPath);
+        deleteOutputFolder(fs, partitionPath);
 
         final Job job = Job.getInstance(conf, "Sort output by proportion");
 
@@ -111,5 +110,53 @@ public class JobFactory {
         TextOutputFormat.setOutputPath(job, OUTPUT_PATH);
 
         return job;
+    }*/
+
+    public static Job getFedeSortJob(final Configuration conf) throws IOException, InterruptedException, ClassNotFoundException {
+        /*final FileSystem fs = FileSystem.get(conf);
+
+        Path partitionPath = new Path(GENERIC_OUTPUT_PATH + "partition", "part.lst");
+        JobUtils.deleteOutputFolder(fs, OUTPUT_PATH);
+//        JobUtils.deleteOutputFolder(fs, PARTITION_FOLDER_PATH);
+        JobUtils.deleteOutputFolder(fs, partitionPath);
+
+        final Job job = Job.getInstance(conf, "Sort output by proportion");
+        
+
+        return job;*/
+
+        final FileSystem fs = FileSystem.get(conf);
+        final String GENERIC_OUTPUT_PATH = "hdfs:///user/nmaltoni/mapreduce/";
+        
+        final Path partitionPath = new Path(GENERIC_OUTPUT_PATH + "partition", "part.lst");
+        deleteOutputFolder(fs, OUTPUT_PATH);
+        deleteOutputFolder(fs, partitionPath);
+
+        final Job sortJob = Job.getInstance(conf, "Sort Job");
+
+        sortJob.setJarByClass(Main.class);
+        
+        sortJob.setMapperClass(SortMapper.class);
+        sortJob.setInputFormatClass(KeyValueTextInputFormat.class);
+        
+        sortJob.setMapOutputKeyClass(Text.class);
+        sortJob.setMapOutputValueClass(Text.class);
+
+        sortJob.setReducerClass(SortReducer.class);
+        sortJob.setOutputKeyClass(Text.class);
+        sortJob.setOutputValueClass(Text.class);
+        FileInputFormat.addInputPath(sortJob, WORKDAY_HOLIDAY_PROPORTION_PATH);
+        FileOutputFormat.setOutputPath(sortJob, OUTPUT_PATH);
+
+        sortJob.setNumReduceTasks(3);
+        TotalOrderPartitioner.setPartitionFile(sortJob.getConfiguration(), partitionPath);
+
+        InputSampler.Sampler<IntWritable, Text> sampler = new InputSampler.RandomSampler<>(1, 1000);
+        InputSampler.writePartitionFile(sortJob, sampler);
+
+        sortJob.setPartitionerClass(TotalOrderPartitioner.class);
+
+        return sortJob;
+        
     }
 }
