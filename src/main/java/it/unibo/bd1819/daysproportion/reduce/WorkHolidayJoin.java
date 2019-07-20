@@ -11,11 +11,11 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.log4j.Logger;
 
 import static it.unibo.bd1819.daysproportion.map.QuestionTagMap.QT_PREFIX;
-import static it.unibo.bd1819.daysproportion.map.WorkHolidayJoin.WHJ_PREFIX;
+import static it.unibo.bd1819.daysproportion.map.WorkHolidayMap.WHM_PREFIX;
 
-public class WorkHolidayJoinReducer extends Reducer<LongWritable, Text, Text, BooleanWritable> {
+public class WorkHolidayJoin extends Reducer<LongWritable, Text, Text, BooleanWritable> {
     private final Logger logger = Logger.getLogger(this.getClass());
-    
+
     private final Text tagKey = new Text();
     private final BooleanWritable workdayValue = new BooleanWritable();
 
@@ -31,7 +31,7 @@ public class WorkHolidayJoinReducer extends Reducer<LongWritable, Text, Text, Bo
                 case QT_PREFIX:
                     tags.add(value.toString().substring(1));
                     break;
-                case WHJ_PREFIX:
+                case WHM_PREFIX:
                     workdays.add(Boolean.parseBoolean(value.toString().substring(1)));
                     break;
                 default:
@@ -42,7 +42,7 @@ public class WorkHolidayJoinReducer extends Reducer<LongWritable, Text, Text, Bo
         if (workdays.size() != 1) logger.warn("Unexpected WHJ boolean quantity: " + workdays.size());
 
         for (final String tag : tags) {
-            for (final Boolean workday : workdays) {
+            for (final boolean workday : workdays) {
                 tagKey.set(tag);
                 workdayValue.set(workday);
                 context.write(tagKey, workdayValue);

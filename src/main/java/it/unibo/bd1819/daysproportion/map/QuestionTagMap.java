@@ -6,7 +6,7 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
-/** Drop first line of question_tags.csv and output (Id, 1Tag) tuples. The */
+/** Drop first line of question_tags.csv and output (Id, 1Tag) tuples. */
 public class QuestionTagMap extends Mapper<LongWritable, Text, LongWritable, Text> {
     private static final Integer LINE_NUM_TO_DROP = 0;
     private static final String TEXT_TO_DROP = "Id,Tag";

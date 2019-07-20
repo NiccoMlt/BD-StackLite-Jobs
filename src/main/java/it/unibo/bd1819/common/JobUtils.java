@@ -22,7 +22,7 @@ public class JobUtils {
     public static final Path MINI_QUESTIONS_INPUT_PATH = new Path(GENERIC_INPUT_PATH + "mini_questions.csv");
     public static final Path OUTPUT_PATH = new Path(MAIN_OUTPUT_PATH);
 
-    private static <K1, V1, K2, V2> void configureMapper(final Job job, final Class<? extends InputFormat<K1, V1>> inputFormat,
+    public static <K1, V1, K2, V2> void configureMapper(final Job job, final Class<? extends InputFormat<K1, V1>> inputFormat,
                                                          final Class<? extends Mapper<K1, V1, K2, V2>> mapper,
                                                          final Class<K2> mapOutputKeyClass, final Class<V2> mapOutputValueClass) {
         job.setInputFormatClass(inputFormat);
