@@ -1,24 +1,31 @@
 package it.unibo.bd1819.daysproportion.comparator;
 
 import it.unibo.bd1819.daysproportion.reduce.WorkHolidayProportionReducer;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.WritableComparator;
 import org.apache.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class TagBoolComparator extends WritableComparator {
     private Logger logger = Logger.getLogger(this.getClass());
+    
+    public TagBoolComparator() {
+        super(Text.class, true);
+    }
 
     @Override
     public int compare(WritableComparable a, WritableComparable b) {
-        if (a instanceof Text && b instanceof Text) {
+        if (isNotSomethingNull(a) && isNotSomethingNull(b) && a instanceof Text && b instanceof Text) {
             logger.debug("Comparing Text objects");
 
             final String[] aSplit = a.toString().split(",");
             final String[] bSplit = b.toString().split(",");
 
             if (aSplit.length < 2 || bSplit.length < 2) {
-                return compareKeys((Text) a, (Text) b);
+                return super.compare(a, b);
             } else {
                 return compareValues(aSplit[0], Long.parseLong(aSplit[1]), bSplit[0], Long.parseLong(bSplit[1]));
             }
@@ -28,11 +35,7 @@ public class TagBoolComparator extends WritableComparator {
         }
     }
 
-    private int compareKeys(final Text a, final Text b) {
-        return super.compare(a, b);
-    }
-
-    private int compareValues(final String aProportion, final long aCount, final String bProportion, final long bCount) {
+    private int compareValues(final @NotNull String aProportion, final long aCount, final @NotNull String bProportion, final long bCount) {
         switch (aProportion) {
             case WorkHolidayProportionReducer.WORKDAY_ONLY:
                 switch (bProportion) {
@@ -62,5 +65,9 @@ public class TagBoolComparator extends WritableComparator {
                 int compareProportion = Double.compare(Double.parseDouble(aProportion), Double.parseDouble(bProportion));
                 return compareProportion == 0 ? Long.compare(aCount, bCount) : compareProportion;
         }
+    }
+
+    private boolean isNotSomethingNull(final @Nullable WritableComparable a) {
+        return a != null && !(a instanceof NullWritable);
     }
 }

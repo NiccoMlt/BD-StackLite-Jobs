@@ -3,6 +3,7 @@ package it.unibo.bd1819.daysproportion;
 import java.io.IOException;
 
 import it.unibo.bd1819.common.JobUtils;
+import it.unibo.bd1819.daysproportion.comparator.TagBoolComparator;
 import it.unibo.bd1819.daysproportion.map.FedeSortMapper;
 import it.unibo.bd1819.daysproportion.map.QuestionTagMap;
 import it.unibo.bd1819.daysproportion.map.SortMapper;
@@ -126,7 +127,6 @@ public class JobFactory {
         return job;*/
 
         final FileSystem fs = FileSystem.get(conf);
-        final String GENERIC_OUTPUT_PATH = "hdfs:///user/nmaltoni/mapreduce/";
         
         final Path partitionPath = new Path(GENERIC_OUTPUT_PATH + "partition", "part.lst");
         deleteOutputFolder(fs, OUTPUT_PATH);
@@ -141,6 +141,8 @@ public class JobFactory {
         
         sortJob.setMapOutputKeyClass(Text.class);
         sortJob.setMapOutputValueClass(Text.class);
+        
+        sortJob.setSortComparatorClass(TagBoolComparator.class);
 
         sortJob.setReducerClass(SortReducer.class);
         sortJob.setOutputKeyClass(Text.class);
