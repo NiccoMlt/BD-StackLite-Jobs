@@ -42,5 +42,8 @@
 ## Git-LFS-generated configurations ##
 '*.jar' filter=lfs diff=lfs merge=lfs -text
 
+## Linguist: custom DSL specification ##
+*.czrc linguist-language=JSON
+
 ## Linguist: folders configurations ##
 report/* linguist-documentation

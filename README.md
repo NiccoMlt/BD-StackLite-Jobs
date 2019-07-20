@@ -8,7 +8,7 @@ Il progetto è pensato per studiare il contenuto del dataset [StackLite](https:/
 
 Sono stati individuati due job:
 
-  - effettuare la proporzione tra post realizzati in giorni feriali e in giorni festivi per ciascun tag
+  - effettuare la proporzione tra post realizzati in giorni feriali e in giorni festivi per ciascun tag.
     - ordinare i risultati per valore della proporzione e per quantità di post
   
   - suddividere in 4 bin i dati in base a valori arbitrari su score e risposte: i 4 bin saranno

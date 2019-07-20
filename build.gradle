@@ -1,6 +1,8 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 plugins {
+    id 'idea'
+    id 'eclipse'
     id 'scala'
     id 'com.github.johnrengelman.shadow' version '5.1.0'
 }
@@ -86,5 +88,18 @@ task sparkJar(type: ShadowJar) {
     zip64 true
 }
 
+eclipse {
+    classpath {
+        downloadJavadoc = true
+        downloadSources = true
+    }
+}
+
+idea {
+    module {
+        downloadJavadoc = true
+        downloadSources = true
+    }
+}
 
 defaultTasks 'clean', 'build', 'javadoc', 'scaladoc'
