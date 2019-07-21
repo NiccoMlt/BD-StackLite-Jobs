@@ -1,111 +1,162 @@
-\documentclass[10pt]{article}
-\usepackage[utf8]{inputenc}
-\usepackage{hyperref}
-\usepackage[pdftex]{graphicx}
+%% Direttive TeXworks:
+% !TeX root = ./report.tex
+% !TEX encoding = UTF-8 Unicode
+% !TEX program = arara
+% !TEX TS-program = arara
+% !TeX spellcheck = it-IT
 
-    
-\title{\textbf{Report on Big Data project: \\(short subtitle)}}
+% arara: pdflatex: { synctex: yes, shell: yes }
+% arara: pdflatex: { synctex: yes, shell: yes }
+
+%% Genera un file report.xmpdata con i dati di titolo e autore per il formato PDF/A %%
+\begin{filecontents*}{\jobname.xmpdata}
+\Title{Big Data - Tema finale: StackLite}
+\Author{Niccolò Maltoni\sep Luca Semprini}
+\end{filecontents*}
+
+\documentclass[
+  a4paper,            % specifica il formato A4 (default: letter)
+  10pt                % specifica la dimensione del carattere a 10
+]{article}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% package sillabazione italiana e uso lettere accentate
+\usepackage[T1]{fontenc}        % serve per impostare la codifica di output del font
+\usepackage{textcomp}           % serve per fornire supporto ai Text Companion fonts
+\usepackage[utf8]{inputenc}     % serve per impostare la codifica di input del font
+\usepackage[
+  english,            % utilizza l'inglese come lingua secondaria
+  italian             % utilizza l'italiano come lingua primaria
+]{%
+  babel,                      % serve per scrivere Indice, Capitolo, etc in Italiano
+  varioref                    % introduce il comando \vref da usarsi nello stesso modo del comune \ref per i riferimenti
+}
+\usepackage{lmodern}            % carica una variante Latin Modern prodotto dal GUST
+\usepackage[%
+  strict,             % rende tutti gli warning degli errori
+  autostyle,          % imposta lo stile in base al linguaggio specificato in babel
+  english=american,   % imposta lo stile per l'inglese
+  italian=guillemets  % imposta lo stile per l'italiano
+]{csquotes}                     % serve a impostare lo stile delle virgolette
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\usepackage{indentfirst}        % serve per avere l'indentazione nel primo paragrafo
+\usepackage{setspace}           % serve a fornire comandi di interlinea standard
+\usepackage{xcolor}             % serve per la gestione dei colori nel testo
+\usepackage{graphicx}           % serve per includere immagini e grafici
+
+\onehalfspacing%                % Imposta interlinea a 1,5 ed equivale a \linespread{1,5}
+
+\setcounter{secnumdepth}{2}     % Numera fino alla sottosezione nel corpo del testo
+\setcounter{tocdepth}{3}        % Numera fino alla sotto-sottosezione nell'indice
+
+% Rende \paragraph simile alle sezioni
+\usepackage{titlesec}
+
+\usepackage[%
+  depth=3,              % equivale a bookmarksdepth di hyperref
+  open=false,           % equivale a bookmarksopen di hyperref
+  numbered=true         % equivale a bookmarksnumbered di hyperref
+]{bookmark}                     % Gestisce i segnalibri meglio di hyperref
+\usepackage{hyperref}           % Gestisce tutte le cose ipertestuali del pdf
+\hypersetup{%
+  pdfpagemode={UseNone},
+  hidelinks,            % nasconde i collegamenti (non vengono quadrettati)
+  hypertexnames=false,
+  linktoc=all,          % inserisce i link nell'indice
+  unicode=true,         % only Latin characters in Acrobat’s bookmarks
+  pdftoolbar=false,     % show Acrobat’s toolbar?
+  pdfmenubar=false,     % show Acrobat’s menu?
+  plainpages=false,
+  breaklinks,
+  pdfstartview={Fit},
+  pdfauthor={Niccolò Maltoni, Luca Semprini},
+  pdfcreator={Niccolò Maltoni, Luca Semprini},
+  pdftitle={Big Data - Tema finale: StackLite}, % chktex 8
+  pdflang={it}
+}
+
+\usepackage[a-1b]{pdfx}
+\usepackage[%
+  italian,            % definizione delle lingue da usare
+  nameinlink          % inserisce i link nei riferimenti
+]{cleveref}                     % permette di usare riferimenti migliori dei \ref e dei varioref
+
+
+\title{\textbf{Report on Big Data project: \\(StackLite-Jobs)}}
 
 \author{
-	Name Surname - Mat. 004815\\
-	Name Surname - Mat. 162342}
-	
+  Niccolò~Maltoni - Mat. 000000840825\\%
+  Luca~Semprini - Mat. ????????????
+}
+
 \date{\today}
 
 \begin{document}
-\maketitle
-\newpage
+  \maketitle
+  \newpage
 
-\tableofcontents
+  \tableofcontents
 
-\newpage
+  \newpage
 
-\section{Teachers' notes}
+  \section{Introduzione}\label{sec:intro}
+  \subsection{Descrizione del dataset}\label{subsec:dataset}
 
-Each group should designate a reference user. In the local home directory of such user there must be an {\sf exam} folder exclusively containing the jobs to run (e.g., MapReduce jar, Spark scala file, Spark jar). Also, please send (either by email or by sharing a Git project) the following files.
+  TODO
 
-\begin{itemize}
-\item The source code of the jobs; if more versions have been developed, only send the most efficient one.
-\item A text file with the commands to run the job.
-\item The PDF file of the report; use Italian/English and Latex/Word at your discretion. Be concise and go straight to the point; do not waste time and space on writing a verbose report.
-\end{itemize}
+  \subsubsection{Descrizione dei file}\label{subsub:dataset:files}
 
-This guide is based on the ``MapReduce+Spark'' kind of project. However, we remind that a different kind of project may be agreed upon.
-\\
+  TODO
 
-The evaluation will be based on the following.
-\begin{itemize}
-\item Compliance of the jobs with the agreed upon specifications.
-\item Compliance of the report with this guide.
-\item Job correctness.
-\item Correct reasoning about optimizations.
-\end{itemize}
+  \section{Preparazione dei dati}\label{sec:preparation}
 
-Appreciated aspects.
-\begin{itemize}
-\item Code cleanliness and comments.
-\item Further considerations in terms of job scalability and extensibility.
-\end{itemize}
+  TODO
 
+  \section{Job}\label{sec:job}
 
+  \subsection[%
+    Job 1: Proporzione giorni feriali/festivi per tag%
+  ]{%
+    Job 1: Effettuare la proporzione tra post realizzati in giorni feriali e in giorni festivi per ciascun tag%
+  }\label{subsec:job1}
 
-\section{Introduction}
-\subsection{Dataset description}
+  TODO
 
-Please provide:
-\begin{itemize}
-\item A brief description of the dataset.
-\item The link to the website publishing the dataset (e.g., \url{https://www1.nyc.gov/site/tlc/about/tlc-trip-record-data.page}).
-\item Direct links to the downloaded files, especially if more than one files are available in the previous link (e.g., \url{https://s3.amazonaws.com/nyc-tlc/trip+data/yellow_tripdata_2017-01.csv}).
-\end{itemize}
+  \subsubsection{MapReduce implementation}\label{subsub:job1:mapreduce}
 
-\subsubsection{File description}
+  TODO
 
-For each file, briefly indicated the available data and the fields used for the analyses; examples are welcome.
+  \subsubsection{Spark SQL implementation}\label{subsub:job1:spark}
 
+  TODO
 
-\section{Data preparation}
+  \subsection[%
+    Job 2: Suddividere tag in base a score e risposte%
+  ]{%
+    Job 2: Suddividere i tag in 4 bin per score e risposte e ottenere i top 10 per ciascun bin%
+  }\label{subsec:job2}
 
-Please provide:
-\begin{itemize}
-\item The name of the reference user (i.e., the one in whose home directory is the {\sf exam} folder).
-\item The machine name (or IP address) of the reference user.
-\item The paths to each file on HDFS and/or its corresponding location in Hive (database and table); consider relying on the structured data lake organization.
-\item A subsection with details on the pre-processing of the data (only necessary if the data is dirty and/or it contains a significant amount of useless information).
-\end{itemize}
+  TODO
 
+  \subsubsection{MapReduce implementation}\label{subsub:job2:mapreduce}
 
-\section{Jobs}
+  TODO
 
-One subsection for each job.
+  \subsubsection{Spark SQL implementation}\label{subsub:job2:spark}
 
-\subsection{Job \#1: short description}
+  TODO
 
-Provide a brief, general description of the job. Then, one subsubsection for each implementation.
+  \subsection[%
+    Job 3: Machine learning%
+  ]{%
+    Job 3: Machine learning TODO%
+  }\label{subsec:job3}
 
-\subsubsection{MapReduce/Spark(SQL) implementation}
+  TODO
 
-Please provide:
-\begin{itemize}
-\item The command to run the job from the reference user's home directory; explain possibly different parameter configurations.
-\item Direct link to the application's history on YARN (e.g., \url{http://isi-vclust0.csr.unibo.it:18088/history/application_15...}).
-\item Input files/tables.
-\item Output files/tables.
-\item Description of the implementation. A schematic and concise discussion is preferrable to a verbose narrative. Focus on how the data is manipulated in the job (e.g., what do keys and values represent across the different stages, what operations are carried out). 
-\item Performance considerations with respect the (potentially) carried out optimizations, e.g., in terms of:
-\begin{itemize}
-\item allocated resources and tasks;
-\item enforced partitioning;
-\item data caching;
-\item combiner usage;
-\item broadcast variables usage;
-\item any other kind of optimization.
-\end{itemize}
-\item Short extract of the output and discussion (i.e., whether there is any relevant insight obtained).
-\end{itemize}
+  \section{Miscellanea}\label{sec:miscellaneous}
 
-\section{Miscellaneous}
-
-If necessary, feel free to add sections to explain any other relevant information.
+  TODO
 
 \end{document}
