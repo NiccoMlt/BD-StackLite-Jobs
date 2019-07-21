@@ -1,21 +1,29 @@
 package it.unibo.bd1819.daysproportion;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.util.Tool;
+import org.apache.hadoop.util.ToolRunner;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.mapreduce.Job;
-
-public class Main {
+public class Main extends Configured implements Tool {
 
     /**
      * Launch the job.
      *
      * @param args command line args
-     *
      * @throws Exception if something goes wrong
      */
     public static void main(final String[] args) throws Exception {
+        int res = ToolRunner.run(new Configuration(), new Main(), args);
+        System.exit(res);
+    }
+
+    @Override
+    public int run(final String[] args) throws Exception {
         final List<Job> jobs = new ArrayList<>();
         final Configuration conf = new Configuration();
 
@@ -28,7 +36,6 @@ public class Main {
             }
         }
 
-//        JobFactory.getSortJob(conf).waitForCompletion(true);
-        JobFactory.getFedeSortJob(conf).waitForCompletion(true);
+        return JobFactory.getSortJob(conf).waitForCompletion(true) ? 0 : 1;
     }
 }
