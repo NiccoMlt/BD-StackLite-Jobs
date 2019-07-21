@@ -30,10 +30,10 @@ java {
 }
 
 repositories {
-    jcenter()
     mavenLocal()
-    mavenCentral()
     maven { url "https://repository.cloudera.com/artifactory/cloudera-repos" }
+    mavenCentral()
+    jcenter()
 }
 
 dependencies {
@@ -47,6 +47,8 @@ dependencies {
     testRuntimeOnly "org.scala-lang.modules:scala-xml_$scalaBinaryVersion:$scalaXmlVersion"
 
     compileOnly 'org.jetbrains:annotations-java5:17.0.0' // annotations-java5 is compatible with JDK 1.5, 1.6 or 1.7
+    
+    implementation 'org.apache.commons:commons-lang3:3.8.1' // Requires Java 7, supports Java 8, 9, 10.
     implementation 'joda-time:joda-time:2.10.3'
     implementation 'de.jollyday:jollyday:0.4.9'
 
