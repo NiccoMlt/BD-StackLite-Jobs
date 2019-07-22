@@ -3,41 +3,23 @@ package it.unibo.bd1819.daysproportion;
 import java.io.IOException;
 
 import it.unibo.bd1819.common.JobUtils;
-import it.unibo.bd1819.daysproportion.comparator.TagBoolComparator;
 import it.unibo.bd1819.daysproportion.map.QuestionTagMap;
-import it.unibo.bd1819.daysproportion.map.SwitchSortMapper;
 import it.unibo.bd1819.daysproportion.map.WorkHolidayMap;
-import it.unibo.bd1819.daysproportion.reduce.SwitchSortReducer;
 import it.unibo.bd1819.daysproportion.reduce.WorkHolidayJoin;
 import it.unibo.bd1819.daysproportion.reduce.WorkHolidayProportionReducer;
-import it.unibo.bd1819.daysproportion.sort.compositekey.ActualKeyGroupingComparator;
-import it.unibo.bd1819.daysproportion.sort.compositekey.ActualKeyPartitioner;
-import it.unibo.bd1819.daysproportion.sort.text.ActualKeyTextGroupingComparator;
-import it.unibo.bd1819.daysproportion.sort.text.ActualKeyTextPartitioner;
-import it.unibo.bd1819.daysproportion.sort.CompositeKey;
-import it.unibo.bd1819.daysproportion.sort.compositekey.CompositeKeyComparator;
-import it.unibo.bd1819.daysproportion.sort.compositekey.CompositeKeyMapper;
-import it.unibo.bd1819.daysproportion.sort.text.CompositeKeyTextComparator;
-import it.unibo.bd1819.daysproportion.sort.text.CompositeKeyTextMapper;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.BooleanWritable;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.KeyValueTextInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.MultipleInputs;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
-import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
-import org.apache.hadoop.mapreduce.lib.partition.InputSampler;
-import org.apache.hadoop.mapreduce.lib.partition.TotalOrderPartitioner;
 
 import static it.unibo.bd1819.common.JobUtils.GENERIC_OUTPUT_PATH;
-import static it.unibo.bd1819.common.JobUtils.OUTPUT_PATH;
 import static it.unibo.bd1819.common.JobUtils.QUESTIONS_INPUT_PATH;
 import static it.unibo.bd1819.common.JobUtils.QUESTION_TAGS_INPUT_PATH;
 import static it.unibo.bd1819.common.JobUtils.deleteOutputFolder;
@@ -93,118 +75,6 @@ public class JobFactory {
         JobUtils.configureReducer(job, WorkHolidayProportionReducer.class, Text.class, Text.class, TextOutputFormat.class);
 
         TextOutputFormat.setOutputPath(job, WORKDAY_HOLIDAY_PROPORTION_PATH);
-
-        return job;
-    }
-
-    public static Job getSortingJob(final Configuration conf) throws IOException {
-        final FileSystem fs = FileSystem.get(conf);
-
-        final Path partitionPath = new Path(GENERIC_OUTPUT_PATH + "partition", "part.lst");
-        deleteOutputFolder(fs, OUTPUT_PATH);
-        deleteOutputFolder(fs, partitionPath);
-
-        final Job job = Job.getInstance(conf, "Sorting Job");
-
-        job.setJarByClass(Main.class);
-
-        // TODO
-
-        return job;
-    }
-
-    public static Job getSortJob(final Configuration conf) throws IOException, InterruptedException, ClassNotFoundException {
-        final FileSystem fs = FileSystem.get(conf);
-
-        final Path partitionPath = new Path(GENERIC_OUTPUT_PATH + "partition", "part.lst");
-        deleteOutputFolder(fs, OUTPUT_PATH);
-        deleteOutputFolder(fs, partitionPath);
-
-        final Job sortJob = Job.getInstance(conf, "Sort Job");
-
-        sortJob.setJarByClass(Main.class);
-
-        sortJob.setMapperClass(SwitchSortMapper.class);
-        sortJob.setInputFormatClass(KeyValueTextInputFormat.class);
-
-        sortJob.setMapOutputKeyClass(Text.class);
-        sortJob.setMapOutputValueClass(Text.class);
-
-        sortJob.setSortComparatorClass(TagBoolComparator.class);
-
-        sortJob.setReducerClass(SwitchSortReducer.class);
-        sortJob.setOutputKeyClass(Text.class);
-        sortJob.setOutputValueClass(Text.class);
-        FileInputFormat.addInputPath(sortJob, WORKDAY_HOLIDAY_PROPORTION_PATH);
-        FileOutputFormat.setOutputPath(sortJob, OUTPUT_PATH);
-
-        sortJob.setNumReduceTasks(3);
-        TotalOrderPartitioner.setPartitionFile(sortJob.getConfiguration(), partitionPath);
-
-        InputSampler.Sampler<IntWritable, Text> sampler = new InputSampler.RandomSampler<>(1, 1000);
-        InputSampler.writePartitionFile(sortJob, sampler);
-
-        sortJob.setPartitionerClass(TotalOrderPartitioner.class);
-
-        return sortJob;
-    }
-
-    public static Job getSecondarySortJob(final Configuration conf) throws IOException, InterruptedException, ClassNotFoundException {
-        final FileSystem fs = FileSystem.get(conf);
-
-        final Path partitionPath = new Path(GENERIC_OUTPUT_PATH + "partition", "part.lst");
-        deleteOutputFolder(fs, OUTPUT_PATH);
-        deleteOutputFolder(fs, partitionPath);
-
-        final Job job = Job.getInstance(conf, "Secondary sort Job");
-
-        job.setJarByClass(Main.class);
-
-        job.setMapperClass(CompositeKeyMapper.class);
-        KeyValueTextInputFormat.addInputPath(job, WORKDAY_HOLIDAY_PROPORTION_PATH);
-        job.setInputFormatClass(KeyValueTextInputFormat.class);
-        TextOutputFormat.setOutputPath(job, OUTPUT_PATH);
-
-        job.setMapOutputKeyClass(CompositeKey.class);
-        job.setMapOutputValueClass(Text.class);
-        job.setNumReduceTasks(3);
-        TotalOrderPartitioner.setPartitionFile(job.getConfiguration(), partitionPath);
-
-//        InputSampler.Sampler<IntWritable, Text> sampler = new InputSampler.RandomSampler<>(1, 1000);
-//        InputSampler.writePartitionFile(job, sampler);
-        job.setPartitionerClass(ActualKeyPartitioner.class);
-        job.setGroupingComparatorClass(ActualKeyGroupingComparator.class);
-        job.setSortComparatorClass(CompositeKeyComparator.class);
-
-        return job;
-    }
-    
-    public static Job getSecondarySortTextJob(final Configuration conf) throws IOException, InterruptedException, ClassNotFoundException {
-        final FileSystem fs = FileSystem.get(conf);
-
-        final Path partitionPath = new Path(GENERIC_OUTPUT_PATH + "partition", "part.lst");
-        deleteOutputFolder(fs, OUTPUT_PATH);
-        deleteOutputFolder(fs, partitionPath);
-
-        final Job job = Job.getInstance(conf, "Secondary sort Job");
-
-        job.setJarByClass(Main.class);
-
-        job.setMapperClass(CompositeKeyTextMapper.class);
-        KeyValueTextInputFormat.addInputPath(job, WORKDAY_HOLIDAY_PROPORTION_PATH);
-        job.setInputFormatClass(KeyValueTextInputFormat.class);
-        TextOutputFormat.setOutputPath(job, OUTPUT_PATH);
-
-        job.setMapOutputKeyClass(Text.class);
-        job.setMapOutputValueClass(Text.class);
-        job.setNumReduceTasks(3);
-        TotalOrderPartitioner.setPartitionFile(job.getConfiguration(), partitionPath);
-
-        InputSampler.Sampler<IntWritable, Text> sampler = new InputSampler.RandomSampler<>(1, 1000);
-        InputSampler.writePartitionFile(job, sampler);
-        job.setPartitionerClass(ActualKeyTextPartitioner.class);
-        job.setGroupingComparatorClass(ActualKeyTextGroupingComparator.class);
-        job.setSortComparatorClass(CompositeKeyTextComparator.class);
 
         return job;
     }

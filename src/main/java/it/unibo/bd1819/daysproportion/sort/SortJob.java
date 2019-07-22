@@ -1,4 +1,4 @@
-package it.unibo.bd1819.daysproportion.textsort;
+package it.unibo.bd1819.daysproportion.sort;
 
 import java.io.IOException;
 
