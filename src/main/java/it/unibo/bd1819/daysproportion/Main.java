@@ -1,13 +1,12 @@
 package it.unibo.bd1819.daysproportion;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class Main extends Configured implements Tool {
 
@@ -15,6 +14,7 @@ public class Main extends Configured implements Tool {
      * Launch the job.
      *
      * @param args command line args
+     *
      * @throws Exception if something goes wrong
      */
     public static void main(final String[] args) throws Exception {

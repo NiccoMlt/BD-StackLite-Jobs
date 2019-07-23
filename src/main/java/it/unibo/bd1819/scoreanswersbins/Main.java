@@ -11,13 +11,14 @@ public class Main extends Configured implements Tool {
      * Launch the job.
      *
      * @param args command line args
+     *
      * @throws Exception if something goes wrong
      */
     public static void main(final String[] args) throws Exception {
         int res = ToolRunner.run(new Configuration(), new Main(), args);
         System.exit(res);
     }
-    
+
     @Override
     public int run(final String[] args) throws Exception {
         // TODO

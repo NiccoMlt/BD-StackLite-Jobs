@@ -1,6 +1,10 @@
 package it.unibo.bd1819.daysproportion;
 
-import java.io.IOException;
+import static it.unibo.bd1819.common.JobUtils.GENERIC_OUTPUT_PATH;
+import static it.unibo.bd1819.common.JobUtils.OUTPUT_PATH;
+import static it.unibo.bd1819.common.JobUtils.QUESTIONS_INPUT_PATH;
+import static it.unibo.bd1819.common.JobUtils.QUESTION_TAGS_INPUT_PATH;
+import static it.unibo.bd1819.common.JobUtils.deleteOutputFolder;
 
 import it.unibo.bd1819.common.JobUtils;
 import it.unibo.bd1819.daysproportion.map.QuestionTagMap;
@@ -13,6 +17,7 @@ import it.unibo.bd1819.daysproportion.sort.KeyComparator;
 import it.unibo.bd1819.daysproportion.sort.SortMapper;
 import it.unibo.bd1819.daysproportion.sort.SortReducer;
 import it.unibo.bd1819.daysproportion.sort.TextTriplet;
+import java.io.IOException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -26,22 +31,19 @@ import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
-import static it.unibo.bd1819.common.JobUtils.GENERIC_OUTPUT_PATH;
-import static it.unibo.bd1819.common.JobUtils.OUTPUT_PATH;
-import static it.unibo.bd1819.common.JobUtils.QUESTIONS_INPUT_PATH;
-import static it.unibo.bd1819.common.JobUtils.QUESTION_TAGS_INPUT_PATH;
-import static it.unibo.bd1819.common.JobUtils.deleteOutputFolder;
-
 public final class JobFactory {
 
-    private static final Path WORKDAY_HOLIDAY_JOIN_PATH = new Path(GENERIC_OUTPUT_PATH + "workdayHolidayJoin");
-    private static final Path WORKDAY_HOLIDAY_PROPORTION_PATH = new Path(GENERIC_OUTPUT_PATH + "workdayHolidayProportion");
+    private static final Path WORKDAY_HOLIDAY_JOIN_PATH =
+        new Path(GENERIC_OUTPUT_PATH + "workdayHolidayJoin");
+    private static final Path WORKDAY_HOLIDAY_PROPORTION_PATH =
+        new Path(GENERIC_OUTPUT_PATH + "workdayHolidayProportion");
 
     private JobFactory() {
     }
 
     /**
-     * Job #1: Create a job to map StackOverflow full questions to tuples (id, isWorkday) and join with tags by question ID.
+     * Job #1: Create a job to map StackOverflow full questions to tuples (id, isWorkday)
+     * and join with tags by question ID.
      *
      * @param conf the job configuration
      *
@@ -58,13 +60,16 @@ public final class JobFactory {
 
         job.setJarByClass(Main.class);
 
-        MultipleInputs.addInputPath(job, QUESTION_TAGS_INPUT_PATH, TextInputFormat.class, QuestionTagMap.class);
-        MultipleInputs.addInputPath(job, QUESTIONS_INPUT_PATH, TextInputFormat.class, WorkHolidayMap.class);
+        MultipleInputs.addInputPath(job,
+            QUESTION_TAGS_INPUT_PATH, TextInputFormat.class, QuestionTagMap.class);
+        MultipleInputs.addInputPath(job,
+            QUESTIONS_INPUT_PATH, TextInputFormat.class, WorkHolidayMap.class);
 
         job.setMapOutputKeyClass(LongWritable.class);
         job.setMapOutputValueClass(Text.class);
 
-        JobUtils.configureReducer(job, WorkHolidayJoin.class, Text.class, BooleanWritable.class, TextOutputFormat.class);
+        JobUtils.configureReducer(job, WorkHolidayJoin.class,
+            Text.class, BooleanWritable.class, TextOutputFormat.class);
 
         TextOutputFormat.setOutputPath(job, WORKDAY_HOLIDAY_JOIN_PATH);
 
@@ -76,14 +81,15 @@ public final class JobFactory {
 
         deleteOutputFolder(fs, WORKDAY_HOLIDAY_PROPORTION_PATH);
 
-        final Job job = Job.getInstance(conf, "Get proportion between workdays and holidays by tags");
+        final Job job = Job.getInstance(conf, "Proportion between workdays and holidays by tags");
 
         job.setJarByClass(Main.class);
 
         job.setInputFormatClass(KeyValueTextInputFormat.class);
         KeyValueTextInputFormat.addInputPath(job, WORKDAY_HOLIDAY_JOIN_PATH);
 
-        JobUtils.configureReducer(job, WorkHolidayProportionReducer.class, Text.class, Text.class, TextOutputFormat.class);
+        JobUtils.configureReducer(job,
+            WorkHolidayProportionReducer.class, Text.class, Text.class, TextOutputFormat.class);
 
         TextOutputFormat.setOutputPath(job, WORKDAY_HOLIDAY_PROPORTION_PATH);
 

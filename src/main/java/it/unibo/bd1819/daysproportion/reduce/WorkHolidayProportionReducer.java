@@ -1,16 +1,16 @@
 package it.unibo.bd1819.daysproportion.reduce;
 
+import java.io.IOException;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.log4j.Logger;
-
-import java.io.IOException;
 
 public class WorkHolidayProportionReducer extends Reducer<Text, Text, Text, Text> {
     private static final Logger logger = Logger.getLogger(WorkHolidayProportionReducer.class);
 
     @Override
-    protected void reduce(final Text key, final Iterable<Text> values, final Context context) throws IOException, InterruptedException {
+    protected void reduce(final Text key, final Iterable<Text> values, final Context context)
+        throws IOException, InterruptedException {
         long holidays = 0;
         long workdays = 0;
 
@@ -29,7 +29,9 @@ public class WorkHolidayProportionReducer extends Reducer<Text, Text, Text, Text
         } else {
             // Filter out extreme results // TODO
             if (!Double.isInfinite(proportion) && proportion != 0.0) {
-                context.write(key, new Text(String.format("%.2f", proportion) + "," + (holidays + workdays)));
+                context.write(
+                    key,
+                    new Text(String.format("%.2f", proportion) + "," + (holidays + workdays)));
             }
         }
     }

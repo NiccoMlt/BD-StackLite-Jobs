@@ -1,17 +1,16 @@
 package it.unibo.bd1819.daysproportion.reduce;
 
+import static it.unibo.bd1819.daysproportion.map.QuestionTagMap.QT_PREFIX;
+import static it.unibo.bd1819.daysproportion.map.WorkHolidayMap.WHM_PREFIX;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.log4j.Logger;
-
-import static it.unibo.bd1819.daysproportion.map.QuestionTagMap.QT_PREFIX;
-import static it.unibo.bd1819.daysproportion.map.WorkHolidayMap.WHM_PREFIX;
 
 public class WorkHolidayJoin extends Reducer<LongWritable, Text, Text, BooleanWritable> {
     private static final Logger logger = Logger.getLogger(WorkHolidayJoin.class);
@@ -21,7 +20,8 @@ public class WorkHolidayJoin extends Reducer<LongWritable, Text, Text, BooleanWr
     private final transient BooleanWritable workdayValue = new BooleanWritable();
 
     @Override
-    protected void reduce(final LongWritable key, final Iterable<Text> values, final Context context) throws IOException, InterruptedException {
+    protected void reduce(final LongWritable key, final Iterable<Text> values, final Context context)
+        throws IOException, InterruptedException {
         final List<String> tags = new ArrayList<>();
         final List<Boolean> workdays = new ArrayList<>();
 

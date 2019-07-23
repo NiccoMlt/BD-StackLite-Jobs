@@ -1,8 +1,7 @@
 package it.unibo.bd1819.daysproportion.map;
 
-import java.io.IOException;
-
 import it.unibo.bd1819.common.Question;
+import java.io.IOException;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -17,7 +16,8 @@ public class WorkHolidayMap extends Mapper<LongWritable, Text, LongWritable, Tex
     private final transient LongWritable id = new LongWritable();
 
     @Override
-    protected void map(final LongWritable key, final Text value, final Context context) throws IOException, InterruptedException {
+    protected void map(final LongWritable key, final Text value, final Context context)
+        throws IOException, InterruptedException {
         if (key.get() != LINE_NUM_TO_DROP || !value.toString().equals(TEXT_TO_DROP)) {
             final Question q = Question.parseText(key, value);
             workday.set(WHM_PREFIX + q.isCreatedInWorkday());

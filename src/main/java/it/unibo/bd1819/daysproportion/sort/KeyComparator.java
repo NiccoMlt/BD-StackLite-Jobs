@@ -10,10 +10,10 @@ public class KeyComparator extends WritableComparator {
 
     @SuppressWarnings("rawtypes")
     @Override
-    public int compare(WritableComparable w1, WritableComparable w2) {
+    public int compare(final WritableComparable w1, final WritableComparable w2) {
         final TextTriplet ip1 = (TextTriplet) w1;
         final TextTriplet ip2 = (TextTriplet) w2;
-        
+
         return ip1.compareTo(ip2);
     }
 }
