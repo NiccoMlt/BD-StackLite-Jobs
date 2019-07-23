@@ -30,7 +30,10 @@ public class WorkHolidayProportionReducer extends Reducer<Text, Text, Text, Text
         if (Double.isNaN(proportion)) {
             logger.warn("Unexpected proportion for tag: " + key.toString());
         } else {
-            context.write(key, new Text(String.format("%.2f", proportion) + "," + (holidays + workdays)));
+            // Filter out extreme results // TODO
+            if (!Double.isInfinite(proportion) && proportion != 0.0) {
+                context.write(key, new Text(String.format("%.2f", proportion) + "," + (holidays + workdays)));
+            }
         }
     }
 }

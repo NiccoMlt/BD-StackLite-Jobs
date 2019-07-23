@@ -3,8 +3,8 @@ package it.unibo.bd1819.daysproportion.sort;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Objects;
 
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.WritableComparable;
 
 public class TextTriplet implements WritableComparable<TextTriplet> {
@@ -13,14 +13,18 @@ public class TextTriplet implements WritableComparable<TextTriplet> {
     private double proportion;
 
     /** No argument constructor, required by Hadoop. */
+    @SuppressWarnings("unused")
     public TextTriplet() {
     }
 
+    /**
+     * Actual constructor.
+     *
+     * @param tag        the tag
+     * @param proportion the proportion between workdays and holidays
+     * @param count      the number of question with given tag
+     */
     public TextTriplet(final String tag, final double proportion, final long count) {
-        set(tag, proportion, count);
-    }
-
-    public void set(String tag, double proportion, long count) {
         this.tag = tag;
         this.count = count;
         this.proportion = proportion;
@@ -54,20 +58,17 @@ public class TextTriplet implements WritableComparable<TextTriplet> {
 
     @Override
     public int hashCode() {
-        /*
-            This hashcode function is important as it is used by the custom
-            partitioner for this class.
-        */
-        return (int) (tag.hashCode() * 163 + count + proportion);
+        return Objects.hash(getTag(), getCount(), getProportion());
     }
 
     @Override
     public boolean equals(final Object o) {
-        if (o instanceof TextTriplet) {
-            TextTriplet tp = (TextTriplet) o;
-            return tag.equals(tp.tag) && count == (tp.count) && proportion == (tp.proportion);
-        }
-        return false;
+        if (this == o) return true;
+        if (!(o instanceof TextTriplet)) return false;
+        final TextTriplet that = (TextTriplet) o;
+        return getCount() == that.getCount() &&
+            Double.compare(that.getProportion(), getProportion()) == 0 &&
+            getTag().equals(that.getTag());
     }
 
     @Override
@@ -75,34 +76,19 @@ public class TextTriplet implements WritableComparable<TextTriplet> {
         return tag + "," + proportion + "," + count;
     }
 
-    /*
-     LHS in the conditional statement is the current key
-     RHS in the conditional statement is the previous key
-     When you return a negative value, it means that you are exchanging
-     the positions of current and previous key-value pair
-     Returning 0 or a positive value means that you are keeping the
-     order as it is
-    */
     @Override
     public int compareTo(final TextTriplet tp) {
-        // Here my natural is tag and I don't even take it into
-        // consideration.
+        final int compareProportion = -Double.compare(this.getProportion(), tp.getProportion());
 
-        // So as you might have concluded, I am sorting count,F,proportion descendingly.
-        if (this.count != tp.count) {
-            if (this.count < tp.count) {
-                return 1;
+        if (compareProportion == 0) {
+            final int compareCount = -Long.compare(this.getCount(), tp.getCount());
+            if (compareCount == 0) {
+                return this.getTag().compareTo(tp.getTag());
             } else {
-                return -1;
+                return compareCount;
             }
+        } else {
+            return compareProportion;
         }
-        if (this.proportion != tp.proportion) {
-            if (this.proportion < tp.proportion) {
-                return 1;
-            } else {
-                return -1;
-            }
-        }
-        return 0;
     }
 }
