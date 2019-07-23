@@ -5,6 +5,7 @@ plugins {
     id 'eclipse'
     id 'java'
     id 'scala'
+    id 'pmd'
     id 'com.github.johnrengelman.shadow' version '5.1.0'
 }
 
@@ -90,6 +91,13 @@ task sparkJar(type: ShadowJar) {
     from(shadowJar.from())
     zip64 true
 }
+
+pmd {
+    ruleSets = []
+    ruleSetConfig = resources.text.fromFile("${project.rootProject.projectDir}/config/pmd/pmd.xml")
+    targetJdk = javaVersion
+}
+
 
 eclipse {
     classpath {

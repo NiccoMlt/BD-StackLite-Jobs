@@ -6,7 +6,9 @@ import org.apache.hadoop.mapreduce.*;
 
 import java.io.IOException;
 
-public class JobUtils {
+public final class JobUtils {
+    private JobUtils() {
+    }
 
     public static final String GENERIC_INPUT_PATH = "hdfs:///user/nmaltoni/dataset/";
     public static final String GENERIC_OUTPUT_PATH = "hdfs:///user/nmaltoni/mapreduce/";

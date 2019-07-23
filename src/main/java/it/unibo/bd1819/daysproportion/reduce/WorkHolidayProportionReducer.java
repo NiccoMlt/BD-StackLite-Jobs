@@ -7,10 +7,7 @@ import org.apache.log4j.Logger;
 import java.io.IOException;
 
 public class WorkHolidayProportionReducer extends Reducer<Text, Text, Text, Text> {
-    public static final String HOLIDAY_ONLY = "Holiday only";
-    public static final String WORKDAY_ONLY = "Workday only";
-
-    private final Logger logger = Logger.getLogger(this.getClass());
+    private static final Logger logger = Logger.getLogger(WorkHolidayProportionReducer.class);
 
     @Override
     protected void reduce(final Text key, final Iterable<Text> values, final Context context) throws IOException, InterruptedException {

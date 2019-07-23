@@ -7,6 +7,7 @@ import java.util.Objects;
 
 import org.apache.hadoop.io.WritableComparable;
 
+@SuppressWarnings("PMD.BeanMembersShouldSerialize")
 public class TextTriplet implements WritableComparable<TextTriplet> {
     private String tag;
     private long count;
@@ -15,6 +16,7 @@ public class TextTriplet implements WritableComparable<TextTriplet> {
     /** No argument constructor, required by Hadoop. */
     @SuppressWarnings("unused")
     public TextTriplet() {
+        // This constructor is intentionally empty. Nothing special is needed here.
     }
 
     /**
@@ -31,15 +33,15 @@ public class TextTriplet implements WritableComparable<TextTriplet> {
     }
 
     public String getTag() {
-        return tag;
+        return this.tag;
     }
 
     public long getCount() {
-        return count;
+        return this.count;
     }
 
     public double getProportion() {
-        return proportion;
+        return this.proportion;
     }
 
     @Override
@@ -63,8 +65,12 @@ public class TextTriplet implements WritableComparable<TextTriplet> {
 
     @Override
     public boolean equals(final Object o) {
-        if (this == o) return true;
-        if (!(o instanceof TextTriplet)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof TextTriplet)) {
+            return false;
+        }
         final TextTriplet that = (TextTriplet) o;
         return getCount() == that.getCount() &&
             Double.compare(that.getProportion(), getProportion()) == 0 &&

@@ -11,7 +11,7 @@ public class QuestionTag {
     private final String tag;
 
     @Contract(pure = true)
-    private QuestionTag(final long id, final String tag) {
+    public QuestionTag(final long id, final String tag) {
         this.id = id;
         this.tag = tag;
     }

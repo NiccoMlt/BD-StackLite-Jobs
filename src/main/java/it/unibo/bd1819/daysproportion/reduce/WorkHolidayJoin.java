@@ -14,10 +14,11 @@ import static it.unibo.bd1819.daysproportion.map.QuestionTagMap.QT_PREFIX;
 import static it.unibo.bd1819.daysproportion.map.WorkHolidayMap.WHM_PREFIX;
 
 public class WorkHolidayJoin extends Reducer<LongWritable, Text, Text, BooleanWritable> {
-    private final Logger logger = Logger.getLogger(this.getClass());
+    private static final Logger logger = Logger.getLogger(WorkHolidayJoin.class);
+    private static final int TUPLE_SIZE = 1;
 
-    private final Text tagKey = new Text();
-    private final BooleanWritable workdayValue = new BooleanWritable();
+    private final transient Text tagKey = new Text();
+    private final transient BooleanWritable workdayValue = new BooleanWritable();
 
     @Override
     protected void reduce(final LongWritable key, final Iterable<Text> values, final Context context) throws IOException, InterruptedException {
@@ -36,10 +37,13 @@ public class WorkHolidayJoin extends Reducer<LongWritable, Text, Text, BooleanWr
                     break;
                 default:
                     logger.warn("Key " + key.toString() + " - Unexpected value: " + value.toString());
+                    break;
             }
         }
 
-        if (workdays.size() != 1) logger.warn("Unexpected WHJ boolean quantity: " + workdays.size());
+        if (workdays.size() != TUPLE_SIZE) {
+            logger.warn("Unexpected WHJ boolean quantity: " + workdays.size());
+        }
 
         for (final String tag : tags) {
             for (final boolean workday : workdays) {

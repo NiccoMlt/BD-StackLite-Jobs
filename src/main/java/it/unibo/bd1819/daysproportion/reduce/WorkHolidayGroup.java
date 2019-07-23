@@ -9,7 +9,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
 public class WorkHolidayGroup extends Reducer<BooleanWritable, LongWritable, BooleanWritable, Text> {
-    final Text list = new Text();
+    private final transient Text list = new Text();
 
     @Override
     protected void reduce(final BooleanWritable key, final Iterable<LongWritable> values, final Context context) throws IOException, InterruptedException {

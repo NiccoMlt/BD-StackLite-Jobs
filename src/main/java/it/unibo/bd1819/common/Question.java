@@ -13,6 +13,8 @@ import static it.unibo.bd1819.common.DateUtils.parseNullableDate;
 
 /** The class models the data contained in questions.csv file. */
 public class Question {
+    private static final int NUMBER_OF_FIELDS = 7;
+    
     private final long id;
     private final DateTime creationDate;
     @Nullable
@@ -26,7 +28,7 @@ public class Question {
     private final Integer answerCount;
 
     @Contract(pure = true)
-    private Question(
+    public Question(
         final long id,
         @Nullable final String creationDate, @Nullable final String closedDate, @Nullable final String deletionDate,
         final int score, @Nullable final Integer ownerUserId, @Nullable final Integer answerCount) {
@@ -55,7 +57,9 @@ public class Question {
     public static Question parseText(final LongWritable id, final Text text) {
         final String[] line = text.toString().split(",");
 
-        if (line.length != 7) throw new IllegalArgumentException("Unexpected line format: columns: " + line.length);
+        if (line.length != NUMBER_OF_FIELDS) {
+            throw new IllegalArgumentException("Unexpected line format: columns: " + line.length);
+        }
 
         return new Question(
             Long.parseLong(line[0]), line[1], parseNullableDate(line[2]), parseNullableDate(line[3]),

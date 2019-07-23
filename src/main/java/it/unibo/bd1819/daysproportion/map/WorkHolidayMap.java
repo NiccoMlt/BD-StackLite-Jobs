@@ -13,8 +13,8 @@ public class WorkHolidayMap extends Mapper<LongWritable, Text, LongWritable, Tex
     private static final Integer LINE_NUM_TO_DROP = 0;
     private static final String TEXT_TO_DROP = "Id,CreationDate,ClosedDate,DeletionDate,Score,OwnerUserId,AnswerCount";
 
-    private final Text workday = new Text();
-    private final LongWritable id = new LongWritable();
+    private final transient Text workday = new Text();
+    private final transient LongWritable id = new LongWritable();
 
     @Override
     protected void map(final LongWritable key, final Text value, final Context context) throws IOException, InterruptedException {

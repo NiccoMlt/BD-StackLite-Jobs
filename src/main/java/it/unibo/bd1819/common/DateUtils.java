@@ -9,7 +9,7 @@ import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormat;
 
-public class DateUtils {
+public final class DateUtils {
     private static final String UTC_DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss'Z'";
 
     private static final HolidayManager HOLIDAY_MANAGER = HolidayManager.getInstance();
@@ -27,7 +27,7 @@ public class DateUtils {
     @Contract(pure = true)
     @Nullable
     public static String parseNullableDate(final @NotNull String nullableUtc) {
-        return nullableUtc.equals("NA") ? null : nullableUtc;
+        return "NA".equals(nullableUtc) ? null : nullableUtc;
     }
 
     @Contract("null -> false")

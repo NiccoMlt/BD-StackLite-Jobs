@@ -32,10 +32,13 @@ import static it.unibo.bd1819.common.JobUtils.QUESTIONS_INPUT_PATH;
 import static it.unibo.bd1819.common.JobUtils.QUESTION_TAGS_INPUT_PATH;
 import static it.unibo.bd1819.common.JobUtils.deleteOutputFolder;
 
-public class JobFactory {
+public final class JobFactory {
 
-    public static final Path WORKDAY_HOLIDAY_JOIN_PATH = new Path(GENERIC_OUTPUT_PATH + "workdayHolidayJoin");
-    public static final Path WORKDAY_HOLIDAY_PROPORTION_PATH = new Path(GENERIC_OUTPUT_PATH + "workdayHolidayProportion");
+    private static final Path WORKDAY_HOLIDAY_JOIN_PATH = new Path(GENERIC_OUTPUT_PATH + "workdayHolidayJoin");
+    private static final Path WORKDAY_HOLIDAY_PROPORTION_PATH = new Path(GENERIC_OUTPUT_PATH + "workdayHolidayProportion");
+
+    private JobFactory() {
+    }
 
     /**
      * Job #1: Create a job to map StackOverflow full questions to tuples (id, isWorkday) and join with tags by question ID.

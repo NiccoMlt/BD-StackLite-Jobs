@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+
+<ruleset name="PMD Custom Rules"
+         xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 https://pmd.sourceforge.io/ruleset_2_0_0.xsd">
+
+    <description>
+        PMD ruleset
+    </description>
+
+    <rule ref="rulesets/java/quickstart.xml"/>
+    
+    <!--<rule ref="category/java/bestpractices.xml" />-->
+    <rule ref="category/java/bestpractices.xml/GuardLogStatement">
+        <properties>
+            <property name="guardsMethods">
+                <value>
+                    isTraceEnabled,isDebugEnabled,isInfoEnabled,isWarnEnabled,isErrorEnabled,isLoggable,isEnabledFor
+                </value>
+            </property>
+            <property name="logLevels">
+                <value>
+                    trace,debug,info,log,finest,finer,fine,info,
+                </value>
+            </property>
+        </properties>
+    </rule>
+    <!--<rule ref="category/java/codestyle.xml />-->
+    <rule ref="category/java/codestyle.xml/ClassNamingConventions">
+        <properties>
+            <property name="utilityClassPattern">
+                <value>[A-Z][a-zA-Z0-9]+(Utils?|Helper|Factory)</value>
+            </property>
+        </properties>
+    </rule>
+    <!--<rule ref="category/java/design.xml" />-->
+    <!--<rule ref="category/java/documentation.xml" />-->
+    <rule ref="category/java/errorprone.xml">
+        <exclude name="NullAssignment"/>
+        <exclude name="DoNotCallSystemExit"/>
+        <exclude name="DataflowAnomalyAnalysis"/>
+    </rule>
+    <!--<rule ref="category/java/multithreading.xml" />-->
+    <!--<rule ref="category/java/performance.xml" />-->
+    <!--<rule ref="category/java/security.xml" />-->
+</ruleset>
