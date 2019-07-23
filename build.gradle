@@ -3,6 +3,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 plugins {
     id 'idea'
     id 'eclipse'
+    id 'java'
     id 'scala'
     id 'com.github.johnrengelman.shadow' version '5.1.0'
 }
@@ -10,7 +11,7 @@ plugins {
 group 'it.unibo.bd1819'
 version '1.0.0'
 
-// Versions enforced by Unversity environment
+// Versions enforced by University environment
 def javaVersion = JavaVersion.VERSION_1_7
 def scalaBinaryVersion = "2.11"
 def scalaMinorVersion = "8"
@@ -46,11 +47,11 @@ dependencies {
 
     testRuntimeOnly "org.scala-lang.modules:scala-xml_$scalaBinaryVersion:$scalaXmlVersion"
 
-    compileOnly 'org.jetbrains:annotations-java5:17.0.0' // annotations-java5 is compatible with JDK 1.5, 1.6 or 1.7
+    // annotations-java5 is compatible with JDK 1.5, 1.6 or 1.7
+    compileOnly "org.jetbrains:annotations-java5:$jetbrainsAnnotationsVersion" 
     
-    implementation 'org.apache.commons:commons-lang3:3.8.1' // Requires Java 7, supports Java 8, 9, 10.
-    implementation 'joda-time:joda-time:2.10.3'
-    implementation 'de.jollyday:jollyday:0.4.9'
+    implementation "joda-time:joda-time:$jodaTimeVersion"
+    implementation "de.jollyday:jollyday:$jollydayVersion"
 
     shadow "org.apache.spark:spark-mllib_$scalaBinaryVersion:$sparkStandardVersion"
     shadow "org.apache.spark:spark-sql_$scalaBinaryVersion:$sparkVersion"

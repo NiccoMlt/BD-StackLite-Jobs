@@ -6,7 +6,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.log4j.Logger;
 
-class SortMapper extends Mapper<Text, Text, TextTriplet, Text> {
+public class SortMapper extends Mapper<Text, Text, TextTriplet, Text> {
     private final Logger logger = Logger.getLogger(getClass());
     
     @Override

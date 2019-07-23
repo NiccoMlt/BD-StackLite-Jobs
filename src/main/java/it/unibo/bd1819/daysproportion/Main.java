@@ -1,6 +1,5 @@
 package it.unibo.bd1819.daysproportion;
 
-import it.unibo.bd1819.daysproportion.sort.SortJob;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.mapreduce.Job;
@@ -38,6 +37,6 @@ public class Main extends Configured implements Tool {
         }
 
 //        return JobFactory.getSecondarySortTextJob(conf).waitForCompletion(true) ? 0 : 1;
-        return SortJob.getSortJob(conf).waitForCompletion(true) ? 0 : 1;
+        return JobFactory.getSortJob(conf).waitForCompletion(true) ? 0 : 1;
     }
 }
