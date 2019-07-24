@@ -6,20 +6,25 @@ Elaborato di progetto per l'esame Big Data, anno 2018-2019.
 
 Il progetto è pensato per studiare il contenuto del dataset [StackLite](https://www.kaggle.com/stackoverflow/stacklite).
 
-Sono stati individuati due job:
+Sono stati individuati due job da realizzare sia con **MapReduce** che con **Spark SQL**:
 
   - effettuare la proporzione tra post realizzati in giorni feriali e in giorni festivi per ciascun tag.
     - ordinare i risultati per valore della proporzione e per quantità di post
   
-  - suddividere in 4 bin i dati in base a valori arbitrari su score e risposte: i 4 bin saranno
+  - suddividere i dati in 4 bin in base a valori soglia arbitrari su score e numero di risposte;
+    i 4 bin saranno:
+
 	- score basso, numero di risposte basso
 	- score basso, numero di risposte alto
 	- score alto, numero di risposte basso
 	- score alto, numero di risposte alto
 
-    Per ogni score i risultati saranno i primi 10 tag in ordine di score e numero di risposte.
-  
-  - [...]
+    Per ogni coppia visualizzare i primi 10 tag più utilizzati.
+
+Inoltre, è stato individuato uno studio da effettuare attraverso **Spark ML**:
+
+  - Utilizzare il Machine Learning per studiare la correlazione tra score e numero di risposte
+    - Attenzione: escludere le domande cancellate
 
 ## Team members
 
