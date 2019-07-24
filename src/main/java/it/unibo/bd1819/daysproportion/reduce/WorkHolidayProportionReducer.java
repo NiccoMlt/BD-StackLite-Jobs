@@ -1,12 +1,14 @@
 package it.unibo.bd1819.daysproportion.reduce;
 
+import static org.slf4j.LoggerFactory.getLogger;
+
 import java.io.IOException;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
 
 public class WorkHolidayProportionReducer extends Reducer<Text, Text, Text, Text> {
-    private static final Logger logger = Logger.getLogger(WorkHolidayProportionReducer.class);
+    private static final Logger logger = getLogger(WorkHolidayProportionReducer.class);
 
     @Override
     protected void reduce(final Text key, final Iterable<Text> values, final Context context)
@@ -27,12 +29,7 @@ public class WorkHolidayProportionReducer extends Reducer<Text, Text, Text, Text
         if (Double.isNaN(proportion)) {
             logger.warn("Unexpected proportion for tag: " + key.toString());
         } else {
-            // Filter out extreme results // TODO
-            if (!Double.isInfinite(proportion) && proportion != 0.0) {
-                context.write(
-                    key,
-                    new Text(String.format("%.2f", proportion) + "," + (holidays + workdays)));
-            }
+            context.write(key, new Text(String.format("%.2f", proportion) + "," + (holidays + workdays)));
         }
     }
 }

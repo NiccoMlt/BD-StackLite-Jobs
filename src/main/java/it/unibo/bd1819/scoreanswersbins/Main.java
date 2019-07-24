@@ -21,6 +21,9 @@ public class Main extends Configured implements Tool {
 
     @Override
     public int run(final String[] args) throws Exception {
+        final String inputPath = args[0];
+        final String outputPath = args[1];
+        
         // TODO
         return 0;
     }

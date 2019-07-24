@@ -1,10 +1,10 @@
 package it.unibo.bd1819.daysproportion;
 
-import static it.unibo.bd1819.common.JobUtils.GENERIC_OUTPUT_PATH;
-import static it.unibo.bd1819.common.JobUtils.OUTPUT_PATH;
-import static it.unibo.bd1819.common.JobUtils.QUESTIONS_INPUT_PATH;
-import static it.unibo.bd1819.common.JobUtils.QUESTION_TAGS_INPUT_PATH;
 import static it.unibo.bd1819.common.JobUtils.deleteOutputFolder;
+import static it.unibo.bd1819.common.JobUtils.getJobOutputPath;
+import static it.unibo.bd1819.common.JobUtils.getQuestionTagsInputPath;
+import static it.unibo.bd1819.common.JobUtils.getQuestionsInputPath;
+import static it.unibo.bd1819.common.JobUtils.getTaskOutputPath;
 
 import it.unibo.bd1819.common.JobUtils;
 import it.unibo.bd1819.daysproportion.map.QuestionTagMap;
@@ -31,39 +31,43 @@ import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
-public final class JobFactory {
+public class JobFactory {
+    private static final String JOB_NAME = "daysproportion";
+    private static final String FIRST_TASK_NAME = "workdayHolidayJoin";
+    private static final String SECOND_TASK_NAME = "workdayHolidayProportion";
 
-    private static final Path WORKDAY_HOLIDAY_JOIN_PATH =
-        new Path(GENERIC_OUTPUT_PATH + "workdayHolidayJoin");
-    private static final Path WORKDAY_HOLIDAY_PROPORTION_PATH =
-        new Path(GENERIC_OUTPUT_PATH + "workdayHolidayProportion");
+    private final String inputPath;
+    private final String outputPath;
+    private final Configuration conf;
 
-    private JobFactory() {
+    public JobFactory(final String inputPath, final String outputPath, final Configuration conf) {
+        this.inputPath = inputPath;
+        this.outputPath = outputPath;
+        this.conf = conf;
     }
 
     /**
      * Job #1: Create a job to map StackOverflow full questions to tuples (id, isWorkday)
      * and join with tags by question ID.
      *
-     * @param conf the job configuration
-     *
      * @return a Hadoop Job.
      *
      * @throws IOException if something goes wrong in the I/O process
      */
-    public static Job getWorkdayHolidayJoinJob(final Configuration conf) throws IOException {
+    public Job getWorkdayHolidayJoinJob() throws IOException {
         final FileSystem fs = FileSystem.get(conf);
 
-        deleteOutputFolder(fs, WORKDAY_HOLIDAY_JOIN_PATH);
+        final Path jobOutputPath = getTaskOutputPath(outputPath, JOB_NAME, FIRST_TASK_NAME);
+        deleteOutputFolder(fs, jobOutputPath);
 
         final Job job = Job.getInstance(conf, "Join questions and tags");
 
         job.setJarByClass(Main.class);
 
         MultipleInputs.addInputPath(job,
-            QUESTION_TAGS_INPUT_PATH, TextInputFormat.class, QuestionTagMap.class);
+            getQuestionTagsInputPath(inputPath), TextInputFormat.class, QuestionTagMap.class);
         MultipleInputs.addInputPath(job,
-            QUESTIONS_INPUT_PATH, TextInputFormat.class, WorkHolidayMap.class);
+            getQuestionsInputPath(inputPath), TextInputFormat.class, WorkHolidayMap.class);
 
         job.setMapOutputKeyClass(LongWritable.class);
         job.setMapOutputValueClass(Text.class);
@@ -71,42 +75,43 @@ public final class JobFactory {
         JobUtils.configureReducer(job, WorkHolidayJoin.class,
             Text.class, BooleanWritable.class, TextOutputFormat.class);
 
-        TextOutputFormat.setOutputPath(job, WORKDAY_HOLIDAY_JOIN_PATH);
+        TextOutputFormat.setOutputPath(job, jobOutputPath);
 
         return job;
     }
 
-    public static Job getDayProportionsJob(final Configuration conf) throws IOException {
+    public Job getDayProportionsJob() throws IOException {
         final FileSystem fs = FileSystem.get(conf);
 
-        deleteOutputFolder(fs, WORKDAY_HOLIDAY_PROPORTION_PATH);
+        final Path jobOutputPath = getTaskOutputPath(outputPath, JOB_NAME, SECOND_TASK_NAME);
+        deleteOutputFolder(fs, jobOutputPath);
 
         final Job job = Job.getInstance(conf, "Proportion between workdays and holidays by tags");
 
         job.setJarByClass(Main.class);
 
         job.setInputFormatClass(KeyValueTextInputFormat.class);
-        KeyValueTextInputFormat.addInputPath(job, WORKDAY_HOLIDAY_JOIN_PATH);
+        KeyValueTextInputFormat.addInputPath(job, getTaskOutputPath(outputPath, JOB_NAME, FIRST_TASK_NAME));
 
         JobUtils.configureReducer(job,
             WorkHolidayProportionReducer.class, Text.class, Text.class, TextOutputFormat.class);
 
-        TextOutputFormat.setOutputPath(job, WORKDAY_HOLIDAY_PROPORTION_PATH);
+        TextOutputFormat.setOutputPath(job, jobOutputPath);
 
         return job;
     }
 
-    public static Job getSortJob(final Configuration conf) throws IOException {
+    public Job getSortJob() throws IOException {
         final FileSystem fs = FileSystem.get(conf);
-
-        deleteOutputFolder(fs, OUTPUT_PATH);
+        final Path jobOutputPath = getJobOutputPath(outputPath, JOB_NAME);
+        deleteOutputFolder(fs, jobOutputPath);
 
         final Job job = Job.getInstance(conf, "Secondary sort Job");
 
         job.setJarByClass(Main.class);
 
         job.setInputFormatClass(KeyValueTextInputFormat.class);
-        KeyValueTextInputFormat.addInputPath(job, WORKDAY_HOLIDAY_PROPORTION_PATH);
+        KeyValueTextInputFormat.addInputPath(job, getTaskOutputPath(outputPath, JOB_NAME, SECOND_TASK_NAME));
         job.setMapperClass(SortMapper.class);
 
         job.setPartitionerClass(FirstPartitioner.class);
@@ -121,7 +126,7 @@ public final class JobFactory {
 
         job.setReducerClass(SortReducer.class);
 
-        FileOutputFormat.setOutputPath(job, OUTPUT_PATH);
+        FileOutputFormat.setOutputPath(job, jobOutputPath);
 
         return job;
     }

@@ -1,12 +1,14 @@
 package it.unibo.bd1819.daysproportion.sort;
 
+import static org.slf4j.LoggerFactory.getLogger;
+
 import java.io.IOException;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
 
 public class SortMapper extends Mapper<Text, Text, TextTriplet, Text> {
-    private static final Logger logger = Logger.getLogger(SortMapper.class);
+    private static final Logger logger = getLogger(SortMapper.class);
     private static final int TUPLE_SIZE = 2;
 
     @Override

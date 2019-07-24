@@ -10,12 +10,12 @@ import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.hadoop.mapreduce.Reducer;
 
 public final class JobUtils {
-    public static final String GENERIC_INPUT_PATH = "hdfs:///user/nmaltoni/dataset/";
-    public static final String GENERIC_OUTPUT_PATH = "hdfs:///user/nmaltoni/mapreduce/";
-    public static final Path QUESTION_TAGS_INPUT_PATH = new Path(GENERIC_INPUT_PATH + "question_tags.csv");
-    public static final Path QUESTIONS_INPUT_PATH = new Path(GENERIC_INPUT_PATH + "questions.csv");
-    private static final String MAIN_OUTPUT_PATH = GENERIC_OUTPUT_PATH + "output";
-    public static final Path OUTPUT_PATH = new Path(MAIN_OUTPUT_PATH);
+    public static final String PERSONAL_HOME_PATH = "hdfs:///user/nmaltoni/";
+    public static final String GENERIC_INPUT_PATH = PERSONAL_HOME_PATH + "dataset/";
+    public static final String GENERIC_OUTPUT_PATH = PERSONAL_HOME_PATH + "mapreduce/";
+    private static final String QUESTION_TAGS = "question_tags.csv";
+    private static final String QUESTIONS = "questions.csv";
+    private static final String MAIN_OUTPUT_FOLDER = "output";
 
     private JobUtils() {
     }
@@ -59,5 +59,21 @@ public final class JobUtils {
         if (fs.exists(folderToDelete)) {
             fs.delete(folderToDelete, true);
         }
+    }
+
+    public static Path getQuestionsInputPath(final String inputFolder) {
+        return new Path(inputFolder + QUESTIONS);
+    }
+
+    public static Path getQuestionTagsInputPath(final String inputFolder) {
+        return new Path(inputFolder, QUESTION_TAGS);
+    }
+
+    public static Path getTaskOutputPath(final String baseOutput, final String jobName, final String taskName) {
+        return new Path(baseOutput + Path.SEPARATOR + jobName + Path.SEPARATOR + taskName);
+    }
+
+    public static Path getJobOutputPath(final String baseOutput, final String jobName) {
+        return getTaskOutputPath(baseOutput, jobName, MAIN_OUTPUT_FOLDER);
     }
 }

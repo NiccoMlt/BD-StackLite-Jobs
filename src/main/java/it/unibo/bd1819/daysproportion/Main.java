@@ -1,5 +1,6 @@
 package it.unibo.bd1819.daysproportion;
 
+import it.unibo.bd1819.common.JobUtils;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.hadoop.conf.Configuration;
@@ -27,8 +28,26 @@ public class Main extends Configured implements Tool {
         final List<Job> jobs = new ArrayList<>();
         final Configuration conf = new Configuration();
 
-        jobs.add(JobFactory.getWorkdayHolidayJoinJob(conf));
-        jobs.add(JobFactory.getDayProportionsJob(conf));
+        final List<String> filteredArgs = new ArrayList<>();
+
+        for (final String arg : args) {
+            // If jar file is generated with this class as a main class, that param should be ignored
+            if (!arg.equals(this.getClass().getName())) {
+                filteredArgs.add(arg);
+            }
+        }
+
+        final String inputPath = filteredArgs.size() > 0
+            ? JobUtils.PERSONAL_HOME_PATH + filteredArgs.get(0)
+            : JobUtils.GENERIC_INPUT_PATH;
+        final String outputPath = filteredArgs.size() > 0
+            ? JobUtils.PERSONAL_HOME_PATH + filteredArgs.get(1)
+            : JobUtils.GENERIC_OUTPUT_PATH;
+
+        final JobFactory jobFactory = new JobFactory(inputPath, outputPath, conf);
+
+        jobs.add(jobFactory.getWorkdayHolidayJoinJob());
+        jobs.add(jobFactory.getDayProportionsJob());
 
         for (final Job job : jobs) {
             if (!job.waitForCompletion(true)) {
@@ -36,7 +55,6 @@ public class Main extends Configured implements Tool {
             }
         }
 
-//        return JobFactory.getSecondarySortTextJob(conf).waitForCompletion(true) ? 0 : 1;
-        return JobFactory.getSortJob(conf).waitForCompletion(true) ? 0 : 1;
+        return jobFactory.getSortJob().waitForCompletion(true) ? 0 : 1;
     }
 }

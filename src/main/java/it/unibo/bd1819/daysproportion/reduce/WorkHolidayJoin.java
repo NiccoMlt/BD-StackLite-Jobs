@@ -2,6 +2,7 @@ package it.unibo.bd1819.daysproportion.reduce;
 
 import static it.unibo.bd1819.daysproportion.map.QuestionTagMap.QT_PREFIX;
 import static it.unibo.bd1819.daysproportion.map.WorkHolidayMap.WHM_PREFIX;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -10,10 +11,10 @@ import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
 
 public class WorkHolidayJoin extends Reducer<LongWritable, Text, Text, BooleanWritable> {
-    private static final Logger logger = Logger.getLogger(WorkHolidayJoin.class);
+    private static final Logger logger = getLogger(WorkHolidayJoin.class);
     private static final int TUPLE_SIZE = 1;
 
     private final transient Text tagKey = new Text();
