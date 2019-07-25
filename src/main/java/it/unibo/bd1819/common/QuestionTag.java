@@ -1,6 +1,5 @@
 package it.unibo.bd1819.common;
 
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -11,7 +10,7 @@ public class QuestionTag {
     private final String tag;
 
     @Contract(pure = true)
-    public QuestionTag(final long id, final String tag) {
+    public QuestionTag(final long id, final @NotNull String tag) {
         this.id = id;
         this.tag = tag;
     }
@@ -19,17 +18,17 @@ public class QuestionTag {
     /**
      * Factory method that builds a Question object from Hadoop tuple.
      *
-     * @param id  the Question ID
-     * @param tag the Question Tag
+     * @param text the text to parse
      *
      * @return the QuestionTag object
      *
      * @throws NumberFormatException if numeric data can't be parsed
      */
     @NotNull
-    @Contract("_, _ -> new")
-    public static QuestionTag parseText(final LongWritable id, final Text tag) {
-        return new QuestionTag(id.get(), tag.toString());
+    @Contract("_ -> new")
+    public static QuestionTag parseText(final Text text) {
+        final String[] data = text.toString().split(",");
+        return new QuestionTag(Long.parseLong(data[0]), data[1]);
     }
 
     /**
