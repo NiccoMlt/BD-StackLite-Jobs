@@ -29,6 +29,7 @@ public class Main extends AbstractMain {
         final JobFactory jobFactory = new JobFactory(inputPath, outputPath, conf);
 
         jobs.add(jobFactory.getScoreAnswerCountJoinJob());
+        jobs.add(jobFactory.getBinsJob());
         // TODO
 
         return jobs;
