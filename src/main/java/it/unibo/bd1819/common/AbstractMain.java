@@ -1,13 +1,13 @@
 package it.unibo.bd1819.common;
 
-import it.unibo.bd1819.scoreanswersbins.JobFactory;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.util.Tool;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class AbstractMain extends Configured implements Tool {
 
@@ -39,19 +39,12 @@ public abstract class AbstractMain extends Configured implements Tool {
             }
         }
 
-//        return getSortJob(inputPath, outputPath, conf).waitForCompletion(true) ? 0 : 1;
-        // TODO prefer ^
-        final Job sortJob = getSortJob(inputPath, outputPath, conf);
-        if (sortJob != null) {
-            return sortJob.waitForCompletion(true) ? 0 : 1;
-        } else {
-            return 0;
-        }
+        return getSortJob(inputPath, outputPath, conf).waitForCompletion(true) ? 0 : 1;
     }
 
-    public abstract List<Job> getMainJobs(final String inputPath, final String outputPath, final Configuration conf) 
+    public abstract List<Job> getMainJobs(final String inputPath, final String outputPath, final Configuration conf)
         throws IOException;
-    
+
     public abstract Job getSortJob(final String inputPath, final String outputPath, final Configuration conf)
         throws IOException;
 }

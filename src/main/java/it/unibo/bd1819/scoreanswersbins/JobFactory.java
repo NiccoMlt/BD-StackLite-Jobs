@@ -1,17 +1,13 @@
 package it.unibo.bd1819.scoreanswersbins;
 
-import static it.unibo.bd1819.common.JobUtils.deleteOutputFolder;
-import static it.unibo.bd1819.common.JobUtils.getQuestionTagsInputPath;
-import static it.unibo.bd1819.common.JobUtils.getQuestionsInputPath;
-import static it.unibo.bd1819.common.JobUtils.getTaskOutputPath;
-
 import it.unibo.bd1819.common.JobUtils;
 import it.unibo.bd1819.scoreanswersbins.map.BinMap;
 import it.unibo.bd1819.scoreanswersbins.map.QuestionTagMap;
 import it.unibo.bd1819.scoreanswersbins.map.ScoreCountTagMap;
 import it.unibo.bd1819.scoreanswersbins.reduce.BinCountReduce;
 import it.unibo.bd1819.scoreanswersbins.reduce.ScoreCountTagJoin;
-import java.io.IOException;
+import it.unibo.bd1819.scoreanswersbins.sort.BinSortMapper;
+import it.unibo.bd1819.scoreanswersbins.sort.BinSortReducer;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -22,6 +18,10 @@ import org.apache.hadoop.mapreduce.lib.input.KeyValueTextInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.MultipleInputs;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
+
+import java.io.IOException;
+
+import static it.unibo.bd1819.common.JobUtils.*;
 
 public class JobFactory {
     private static final String JOB_NAME = "scoreanswersbin";
@@ -84,7 +84,24 @@ public class JobFactory {
     }
 
     public Job getSortJob() throws IOException {
-        // TODO
-        return null;
+        final FileSystem fs = FileSystem.get(conf);
+
+        final Path jobOutputPath = getJobOutputPath(outputPath, JOB_NAME);
+        deleteOutputFolder(fs, jobOutputPath);
+
+        final Job job = Job.getInstance(conf, "Sort output");
+
+        job.setJarByClass(Main.class);
+
+        KeyValueTextInputFormat.addInputPath(job, getTaskOutputPath(outputPath, JOB_NAME, SECOND_TASK_NAME));
+
+        JobUtils.configureJobForKeyValue(job, KeyValueTextInputFormat.class, BinSortMapper.class, Text.class,
+            Text.class, BinSortReducer.class, Text.class, Text.class, TextOutputFormat.class);
+        
+        TextOutputFormat.setOutputPath(job, jobOutputPath);
+        
+        job.setNumReduceTasks(3);
+
+        return job;
     }
 }

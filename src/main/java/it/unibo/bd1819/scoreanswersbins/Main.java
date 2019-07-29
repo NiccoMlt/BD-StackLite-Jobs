@@ -1,12 +1,13 @@
 package it.unibo.bd1819.scoreanswersbins;
 
 import it.unibo.bd1819.common.AbstractMain;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.util.ToolRunner;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Main extends AbstractMain {
 
@@ -14,7 +15,6 @@ public class Main extends AbstractMain {
      * Launch the job.
      *
      * @param args command line args
-     *
      * @throws Exception if something goes wrong
      */
     public static void main(final String[] args) throws Exception {
@@ -30,14 +30,12 @@ public class Main extends AbstractMain {
 
         jobs.add(jobFactory.getScoreAnswerCountJoinJob());
         jobs.add(jobFactory.getBinsJob());
-        // TODO
 
         return jobs;
     }
 
     @Override
     public Job getSortJob(final String inputPath, final String outputPath, final Configuration conf) throws IOException {
-        // TODO
-        return null;
+        return new JobFactory(inputPath, outputPath, conf).getSortJob();
     }
 }
