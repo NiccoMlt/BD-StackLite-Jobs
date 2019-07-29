@@ -100,7 +100,7 @@ public class JobFactory {
         
         TextOutputFormat.setOutputPath(job, jobOutputPath);
         
-        job.setNumReduceTasks(3);
+        job.setNumReduceTasks(Bin.values().length);
 
         return job;
     }

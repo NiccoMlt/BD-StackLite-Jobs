@@ -1,0 +1,8 @@
+[nmaltoni@isi-vclust5 output]$ cat output.txt | grep HIGH_SCORE_LOW_COUNT | wc -l
+0
+[nmaltoni@isi-vclust5 output]$ cat output.txt | grep HIGH_SCORE_HIGH_COUNT | wc -l
+44
+[nmaltoni@isi-vclust5 output]$ cat output.txt | grep LOW_SCORE_HIGH_COUNT | wc -l
+15
+[nmaltoni@isi-vclust5 output]$ cat output.txt | grep LOW_SCORE_LOW_COUNT | wc -l
+50
