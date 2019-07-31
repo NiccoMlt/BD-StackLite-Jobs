@@ -59,6 +59,9 @@ dependencies {
     shadow "org.apache.hadoop:hadoop-common:$hadoopVersion"
     shadow "org.apache.hadoop:hadoop-core:$hadoopCoreVersion"
     shadow "org.apache.hadoop:hadoop-hdfs:$hadoopVersion"
+
+    
+    compile group: 'org.rogach', name: "scallop_$scallopBinaryVersion", version: "$scallopVersion"
 }
 
 wrapper {
