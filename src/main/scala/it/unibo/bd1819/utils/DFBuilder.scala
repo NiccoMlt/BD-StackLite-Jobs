@@ -19,12 +19,11 @@ object DFBuilder {
     * @return a DF linked to the questions data
     */
     def getQuestionsDF(sparkContext: SparkContext, sqlContext: SQLContext, tableName:String = QUESTIONS_TABLE_NAME) = {
-      val questionsCsv = sparkContext.textFile(PathVariables.QUESTIONS_PATH, 8)
+      val questionsCsv = sparkContext.textFile(PathVariables.QUESTIONS_PATH /*, 8*/)
       val questionsSchema = questionsCsv.first()
       val questionsSchemaType = FileParsing.StringToSchema(questionsSchema, FileParsing.FIELD_SEPARATOR)
       val questionsSchemaRDD = questionsCsv.map(_.split(FileParsing.FIELD_SEPARATOR))
-        .filter(_(1).equals("movie"))
-        .map(e => Row(e(0)))
+        .map(e => Row(e(0), e(1), e(2), e(3), e(4), e(5), e(6)))
       val questionsDF = sqlContext.createDataFrame(questionsSchemaRDD, questionsSchemaType)
       questionsDF.createOrReplaceTempView(tableName)
       questionsDF.cache()

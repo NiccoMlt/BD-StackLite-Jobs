@@ -1,0 +1,162 @@
+%% Direttive TeXworks:
+% !TeX root = ./report.tex
+% !TEX encoding = UTF-8 Unicode
+% !TEX program = arara
+% !TEX TS-program = arara
+% !TeX spellcheck = it-IT
+
+% arara: pdflatex: { synctex: yes, shell: yes }
+% arara: pdflatex: { synctex: yes, shell: yes }
+
+%% Genera un file report.xmpdata con i dati di titolo e autore per il formato PDF/A %%
+\begin{filecontents*}{\jobname.xmpdata}
+\Title{Big Data - Tema finale: StackLite}
+\Author{Niccolò Maltoni\sep Luca Semprini}
+\end{filecontents*}
+
+\documentclass[
+  a4paper,            % specifica il formato A4 (default: letter)
+  10pt                % specifica la dimensione del carattere a 10
+]{article}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% package sillabazione italiana e uso lettere accentate
+\usepackage[T1]{fontenc}        % serve per impostare la codifica di output del font
+\usepackage{textcomp}           % serve per fornire supporto ai Text Companion fonts
+\usepackage[utf8]{inputenc}     % serve per impostare la codifica di input del font
+\usepackage[
+  english,            % utilizza l'inglese come lingua secondaria
+  italian             % utilizza l'italiano come lingua primaria
+]{%
+  babel,                      % serve per scrivere Indice, Capitolo, etc in Italiano
+  varioref                    % introduce il comando \vref da usarsi nello stesso modo del comune \ref per i riferimenti
+}
+\usepackage{lmodern}            % carica una variante Latin Modern prodotto dal GUST
+\usepackage[%
+  strict,             % rende tutti gli warning degli errori
+  autostyle,          % imposta lo stile in base al linguaggio specificato in babel
+  english=american,   % imposta lo stile per l'inglese
+  italian=guillemets  % imposta lo stile per l'italiano
+]{csquotes}                     % serve a impostare lo stile delle virgolette
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\usepackage{indentfirst}        % serve per avere l'indentazione nel primo paragrafo
+\usepackage{setspace}           % serve a fornire comandi di interlinea standard
+\usepackage{xcolor}             % serve per la gestione dei colori nel testo
+\usepackage{graphicx}           % serve per includere immagini e grafici
+
+\onehalfspacing%                % Imposta interlinea a 1,5 ed equivale a \linespread{1,5}
+
+\setcounter{secnumdepth}{2}     % Numera fino alla sottosezione nel corpo del testo
+\setcounter{tocdepth}{3}        % Numera fino alla sotto-sottosezione nell'indice
+
+% Rende \paragraph simile alle sezioni
+\usepackage{titlesec}
+
+\usepackage[%
+  depth=3,              % equivale a bookmarksdepth di hyperref
+  open=false,           % equivale a bookmarksopen di hyperref
+  numbered=true         % equivale a bookmarksnumbered di hyperref
+]{bookmark}                     % Gestisce i segnalibri meglio di hyperref
+\usepackage{hyperref}           % Gestisce tutte le cose ipertestuali del pdf
+\hypersetup{%
+  pdfpagemode={UseNone},
+  hidelinks,            % nasconde i collegamenti (non vengono quadrettati)
+  hypertexnames=false,
+  linktoc=all,          % inserisce i link nell'indice
+  unicode=true,         % only Latin characters in Acrobat’s bookmarks
+  pdftoolbar=false,     % show Acrobat’s toolbar?
+  pdfmenubar=false,     % show Acrobat’s menu?
+  plainpages=false,
+  breaklinks,
+  pdfstartview={Fit},
+  pdfauthor={Niccolò Maltoni, Luca Semprini},
+  pdfcreator={Niccolò Maltoni, Luca Semprini},
+  pdftitle={Big Data - Tema finale: StackLite}, % chktex 8
+  pdflang={it}
+}
+
+\usepackage[a-1b]{pdfx}
+\usepackage[%
+  italian,            % definizione delle lingue da usare
+  nameinlink          % inserisce i link nei riferimenti
+]{cleveref}                     % permette di usare riferimenti migliori dei \ref e dei varioref
+
+
+\title{\textbf{Report on Big Data project: \\(StackLite-Jobs)}}
+
+\author{
+  Niccolò~Maltoni - Mat. 000000840825\\%
+  Luca~Semprini - Mat. ????????????
+}
+
+\date{\today}
+
+\begin{document}
+  \maketitle
+  \newpage
+
+  \tableofcontents
+
+  \newpage
+
+  \section{Introduzione}\label{sec:intro}
+  \subsection{Descrizione del dataset}\label{subsec:dataset}
+
+  TODO
+
+  \subsubsection{Descrizione dei file}\label{subsub:dataset:files}
+
+  TODO
+
+  \section{Preparazione dei dati}\label{sec:preparation}
+
+  TODO
+
+  \section{Job}\label{sec:job}
+
+  \subsection[%
+    Job 1: Proporzione giorni feriali/festivi per tag%
+  ]{%
+    Job 1: Effettuare la proporzione tra post realizzati in giorni feriali e in giorni festivi per ciascun tag%
+  }\label{subsec:job1}
+
+  TODO
+
+  \subsubsection{MapReduce implementation}\label{subsub:job1:mapreduce}
+
+  TODO
+
+  \subsubsection{Spark SQL implementation}\label{subsub:job1:spark}
+
+  TODO
+
+  \subsection[%
+    Job 2: Suddividere tag in base a score e risposte%
+  ]{%
+    Job 2: Suddividere i tag in 4 bin per score e risposte e ottenere i top 10 per ciascun bin%
+  }\label{subsec:job2}
+
+  TODO
+
+  \subsubsection{MapReduce implementation}\label{subsub:job2:mapreduce}
+
+  TODO
+
+  \subsubsection{Spark SQL implementation}\label{subsub:job2:spark}
+
+  TODO
+
+  \subsection[%
+    Job 3: Machine learning%
+  ]{%
+    Job 3: Machine learning TODO%
+  }\label{subsec:job3}
+
+  TODO
+
+  \section{Miscellanea}\label{sec:miscellaneous}
+
+  TODO
+
+\end{document}

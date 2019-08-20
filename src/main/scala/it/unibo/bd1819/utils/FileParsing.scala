@@ -4,7 +4,7 @@ import org.apache.spark.sql.types.{StringType, StructField, StructType}
 
 object FileParsing {
 
-  val FIELD_SEPARATOR = ";"
+  val FIELD_SEPARATOR = ","
   /**
     * Map a string to a StructType schema
     * @param schemaString the string containing the schema
