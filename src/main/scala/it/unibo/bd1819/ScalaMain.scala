@@ -9,7 +9,7 @@ import org.rogach.scallop.ScallopConf
 object ScalaMain extends App {
 
   var executors = 2
-  var taskForExceutor = 4
+  var taskForExecutor = 4
 
   val sc =  new SparkContext()
   val sqlContext = SparkSession.builder.getOrCreate.sqlContext
@@ -20,7 +20,7 @@ object ScalaMain extends App {
   }
 
   if(conf.tasks.supplied) {
-    taskForExceutor = conf.tasks()
+    taskForExecutor = conf.tasks()
   }
   val questionsDF = getQuestionsDF(sc, sqlContext, isTags = false)
   val questionTagsDF = getQuestionsDF(sc, sqlContext, isTags = true)
@@ -28,8 +28,8 @@ object ScalaMain extends App {
 
   //sqlContext.sql("drop table if exists " + definitiveTableName)
 
-  sqlContext.setConf("spark.sql.shuffle.partitions", (executors*taskForExceutor).toString)
-  sqlContext.setConf("spark.default.parallelism", (executors*taskForExceutor).toString)
+  sqlContext.setConf("spark.sql.shuffle.partitions", (executors*taskForExecutor).toString)
+  sqlContext.setConf("spark.default.parallelism", (executors*taskForExecutor).toString)
   questionsDF.show()
 }
 
