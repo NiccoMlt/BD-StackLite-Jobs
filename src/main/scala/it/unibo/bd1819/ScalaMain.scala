@@ -1,9 +1,9 @@
 package it.unibo.bd1819
 
+import it.unibo.bd1819.common.DateUtils
 import utils.DFBuilder._
 import org.apache.spark.{SparkContext, sql}
 import org.apache.spark.sql.{Row, SQLContext, SparkSession}
-
 import org.rogach.scallop.ScallopConf
 
 object ScalaMain extends App {
@@ -13,6 +13,7 @@ object ScalaMain extends App {
 
   val sc =  new SparkContext()
   val sqlContext = SparkSession.builder.getOrCreate.sqlContext
+  import sqlContext.implicits._
   val conf = new Conf(args)
 
   if(conf.executors.supplied) {
@@ -24,13 +25,16 @@ object ScalaMain extends App {
   }
   val questionsDF = getQuestionsDF(sc, sqlContext, isTags = false)
   val questionTagsDF = getQuestionsDF(sc, sqlContext, isTags = true)
+  val selectedQuestions = sqlContext.sql("select Id, CreationDate from questions")
+  val onlyDateDF = selectedQuestions
+    .map(row => (row.getString(0), DateUtils.isWorkday(DateUtils.parseDateFromString(row.getString(1)))))
+  onlyDateDF.show()
   //val definitiveTableName = "fnaldini_director_actors_db.Actor_Director_Table_definitive"
 
   //sqlContext.sql("drop table if exists " + definitiveTableName)
 
   sqlContext.setConf("spark.sql.shuffle.partitions", (executors*taskForExecutor).toString)
   sqlContext.setConf("spark.default.parallelism", (executors*taskForExecutor).toString)
-  questionsDF.show()
 }
 
 /**
