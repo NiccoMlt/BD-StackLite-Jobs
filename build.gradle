@@ -87,10 +87,18 @@ shadowJar {
     zip64 true
 }
 
-task mapReduceJar(type: ShadowJar) {
+task mapReduceJar1(type: ShadowJar) {
     //noinspection GroovyAssignabilityCheck
-    archiveClassifier.set('mr')
+    archiveClassifier.set('mr1')
     manifest.attributes 'Main-Class': 'it.unibo.bd1819.daysproportion.Main'
+    from(shadowJar.from())
+    zip64 true
+}
+
+task mapReduceJar2(type: ShadowJar) {
+    //noinspection GroovyAssignabilityCheck
+    archiveClassifier.set('mr2')
+    manifest.attributes 'Main-Class': 'it.unibo.bd1819.scoreanswersbins.Main'
     from(shadowJar.from())
     zip64 true
 }

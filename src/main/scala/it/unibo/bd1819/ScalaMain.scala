@@ -22,7 +22,8 @@ object ScalaMain extends App {
   if(conf.tasks.supplied) {
     taskForExceutor = conf.tasks()
   }
-  val questionsDF = getQuestionsDF(sc, sqlContext)
+  val questionsDF = getQuestionsDF(sc, sqlContext, isTags = false)
+  val questionTagsDF = getQuestionsDF(sc, sqlContext, isTags = true)
   //val definitiveTableName = "fnaldini_director_actors_db.Actor_Director_Table_definitive"
 
   //sqlContext.sql("drop table if exists " + definitiveTableName)
