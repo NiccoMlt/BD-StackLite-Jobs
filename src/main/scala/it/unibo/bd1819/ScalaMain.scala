@@ -1,5 +1,6 @@
 package it.unibo.bd1819
 
+import breeze.linalg.sum
 import it.unibo.bd1819.common.DateUtils
 import utils.DFBuilder._
 import org.apache.spark.{SparkContext, sql}
@@ -25,10 +26,12 @@ object ScalaMain extends App {
   }
   val questionsDF = getQuestionsDF(sc, sqlContext, isTags = false)
   val questionTagsDF = getQuestionsDF(sc, sqlContext, isTags = true)
-  val selectedQuestions = sqlContext.sql("select Id, CreationDate from questions")
-  val onlyDateDF = selectedQuestions
-    .map(row => (row.getString(0), DateUtils.isWorkday(DateUtils.parseDateFromString(row.getString(1)))))
-  onlyDateDF.show()
+  val onlyDateDF = sqlContext.sql("select Id, CreationDate from questions")
+    .map(row => (row.getString(0), DateUtils.isWorkday(DateUtils.parseDateFromString(row.getString(1))), 1))
+      .withColumnRenamed("_1", "Id")
+      .withColumnRenamed("_2", "IsWorkDay")
+  val joinDF = questionTagsDF.join(onlyDateDF, "Id")
+  joinDF.show()
   //val definitiveTableName = "fnaldini_director_actors_db.Actor_Director_Table_definitive"
 
   //sqlContext.sql("drop table if exists " + definitiveTableName)
