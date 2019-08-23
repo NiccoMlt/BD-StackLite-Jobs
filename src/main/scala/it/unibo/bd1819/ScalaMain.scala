@@ -2,10 +2,12 @@ package it.unibo.bd1819
 
 import breeze.linalg.sum
 import it.unibo.bd1819.common.DateUtils
+import org.apache.spark.sql.catalyst.expressions.aggregate.Count
 import utils.DFBuilder._
 import org.apache.spark.{SparkContext, sql}
-import org.apache.spark.sql.{Row, SQLContext, SparkSession}
+import org.apache.spark.sql.{ColumnName, Row, SQLContext, SparkSession}
 import org.rogach.scallop.ScallopConf
+import org.apache.spark.sql.functions._
 
 object ScalaMain extends App {
 
@@ -27,11 +29,23 @@ object ScalaMain extends App {
   val questionsDF = getQuestionsDF(sc, sqlContext, isTags = false)
   val questionTagsDF = getQuestionsDF(sc, sqlContext, isTags = true)
   val onlyDateDF = sqlContext.sql("select Id, CreationDate from questions")
-    .map(row => (row.getString(0), DateUtils.isWorkday(DateUtils.parseDateFromString(row.getString(1))), 1))
+    .map(row => (row.getString(0), DateUtils.isWorkday(DateUtils.parseDateFromString(row.getString(1)))))
       .withColumnRenamed("_1", "Id")
       .withColumnRenamed("_2", "IsWorkDay")
-  val joinDF = questionTagsDF.join(onlyDateDF, "Id")
-  joinDF.show()
+  val joinDF = questionTagsDF.join(onlyDateDF, "Id").drop("Id")
+  joinDF.createOrReplaceTempView("joinDF")
+  val columnNamesToSelect = Seq("tag", "IsWorkDay")
+  val finalDF = joinDF
+    .select(columnNamesToSelect.map(c => col(c)): _*)
+    .groupBy("tag", "IsWorkDay")
+    .agg(count("IsWorkDay")
+      .as("Count"))
+    .agg(
+      (when(col("IsWorkDay") === "true", count("IsWorkDay")) / 
+        when(col("IsWorkDay") === "false", count("IsWorkDay")))
+    .as("Proportion"))
+      
+  finalDF.show()
   //val definitiveTableName = "fnaldini_director_actors_db.Actor_Director_Table_definitive"
 
   //sqlContext.sql("drop table if exists " + definitiveTableName)
