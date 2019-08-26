@@ -33,19 +33,30 @@ object ScalaMain extends App {
       .withColumnRenamed("_1", "Id")
       .withColumnRenamed("_2", "IsWorkDay")
   val joinDF = questionTagsDF.join(onlyDateDF, "Id").drop("Id")
-  joinDF.createOrReplaceTempView("joinDF")
   val columnNamesToSelect = Seq("tag", "IsWorkDay")
+  val finalColumnNamesToSelect = Seq("tag", "IsWorkDay", "Count")
   val finalDF = joinDF
     .select(columnNamesToSelect.map(c => col(c)): _*)
     .groupBy("tag", "IsWorkDay")
     .agg(count("IsWorkDay")
       .as("Count"))
+  joinDF.createOrReplaceTempView("joinDF")
+  val superFinalDF = sqlContext.sql("select tag, sum(case when IsWorkDay = true then 1 else 0 end) WorkDays, " +
+    "sum(case when IsWorkDay = false then 1 else 0 end) HolyDays " +
+    "from joinDF group by tag")
+    /*finalDF.select(finalColumnNamesToSelect.map(c => col(c)): _*)
+    .where("IsWorkDay === true")
+      .groupBy("tag", "IsWorkDay", "Count")
+      .agg(count("*"))
+      .as("WorkDays")
+      */
+  /*
     .agg(
       (when(col("IsWorkDay") === "true", count("IsWorkDay")) / 
         when(col("IsWorkDay") === "false", count("IsWorkDay")))
     .as("Proportion"))
-      
-  finalDF.show()
+      */ 
+  superFinalDF.show()
   //val definitiveTableName = "fnaldini_director_actors_db.Actor_Director_Table_definitive"
 
   //sqlContext.sql("drop table if exists " + definitiveTableName)
