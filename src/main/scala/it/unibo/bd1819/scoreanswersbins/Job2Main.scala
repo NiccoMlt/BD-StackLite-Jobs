@@ -9,11 +9,24 @@ import org.rogach.scallop.ScallopConf
 
 class Job2Main {
 
-  def executeJob(conf: Configuration, sqlc: SQLContext): Unit = {
+  def executeJob(sc: SparkContext, conf: Configuration, sqlc: SQLContext): Unit = {
     val sqlContext = sqlc
-
-    val questionsDF = getQuestionsDF(sqlContext, isTags = false)
-    val questionTagsDF = getQuestionsDF(sqlContext, isTags = true)
+    import sqlc.implicits._
+    val questionsDF = getQuestionsDF(sc, sqlContext, isTags = false)
+    val questionTagsDF = getQuestionsDF(sc, sqlContext, isTags = true)
+    val scoreAnswersDF = sqlContext.sql("select Id, Score, AnswersCount from questions")
+    val joinDF = questionTagsDF.join(scoreAnswersDF, "Id").drop("Id")
+    joinDF.createOrReplaceTempView("joinDF")
+    val binDF = sqlContext.sql("select tag, Score, AnswerCount from joinDF")
+      .map(row => (row.getString(0), 
+        Bin.getBinFor(Integer.parseInt(row.getString(1)), Bin.DEFAULT_SCORE_THRESHOLD, 
+          Integer.parseInt(row.getString(2)), Bin.DEFAULT_ANSWERS_COUNT_THRESHOLD)).toString())
+      .withColumnRenamed("_1", "tag")
+      .withColumnRenamed("_2", "Bin")
+    binDF.createOrReplaceTempView("binDF")
+    binDF.show()
+    val binCountDF = sqlContext.sql("select tag, Bin, count(*) as Count from binDF group by tag, Bin")
+    binCountDF.show()
   }
 }
 

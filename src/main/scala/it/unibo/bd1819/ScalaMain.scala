@@ -15,19 +15,21 @@ object ScalaMain{
       println("USAGE: ./bd-stacklite-jobs-1.0.0-spark.jar <JOB1 | JOB2>  [PARTITIONS PARALLELISM MEMORY]")
       println("Found: " + args.length)
     } else {
+      val conf: SparkConf = new SparkConf().setAppName("Histogram").setMaster("local")
+      val sc: SparkContext = new SparkContext(conf)
       val sqlContext = SparkSession.builder.master("local[*]").getOrCreate.sqlContext
       if (args.length == 4) {
         val conf = Configuration(args.toList)
         if (args(0) == JOB1) {
-          Job1Main.apply.executeJob(conf, sqlContext)
+          Job1Main.apply.executeJob(sc, conf, sqlContext)
         } else {
-          Job2Main.apply.executeJob(conf, sqlContext)
+          Job2Main.apply.executeJob(sc, conf, sqlContext)
         }
       } else {
         if (args(0) == JOB1) {
-          Job1Main.apply.executeJob(Configuration(), sqlContext)
+          Job1Main.apply.executeJob(sc, Configuration(), sqlContext)
         } else {
-          Job2Main.apply.executeJob(Configuration(), sqlContext)
+          Job2Main.apply.executeJob(sc, Configuration(), sqlContext)
         }
       }
     }
