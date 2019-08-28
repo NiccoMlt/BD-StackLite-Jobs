@@ -36,5 +36,4 @@ object DFBuilder {
       questionsDF.cache()
       questionsDF
     }
-  
 }

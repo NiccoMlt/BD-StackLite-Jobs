@@ -1,33 +1,22 @@
 package it.unibo.bd1819.daysproportion
 
-import it.unibo.bd1819.JobConfigurator
+import it.unibo.bd1819.JobMainAbstract
 import it.unibo.bd1819.common.DateUtils
 import it.unibo.bd1819.scoreanswersbins.Configuration
-import it.unibo.bd1819.utils.DFBuilder.getQuestionsDF
 import org.apache.spark.SparkContext
-import org.apache.spark.sql.{SQLContext, SparkSession}
+import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.functions._
-import org.rogach.scallop.ScallopConf
 
-class Job1Main {
+class Job1Main extends JobMainAbstract {
 
-  var sqlContext : SQLContext = _
-
-  def executeJob(sc: SparkContext, conf: Configuration, sqlc: SQLContext): Unit = {
-    // If users has not specified partitions and tasks for each partitions jobs use default
-    if (conf.partitions == 0) {
-      sqlContext = JobConfigurator.getDefault(sqlc).getSetSqlContext
-    } else {
-      sqlContext = JobConfigurator(sqlc, conf).getSetSqlContext
-    }
-    import sqlc.implicits._
-    val questionsDF = getQuestionsDF(sc, sqlContext, isTags = false)
-    val questionTagsDF = getQuestionsDF(sc, sqlContext, isTags = true)
+  def executeJob(sc: SparkContext, conf: Configuration, sqlCont: SQLContext): Unit = {
+   this.configureEnvironment(sc, conf, sqlCont)
+    import sqlCont.implicits._
     val onlyDateDF = sqlContext.sql("select Id, CreationDate from questions")
       .map(row => (row.getString(0), DateUtils.isWorkday(DateUtils.parseDateFromString(row.getString(1)))))
       .withColumnRenamed("_1", "Id")
       .withColumnRenamed("_2", "IsWorkDay")
-    val joinDF = questionTagsDF.join(onlyDateDF, "Id").drop("Id")
+    val joinDF = this.questionTagsDF.join(onlyDateDF, "Id").drop("Id")
     val columnNamesToSelect = Seq("tag", "IsWorkDay")
     val countDF = joinDF
       .select(columnNamesToSelect.map(c => col(c)): _*)
