@@ -1,4 +1,4 @@
-package it.unibo.bd1819.daysproportion.map;
+package it.unibo.bd1819.scoreanswersbins.map;
 
 import it.unibo.bd1819.common.QuestionTag;
 import java.io.IOException;
