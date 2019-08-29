@@ -1,6 +1,6 @@
 package it.unibo.bd1819.scoreanswersbins.map;
 
-import it.unibo.bd1819.scoreanswersbins.Bin;
+import it.unibo.bd1819.common.Bin;
 import java.io.IOException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.Text;

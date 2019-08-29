@@ -1,0 +1,47 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
+apply plugin: "scala"
+// apply plugin: "application"
+
+java {
+    sourceCompatibility = java_version
+    targetCompatibility = java_version
+}
+
+group 'it.unibo.bd1819'
+version '1.0.0'
+
+dependencies {
+    implementation project(':sources:common')
+
+    shadow "org.scala-lang:scala-library:$scala_version"
+    shadow "org.scala-lang:scala-reflect:$scala_version"
+    shadow "org.scala-lang:scala-compiler:$scala_version"
+
+    testImplementation "junit:junit:$jUnit4_version"
+    testImplementation "org.scalatest:scalatest_$scala_binary_version:$scalaTest_version"
+
+    testRuntimeOnly "org.scala-lang.modules:scala-xml_$scala_binary_version:$scalaXml_version"
+
+    // annotations-java5 is compatible with JDK 1.5, 1.6 or 1.7
+    compileOnly "org.jetbrains:annotations-java5:$jetbrains_annotations_version"
+
+    shadow "org.apache.spark:spark-mllib_$scala_binary_version:$spark_standard_version"
+    shadow "org.apache.spark:spark-sql_$scala_binary_version:$spark_version"
+    shadow "org.apache.spark:spark-streaming-flume-assembly_$scala_binary_version:$spark_standard_version"
+    shadow "org.apache.spark:spark-graphx_$scala_binary_version:$spark_version"
+    shadow "org.apache.spark:spark-launcher_$scala_binary_version:$spark_version"
+    shadow "org.apache.spark:spark-catalyst_$scala_binary_version:$spark_version"
+    shadow "org.apache.spark:spark-streaming_$scala_binary_version:$spark_version"
+    shadow "org.apache.spark:spark-core_$scala_binary_version:$spark_version"
+
+    compile group: 'org.rogach', name: "scallop_$scala_binary_version", version: "$scallop_version"
+}
+
+task sparkJar(type: ShadowJar) {
+    //noinspection GroovyAssignabilityCheck
+    archiveClassifier.set('spark')
+    manifest.attributes 'Main-Class': 'it.unibo.bd1819.ScalaMain'
+    from(shadowJar.from())
+    zip64 true
+}

@@ -1,5 +1,6 @@
 package it.unibo.bd1819.scoreanswersbins;
 
+import it.unibo.bd1819.common.Bin;
 import it.unibo.bd1819.common.JobUtils;
 import it.unibo.bd1819.scoreanswersbins.map.BinMap;
 import it.unibo.bd1819.scoreanswersbins.map.QuestionTagMap;

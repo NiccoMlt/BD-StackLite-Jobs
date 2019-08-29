@@ -1,1 +1,3 @@
 rootProject.name = 'bd-stacklite-jobs'
+
+include "sources:common", "sources:mapreduce", "sources:spark-ml", "sources:spark-sql"

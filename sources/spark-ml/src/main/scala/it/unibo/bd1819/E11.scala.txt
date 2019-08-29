@@ -1,0 +1,100 @@
+//E11 SPARK ML
+
+val sqlContext = new org.apache.spark.sql.SQLContext(sc)
+val train_data = sqlContext.read.format("com.databricks.spark.csv").option("header", "true").option("inferschema", "true").load("../../bigdata/dataset/titanic/train.csv").cache()
+
+train_data.printSchema()
+train_data.show(5)
+train_data.describe().show()
+
+var avgAge = train_data.select(mean("Age")).first()(0).asInstanceOf[Double]
+val train_data_filled = train_data.na.fill(avgAge,Seq("Age"))
+
+train_data_filled.describe().show()
+
+val toDouble = sqlContext.udf.register("toDouble", ((n:Int) => {n.toDouble})
+val train_data_final = train_data_filled.withColumn("Pclass", toDouble(train_data_filled("Pclass"))).withColumn("Survived", toDouble(train_data_filled("Survived")))
+
+train_data_final.show()
+
+import org.apache.spark.ml.feature.StringIndexer
+
+val sexInd = new StringIndexer().setInputCol("Sex").setOutputCol("SexIndex")
+val survivedInd = new StringIndexer().setInputCol("Survived").setOutputCol("SurvivedIndex")
+
+
+import org.apache.spark.ml.feature.Bucketizer
+val fareSplits = Array(0.0, 10.0, 20.0, 30.0, 40.0, Double.PositiveInfinity)
+val fareBucketize = new Bucketizer().setInputCol("Fare").setOutputCol("FareBucketed").setSplits(fareSplits)
+
+import org.apache.spark.ml.feature.VectorAssembler
+val assembler = new VectorAssembler().setInputCols(Array("SexIndex", "Age", "Pclass","FareBucketed")).setOutputCol("features_temp")
+
+import org.apache.spark.ml.feature.Normalizer
+val normalizer = new Normalizer().setInputCol("features_temp").setOutputCol("features")
+
+import org.apache.spark.ml.classification.LogisticRegression
+val lr = new LogisticRegression().setMaxIter(10)
+lr.setFeaturesCol("features").setLabelCol("SurvivedIndex") 
+
+import org.apache.spark.ml.Pipeline
+val pipeline_lr = new Pipeline().setStages(Array(sexInd, survivedInd,fareBucketize, assembler, normalizer, lr))
+
+
+import org.apache.spark.mllib.util.MLUtils
+val splits = train_data_final.randomSplit(Array(0.7, 0.3), seed = 1L)
+val train = splits(0).cache()
+val test = splits(1).cache()
+
+var model = pipeline_lr.fit(train)
+
+var train_result = model.transform(train)
+
+import org.apache.spark.mllib.evaluation.BinaryClassificationMetrics
+train_result = train_result.select("prediction","SurvivedIndex")
+
+val train_predictionAndLabels = train_result.map { row => (row.get(0).asInstanceOf[Double],row.get(1).asInstanceOf[Double])}
+val train_metrics = new BinaryClassificationMetrics(train_predictionAndLabels.rdd)
+
+
+println("Accuracy: " + train_result.filter("prediction=SurvivedIndex").count.asInstanceOf[Double] / train_result.count.asInstanceOf[Double]) 
+println("Precision: " + train_result.filter("prediction=1 and SurvivedIndex=1").count.asInstanceOf[Double] / train_result.filter("prediction=1").count.asInstanceOf[Double])
+
+println("Recall: " + train_result.filter("prediction=1 and SurvivedIndex=1").count.asInstanceOf[Double] /train_result.filter("SurvivedIndex=1").count.asInstanceOf[Double])
+println("Area under ROC curve: " +train_metrics.areaUnderROC())
+
+
+//EX. 1
+
+import org.apache.spark.ml.classification.DecisionTreeClassifier
+val dt = new DecisionTreeClassifier().setMaxDepth(5).setMaxBins(30)
+dt.setFeaturesCol("features").setLabelCol("SurvivedIndex")
+val pipeline_dt = new Pipeline().setStages(Array(sexInd, survivedInd,fareBucketize, assembler, normalizer, dt))
+
+
+import org.apache.spark.mllib.util.MLUtils
+val splits = train_data_final.randomSplit(Array(0.7, 0.3), seed = 1L)
+val train = splits(0).cache()
+val test = splits(1).cache()
+
+var model = pipeline_dt.fit(train)
+
+var train_result = model.transform(train)
+
+import org.apache.spark.mllib.evaluation.BinaryClassificationMetrics
+train_result = train_result.select("prediction","SurvivedIndex")
+
+val train_predictionAndLabels = train_result.map { row => (row.get(0).asInstanceOf[Double],row.get(1).asInstanceOf[Double])}
+val train_metrics = new BinaryClassificationMetrics(train_predictionAndLabels.rdd)
+
+
+println("Accuracy: " + train_result.filter("prediction=SurvivedIndex").count.asInstanceOf[Double] / train_result.count.asInstanceOf[Double]) 
+println("Precision: " + train_result.filter("prediction=1 and SurvivedIndex=1").count.asInstanceOf[Double] / train_result.filter("prediction=1").count.asInstanceOf[Double])
+
+println("Recall: " + train_result.filter("prediction=1 and SurvivedIndex=1").count.asInstanceOf[Double] /train_result.filter("SurvivedIndex=1").count.asInstanceOf[Double])
+println("Area under ROC curve: " +train_metrics.areaUnderROC())
+
+//albero va meglio della regressione
+
+
+//EX.2 TODO

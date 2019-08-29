@@ -1,0 +1,32 @@
+apply plugin: 'java-library'
+
+java {
+    sourceCompatibility = java_version
+    targetCompatibility = java_version
+}
+
+ext {
+    joda_time_version = "2.10.3"
+    jollyday_version = "0.4.9"
+}
+
+group 'it.unibo.bd1819.common'
+version '1.0.0'
+
+dependencies {
+    testImplementation "junit:junit:$jUnit4_version"
+
+    // annotations-java5 is compatible with JDK 1.5, 1.6 or 1.7
+    compileOnly "org.jetbrains:annotations-java5:$jetbrains_annotations_version"
+
+    api "joda-time:joda-time:$joda_time_version"
+    api "de.jollyday:jollyday:$jollyday_version"
+
+    shadow "org.apache.hadoop:hadoop-common:$hadoop_version"
+    shadow "org.apache.hadoop:hadoop-core:$hadoop_core_version"
+    shadow "org.apache.hadoop:hadoop-hdfs:$hadoop_version"
+
+    shadow "org.slf4j:slf4j-api:$slf4j_version"
+    shadow "org.slf4j:slf4j-log4j12:$slf4j_version"
+    shadow "org.slf4j:slf4j-simple:$slf4j_version"
+}

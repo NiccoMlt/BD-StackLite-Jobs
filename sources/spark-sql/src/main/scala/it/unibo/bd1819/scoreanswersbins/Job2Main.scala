@@ -1,6 +1,7 @@
 package it.unibo.bd1819.scoreanswersbins
 
 import it.unibo.bd1819.JobMainAbstract
+import it.unibo.bd1819.common.Bin
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
 
