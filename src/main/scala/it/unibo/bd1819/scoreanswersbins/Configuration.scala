@@ -2,13 +2,13 @@ package it.unibo.bd1819.scoreanswersbins
 
 class Configuration {
 
-  var partitions : Int = 0
+  var partitions: Int = 0
   var parallelism: Int = 0
-  var memorySize : Int = 0
+  var memorySize: Int = 0
 
 }
 
-object Configuration{
+object Configuration {
   def apply(args: List[String]): Configuration = {
     var c = new Configuration()
     c.partitions = args(1).toInt
@@ -19,8 +19,8 @@ object Configuration{
 
   def apply(): Configuration = new Configuration()
 
-  def apply(partitions : Int, parallelism: Int, memory: Int): Configuration = {
-    val c =new Configuration()
+  def apply(partitions: Int, parallelism: Int, memory: Int): Configuration = {
+    val c = new Configuration()
     c.partitions = partitions
     c.parallelism = parallelism
     c.memorySize = memory

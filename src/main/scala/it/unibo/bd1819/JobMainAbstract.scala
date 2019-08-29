@@ -6,9 +6,12 @@ import org.apache.spark.SparkContext
 import org.apache.spark.sql.{DataFrame, SQLContext}
 
 abstract class JobMainAbstract {
-  var sqlContext : SQLContext = _
+  var sqlContext: SQLContext = _
   var questionsDF: DataFrame = _
   var questionTagsDF: DataFrame = _
+
+  def executeJob(sc: SparkContext, conf: Configuration, sqlCont: SQLContext): Unit
+
   protected def configureEnvironment(sc: SparkContext, conf: Configuration, sqlCont: SQLContext): Unit = {
     // If users has not specified partitions and tasks for each partitions jobs use default
     if (conf.partitions == 0) {
@@ -19,5 +22,4 @@ abstract class JobMainAbstract {
     this.questionsDF = getQuestionsDF(sc, sqlContext, isTags = false)
     this.questionTagsDF = getQuestionsDF(sc, sqlContext, isTags = true)
   }
-  def executeJob(sc: SparkContext, conf: Configuration, sqlCont: SQLContext): Unit
 }

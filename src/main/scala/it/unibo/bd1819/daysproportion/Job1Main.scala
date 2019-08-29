@@ -10,7 +10,7 @@ import org.apache.spark.sql.functions._
 class Job1Main extends JobMainAbstract {
 
   def executeJob(sc: SparkContext, conf: Configuration, sqlCont: SQLContext): Unit = {
-   this.configureEnvironment(sc, conf, sqlCont)
+    this.configureEnvironment(sc, conf, sqlCont)
     import sqlCont.implicits._
     val onlyDateDF = sqlContext.sql("select Id, CreationDate from questions")
       .map(row => (row.getString(0), DateUtils.isWorkday(DateUtils.parseDateFromString(row.getString(1)))))
@@ -38,7 +38,7 @@ class Job1Main extends JobMainAbstract {
   }
 }
 
-object Job1Main{
+object Job1Main {
   def apply: Job1Main = new Job1Main()
 }
 

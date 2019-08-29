@@ -5,7 +5,7 @@ import org.apache.spark.sql.SQLContext
 
 class JobConfigurator {
 
-  var sqlContext : SQLContext = _
+  var sqlContext: SQLContext = _
 
   def setSqlContext(sqlc: SQLContext): Unit = {
     sqlContext = sqlc
@@ -14,6 +14,7 @@ class JobConfigurator {
 
   /**
    * Set the number of parallelisms to use
+   *
    * @param parallelism Number of parallelism
    *
    */
@@ -23,15 +24,17 @@ class JobConfigurator {
 
   /**
    * Set the number of partitions
+   *
    * @param partitions
    */
-  def setPartitions(partitions: Int): Unit={
+  def setPartitions(partitions: Int): Unit = {
     sqlContext.setConf("spark.sql.shuffle.partitions", partitions.toString);
   }
 
 
   /**
    * Set the memory size available
+   *
    * @param memory
    */
   def setMemoryOffHeap(memory: Int): Unit = {
@@ -40,6 +43,7 @@ class JobConfigurator {
 
   /**
    * Return a SQLContext set
+   *
    * @return
    */
   def getSetSqlContext: SQLContext = sqlContext
@@ -47,15 +51,15 @@ class JobConfigurator {
 }
 
 
-object JobConfigurator{
+object JobConfigurator {
 
-  def apply(context: SQLContext) : JobConfigurator = {
+  def apply(context: SQLContext): JobConfigurator = {
     val jc = new JobConfigurator()
     jc.setSqlContext(context)
     jc
   }
 
-  def apply(context: SQLContext, conf : Configuration): JobConfigurator = {
+  def apply(context: SQLContext, conf: Configuration): JobConfigurator = {
     val jc = new JobConfigurator()
     jc.setSqlContext(context)
     jc.setPartitions(conf.partitions)
@@ -64,7 +68,7 @@ object JobConfigurator{
     jc
   }
 
-  def getDefault(context: SQLContext) : JobConfigurator = {
+  def getDefault(context: SQLContext): JobConfigurator = {
     val jc = new JobConfigurator()
     jc.setSqlContext(context)
     jc.setParallelism(8)

@@ -2,10 +2,10 @@ package it.unibo.bd1819
 
 import it.unibo.bd1819.daysproportion.Job1Main
 import it.unibo.bd1819.scoreanswersbins.{Configuration, Job2Main}
+import org.apache.spark.sql.SparkSession
 import org.apache.spark.{SparkConf, SparkContext}
-import org.apache.spark.sql.{SQLContext, SparkSession}
 
-object ScalaMain{
+object ScalaMain {
 
   final private val JOB1 = "JOB1"
   final private val JOB2 = "JOB2"
