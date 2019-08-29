@@ -16,21 +16,22 @@ class Job1Main extends JobMainAbstract {
       .map(row => (row.getString(0), DateUtils.isWorkday(DateUtils.parseDateFromString(row.getString(1)))))
       .withColumnRenamed("_1", "Id")
       .withColumnRenamed("_2", "IsWorkDay")
-    val joinDF = this.questionTagsDF.join(onlyDateDF, "Id").drop("Id")
+    val dateAndTagDF = this.questionTagsDF.join(onlyDateDF, "Id").drop("Id")
+    dateAndTagDF.createOrReplaceTempView("dateAndTagDF")
+    dateAndTagDF.cache()
     val columnNamesToSelect = Seq("tag", "IsWorkDay")
-    val countDF = joinDF
+    val countDF = dateAndTagDF
       .select(columnNamesToSelect.map(c => col(c)): _*)
       .groupBy("tag")
       .agg(count("IsWorkDay")
         .as("Count"))
-    joinDF.createOrReplaceTempView("joinDF")
+    countDF.cache()
     val workHolyDF = sqlContext.sql("select tag, (round(" +
       "(cast(sum(case when IsWorkDay = true then 1 else 0 end) as float)) / " +
       "(cast(sum(case when IsWorkDay = false then 1 else 0 end) as float)), " +
       "2)) as Proportion " +
-      "from joinDF group by tag")
+      "from dateAndTagDF group by tag")
     val finalJoinDF = workHolyDF.join(countDF, "tag")
-    finalJoinDF.createOrReplaceTempView("finalJoinDF")
     finalJoinDF.show()
     //val definitiveTableName = "fnaldini_director_actors_db.Actor_Director_Table_definitive"
 
