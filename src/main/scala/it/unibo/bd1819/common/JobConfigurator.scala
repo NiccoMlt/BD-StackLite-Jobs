@@ -1,6 +1,5 @@
-package it.unibo.bd1819
+package it.unibo.bd1819.common
 
-import it.unibo.bd1819.scoreanswersbins.Configuration
 import org.apache.spark.sql.SQLContext
 
 class JobConfigurator {

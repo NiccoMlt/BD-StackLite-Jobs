@@ -1,4 +1,4 @@
-package it.unibo.bd1819.scoreanswersbins
+package it.unibo.bd1819.common
 
 class Configuration {
 

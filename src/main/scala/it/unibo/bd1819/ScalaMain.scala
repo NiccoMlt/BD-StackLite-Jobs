@@ -1,7 +1,8 @@
 package it.unibo.bd1819
 
+import it.unibo.bd1819.common.Configuration
 import it.unibo.bd1819.daysproportion.Job1Main
-import it.unibo.bd1819.scoreanswersbins.{Configuration, Job2Main}
+import it.unibo.bd1819.scoreanswersbins.Job2Main
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.{SparkConf, SparkContext}
 

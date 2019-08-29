@@ -1,7 +1,6 @@
-package it.unibo.bd1819
+package it.unibo.bd1819.common
 
-import it.unibo.bd1819.scoreanswersbins.Configuration
-import it.unibo.bd1819.utils.DFBuilder.getQuestionsDF
+import DFBuilder.getQuestionsDF
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.{DataFrame, SQLContext}
 

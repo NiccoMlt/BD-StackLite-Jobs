@@ -1,4 +1,4 @@
-package it.unibo.bd1819.utils
+package it.unibo.bd1819.common
 
 object PathVariables {
 
