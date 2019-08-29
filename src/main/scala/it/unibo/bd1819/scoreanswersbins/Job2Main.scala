@@ -3,6 +3,7 @@ package it.unibo.bd1819.scoreanswersbins
 import it.unibo.bd1819.JobMainAbstract
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.functions.{collect_list, udf, lit}
 
 class Job2Main extends JobMainAbstract{
 
@@ -23,7 +24,7 @@ class Job2Main extends JobMainAbstract{
     binDF.createOrReplaceTempView("binDF")
     val binCountDF = sqlContext.sql("select tag, Bin, count(*) as Count from binDF group by tag, Bin")
     binCountDF.createOrReplaceTempView("binCountDF")
-    val finalDF = sqlContext.sql("select Bin, GROUP_CONCAT(distinct concat(tag,',',Count) separator ';') from binCountDF group by Bin")
+    val finalDF = sqlContext.sql("select Bin, collect_list(distinct concat(tag,' - ',Count)) from binCountDF group by Bin")
     finalDF.show()
     
   }
