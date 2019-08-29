@@ -1,4 +1,4 @@
-package it.unibo.bd1819.utils
+package it.unibo.bd1819.common
 
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 
@@ -16,6 +16,6 @@ object FileParsing {
                      filterCriteria:String => Boolean = _ => true) =
     StructType(schemaString.split(fieldSeparator)
         .filter(filterCriteria)
-      .map(fieldName => StructField( fieldName, StringType, true)))
+      .map(fieldName => StructField( fieldName, StringType, nullable = true)))
 
 }

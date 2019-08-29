@@ -1,10 +1,7 @@
-package it.unibo.bd1819.utils
+package it.unibo.bd1819.common
 
-import it.unibo.bd1819.common.DateUtils
-import org.apache.avro.generic.GenericData.StringType
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 
 /**
