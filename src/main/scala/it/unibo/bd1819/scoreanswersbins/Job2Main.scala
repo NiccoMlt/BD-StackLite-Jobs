@@ -43,7 +43,6 @@ class Job2Main extends JobMainAbstract{
     val finalDF = sqlContext.sql("select Bin, collect_list(distinct concat(Tag,' - ',Count)) as ListTagCount " +
       "from binCountDF group by Bin")
     finalDF.show()
-    
   }
 }
 
