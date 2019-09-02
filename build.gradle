@@ -1,4 +1,9 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
 plugins {
+    id 'idea'
+    id 'eclipse'
+    id 'java'
     id 'scala'
     id 'com.github.johnrengelman.shadow' version '5.1.0'
 }
@@ -6,7 +11,7 @@ plugins {
 group 'it.unibo.bd1819'
 version '1.0.0'
 
-// Versions enforced by Unversity environment
+// Versions enforced by University server environment
 def javaVersion = JavaVersion.VERSION_1_7
 def scalaBinaryVersion = "2.11"
 def scalaMinorVersion = "8"
@@ -19,6 +24,7 @@ def sparkStandardVersion = "2.1.0"
 def hadoopVersion = "$hadoopStandardVersion-$clouderaHadoopSuffix"
 def hadoopCoreVersion = "$hadoopStandardVersion-$clouderaHadoopCoreSuffix"
 def sparkVersion = "$sparkStandardVersion.$clouderaSparkSuffix"
+def slf4jVersion = "1.7.5"
 
 java {
     sourceCompatibility = javaVersion
@@ -26,34 +32,51 @@ java {
 }
 
 repositories {
-    jcenter()
     mavenLocal()
-    mavenCentral()
     maven { url "https://repository.cloudera.com/artifactory/cloudera-repos" }
+    mavenCentral()
+    jcenter()
 }
 
 dependencies {
-    implementation "org.scala-lang:scala-library:$scalaVersion"
-    implementation "org.scala-lang:scala-reflect:$scalaVersion"
-    implementation "org.scala-lang:scala-compiler:$scalaVersion"
+    shadow "org.scala-lang:scala-library:$scalaVersion"
+    shadow "org.scala-lang:scala-reflect:$scalaVersion"
+    shadow "org.scala-lang:scala-compiler:$scalaVersion"
 
     testImplementation "junit:junit:$jUnit4Version"
     testImplementation "org.scalatest:scalatest_$scalaBinaryVersion:$scalaTestVersion"
 
     testRuntimeOnly "org.scala-lang.modules:scala-xml_$scalaBinaryVersion:$scalaXmlVersion"
 
-    implementation "org.apache.spark:spark-mllib_$scalaBinaryVersion:$sparkStandardVersion"
-    implementation "org.apache.spark:spark-sql_$scalaBinaryVersion:$sparkVersion"
-    implementation "org.apache.spark:spark-streaming-flume-assembly_$scalaBinaryVersion:$sparkStandardVersion"
-    implementation "org.apache.spark:spark-graphx_$scalaBinaryVersion:$sparkVersion"
-    implementation "org.apache.spark:spark-launcher_$scalaBinaryVersion:$sparkVersion"
-    implementation "org.apache.spark:spark-catalyst_$scalaBinaryVersion:$sparkVersion"
-    implementation "org.apache.spark:spark-streaming_$scalaBinaryVersion:$sparkVersion"
-    implementation "org.apache.spark:spark-core_$scalaBinaryVersion:$sparkVersion"
+    // annotations-java5 is compatible with JDK 1.5, 1.6 or 1.7
+    compileOnly "org.jetbrains:annotations-java5:$jetbrainsAnnotationsVersion"
 
-    implementation "org.apache.hadoop:hadoop-common:$hadoopVersion"
-    implementation "org.apache.hadoop:hadoop-core:$hadoopCoreVersion"
-    implementation "org.apache.hadoop:hadoop-hdfs:$hadoopVersion"
+    implementation "joda-time:joda-time:$jodaTimeVersion"
+    implementation "de.jollyday:jollyday:$jollydayVersion"
+
+    shadow "org.apache.hadoop:hadoop-common:$hadoopVersion"
+    shadow "org.apache.hadoop:hadoop-core:$hadoopCoreVersion"
+    shadow "org.apache.hadoop:hadoop-hdfs:$hadoopVersion"
+    
+    shadow "org.slf4j:slf4j-api:$slf4jVersion"
+    shadow "org.slf4j:slf4j-log4j12:$slf4jVersion"
+    shadow "org.slf4j:slf4j-simple:$slf4jVersion"
+    
+    shadow "org.apache.spark:spark-mllib_$scalaBinaryVersion:$sparkStandardVersion"
+    shadow "org.apache.spark:spark-sql_$scalaBinaryVersion:$sparkVersion"
+    shadow "org.apache.spark:spark-streaming-flume-assembly_$scalaBinaryVersion:$sparkStandardVersion"
+    shadow "org.apache.spark:spark-graphx_$scalaBinaryVersion:$sparkVersion"
+    shadow "org.apache.spark:spark-launcher_$scalaBinaryVersion:$sparkVersion"
+    shadow "org.apache.spark:spark-catalyst_$scalaBinaryVersion:$sparkVersion"
+    shadow "org.apache.spark:spark-streaming_$scalaBinaryVersion:$sparkVersion"
+    shadow "org.apache.spark:spark-core_$scalaBinaryVersion:$sparkVersion"
+
+    shadow "org.apache.hadoop:hadoop-common:$hadoopVersion"
+    shadow "org.apache.hadoop:hadoop-core:$hadoopCoreVersion"
+    shadow "org.apache.hadoop:hadoop-hdfs:$hadoopVersion"
+
+    
+    compile group: 'org.rogach', name: "scallop_$scallopBinaryVersion", version: "$scallopVersion"
 }
 
 wrapper {
@@ -64,22 +87,42 @@ shadowJar {
     zip64 true
 }
 
-// Shadowing Test Sources and Dependencies
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+task mapReduceJar1(type: ShadowJar) {
+    //noinspection GroovyAssignabilityCheck
+    archiveClassifier.set('mr1')
+    manifest.attributes 'Main-Class': 'it.unibo.bd1819.daysproportion.Main'
+    from(shadowJar.from())
+    zip64 true
+}
 
-task mapReduceJar(type: ShadowJar) {
-    archiveClassifier.set('mr')
-    manifest.attributes 'Main-Class': 'it.unibo.bd1819.Main'
+task mapReduceJar2(type: ShadowJar) {
+    //noinspection GroovyAssignabilityCheck
+    archiveClassifier.set('mr2')
+    manifest.attributes 'Main-Class': 'it.unibo.bd1819.scoreanswersbins.Main'
     from(shadowJar.from())
     zip64 true
 }
 
 task sparkJar(type: ShadowJar) {
+    //noinspection GroovyAssignabilityCheck
     archiveClassifier.set('spark')
     manifest.attributes 'Main-Class': 'it.unibo.bd1819.ScalaMain'
     from(shadowJar.from())
     zip64 true
 }
 
+eclipse {
+    classpath {
+        downloadJavadoc = true
+        downloadSources = true
+    }
+}
 
-defaultTasks 'clean', 'build', 'javadoc', 'scaladoc', 'shadowJar'
+idea {
+    module {
+        downloadJavadoc = true
+        downloadSources = true
+    }
+}
+
+defaultTasks 'clean', 'build', 'javadoc', 'scaladoc'
