@@ -1,6 +1,6 @@
 package it.unibo.bd1819.common
 
-import DFBuilder.getQuestionsDF
+import it.unibo.bd1819.common.DFBuilder.getQuestionsDF
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.{DataFrame, SQLContext}
 
@@ -13,6 +13,7 @@ abstract class JobMainAbstract {
 
   protected def configureEnvironment(sc: SparkContext, conf: Configuration, sqlCont: SQLContext): Unit = {
     // If users has not specified partitions and tasks for each partitions jobs use default
+    // TODO: why shouldn't I use the passed sqlCont ???
     if (conf.partitions == 0) {
       sqlContext = JobConfigurator.getDefault(sqlCont).getSetSqlContext
     } else {

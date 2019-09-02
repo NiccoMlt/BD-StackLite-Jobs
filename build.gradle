@@ -80,8 +80,6 @@ dependencies {
     shadow "org.apache.spark:spark-core_$scala_binary_version:$spark_version"
 
     implementation "org.apache.spark:spark-mllib_$scala_binary_version:$spark_ml_version"
-    
-    implementation "org.rogach:scallop_$scala_binary_version:$scallop_version"
 }
 
 wrapper {

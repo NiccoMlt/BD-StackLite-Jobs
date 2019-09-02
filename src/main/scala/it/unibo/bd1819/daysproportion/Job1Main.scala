@@ -19,7 +19,7 @@ class Job1Main extends JobMainAbstract {
       .map(row => (row.getString(0), DateUtils.isWorkday(DateUtils.parseDateFromString(row.getString(1)))))
       .withColumnRenamed("_1", "Id")
       .withColumnRenamed("_2", "IsWorkDay")
-    
+
     /* Join the previously obtained DF with the question_tags DF, to obtain a resulting DF that
      * shows the relationship between the tags and the boolean value (IsWorkDay) that tells if 
      * the creation date of that answer is a workday or not.
@@ -28,10 +28,10 @@ class Job1Main extends JobMainAbstract {
     val dateAndTagDF = this.questionTagsDF.join(onlyDateDF, "Id").drop("Id")
     dateAndTagDF.createOrReplaceTempView("dateAndTagDF")
     dateAndTagDF.cache()
-    
+
     /* Create a Sequence that represents the current columns names */
     val columnNamesToSelect = Seq("tag", "IsWorkDay")
-    
+
     /* Add to the DF a column that represents how many questions with a specific Tag appear
      * in the Data Frame.
      */
@@ -41,7 +41,7 @@ class Job1Main extends JobMainAbstract {
       .agg(count("IsWorkDay")
         .as("Count"))
     countDF.cache()
-    
+
     /* Create a DF that has, associated to every tag, the proportion between how many
      * questions with that tag have been posted on workdays and how many on holidays.
      * Proportion float number will only have 2 decimals.
@@ -51,18 +51,18 @@ class Job1Main extends JobMainAbstract {
       "(cast(sum(case when IsWorkDay = false then 1 else 0 end) as float)), " +
       "2)) as Proportion " +
       "from dateAndTagDF group by tag")
-    
+
     /* The final DF will be a join between the previous one and the DF withe count information
      * (the amount of questions posted for every tag).
      */
     val finalJoinDF = workHolyDF.join(countDF, "tag")
-    
+
     /* Show the first 20 rows for this DF */
     finalJoinDF.show()
   }
 }
 
 object Job1Main {
-  def apply: Job1Main = new Job1Main()
+  def apply(): Job1Main = new Job1Main()
 }
 

@@ -28,5 +28,5 @@ class JobMlMain extends JobMainAbstract {
 }
 
 object JobMlMain {
-  def apply: JobMlMain = new JobMlMain()
+  def apply(): JobMlMain = new JobMlMain()
 }
