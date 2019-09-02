@@ -70,13 +70,6 @@ dependencies {
     shadow "org.apache.spark:spark-catalyst_$scalaBinaryVersion:$sparkVersion"
     shadow "org.apache.spark:spark-streaming_$scalaBinaryVersion:$sparkVersion"
     shadow "org.apache.spark:spark-core_$scalaBinaryVersion:$sparkVersion"
-
-    shadow "org.apache.hadoop:hadoop-common:$hadoopVersion"
-    shadow "org.apache.hadoop:hadoop-core:$hadoopCoreVersion"
-    shadow "org.apache.hadoop:hadoop-hdfs:$hadoopVersion"
-
-    
-    compile group: 'org.rogach', name: "scallop_$scallopBinaryVersion", version: "$scallopVersion"
 }
 
 wrapper {
