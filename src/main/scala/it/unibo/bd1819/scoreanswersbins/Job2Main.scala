@@ -12,7 +12,7 @@ class Job2Main extends JobMainAbstract {
 
     /* Select only Id and Score and AnswerCount columns from the questions DF */
     val scoreAnswersDF = sqlContext.sql("select Id, Score, AnswerCount from questions")
-
+    
     /* Join the previously obtained DF to the question_tags DF, dropping the useless column containing the Ids.
      * Select then all columns from the resulting DF, and map the Score and AnswerCount columns into one Bin
      * column that will have data representing in which Bin
@@ -31,14 +31,14 @@ class Job2Main extends JobMainAbstract {
       .withColumnRenamed("_2", "Bin")
     binDF.createOrReplaceTempView("binDF")
     binDF.cache()
-
+    
     /* Add to the previous DF a column representing the amount of the occurrences of (Tag, Bin)
      * are into the DF itself.
      */
     val binCountDF = sqlContext.sql("select Tag, Bin, count(*) as Count from binDF group by Tag, Bin")
     binCountDF.createOrReplaceTempView("binCountDF")
     binCountDF.cache()
-
+    
     /* Generate a DF that shows a column with the four bins, and, for each one of them, a list of couples (Tag - Count) */
     val finalDF = sqlContext.sql("select Bin, collect_list(distinct concat(Tag,' - ',Count)) as ListTagCount " +
       "from binCountDF group by Bin")

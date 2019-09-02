@@ -5,7 +5,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 
 /**
- * An object to build all the needed DataFrame.
+  * An object to build all the needed DataFrame.
  */
 object DFBuilder {
 

@@ -50,15 +50,15 @@ class JobConfigurator {
 }
 
 
-object JobConfigurator {
+object JobConfigurator{
 
-  def apply(context: SQLContext): JobConfigurator = {
+  def apply(context: SQLContext) : JobConfigurator = {
     val jc = new JobConfigurator()
     jc.setSqlContext(context)
     jc
   }
 
-  def apply(context: SQLContext, conf: Configuration): JobConfigurator = {
+  def apply(context: SQLContext, conf : Configuration): JobConfigurator = {
     val jc = new JobConfigurator()
     jc.setSqlContext(context)
     jc.setPartitions(conf.partitions)
@@ -67,7 +67,7 @@ object JobConfigurator {
     jc
   }
 
-  def getDefault(context: SQLContext): JobConfigurator = {
+  def getDefault(context: SQLContext) : JobConfigurator = {
     val jc = new JobConfigurator()
     jc.setSqlContext(context)
     jc.setParallelism(8)
