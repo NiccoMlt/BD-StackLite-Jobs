@@ -30,17 +30,18 @@ class Job1Main extends JobMainAbstract {
     dateAndTagDF.cache()
     
     /* Create a Sequence that represents the current columns names */
-    val columnNamesToSelect = Seq("tag", "IsWorkDay")
+    // val columnNamesToSelect = Seq("tag", "IsWorkDay")
     
     /* Add to the DF a column that represents how many questions with a specific Tag appear
      * in the Data Frame.
-     */
+     
     val countDF = dateAndTagDF
       .select(columnNamesToSelect.map(c => col(c)): _*)
       .groupBy("tag")
       .agg(count("IsWorkDay")
         .as("Count"))
     countDF.cache()
+    */
     
     /* Create a DF that has, associated to every tag, the proportion between how many
      * questions with that tag have been posted on workdays and how many on holidays.
@@ -49,16 +50,17 @@ class Job1Main extends JobMainAbstract {
     val workHolyDF = sqlContext.sql("select tag, (round(" +
       "(cast(sum(case when IsWorkDay = true then 1 else 0 end) as float)) / " +
       "(cast(sum(case when IsWorkDay = false then 1 else 0 end) as float)), " +
-      "2)) as Proportion " +
+      "2)) as Proportion, " +
+      "count(*) as Count " +
       "from dateAndTagDF group by tag")
     
     /* The final DF will be a join between the previous one and the DF withe count information
      * (the amount of questions posted for every tag).
      */
-    val finalJoinDF = workHolyDF.join(countDF, "tag")
+    // val finalJoinDF = workHolyDF.join(countDF, "tag")
     
     /* Show the first 20 rows for this DF */
-    finalJoinDF.show()
+    workHolyDF.show()
   }
 }
 

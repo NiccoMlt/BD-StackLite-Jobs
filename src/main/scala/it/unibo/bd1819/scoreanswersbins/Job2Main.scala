@@ -23,7 +23,8 @@ class Job2Main extends JobMainAbstract{
     val binDF = questionTagsDF.join(scoreAnswersDF, "Id").drop("Id")
       .select("tag", "Score", "AnswerCount")
       .map(row => (row.getString(0),
-      Bin.getBinFor(Integer.parseInt(if(row.getString(1) == "null" || row.getString(1) == "NA") "0" else row.getString(1)),
+      Bin.getBinFor(
+        Integer.parseInt(if(row.getString(1) == "null" || row.getString(1) == "NA") "0" else row.getString(1)),
         Bin.DEFAULT_SCORE_THRESHOLD,
         Integer.parseInt(if(row.getString(2) == "null" || row.getString(2) == "NA") "0" else row.getString(2)),
         Bin.DEFAULT_ANSWERS_COUNT_THRESHOLD).toString))
