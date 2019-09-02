@@ -32,6 +32,7 @@ java {
 }
 
 repositories {
+    mavenLocal()
     maven { url "https://repository.cloudera.com/artifactory/cloudera-repos" }
     mavenCentral()
     jcenter()
