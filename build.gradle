@@ -30,7 +30,8 @@ ext {
 
     junit4_version = "4.12"
     scalatest_version = "3.0.7"
-    scala_xml_version = "1.2.0"
+    scala_xml_version = "1.0.2"
+    joda_convert_version = "2.2.1"
     joda_time_version = "2.10.3"
     jollyday_version = "0.4.9"
     jb_annotations_version = "17.0.0"
@@ -62,6 +63,8 @@ dependencies {
     compileOnly "org.jetbrains:annotations-java5:$jb_annotations_version"
 
     implementation "joda-time:joda-time:$joda_time_version"
+    implementation "org.joda:joda-convert:$joda_convert_version"
+
     implementation "de.jollyday:jollyday:$jollyday_version"
 
     shadow "org.apache.hadoop:hadoop-common:$hadoop_version"
@@ -78,8 +81,7 @@ dependencies {
     shadow "org.apache.spark:spark-catalyst_$scala_binary_version:$spark_version"
     shadow "org.apache.spark:spark-streaming_$scala_binary_version:$spark_version"
     shadow "org.apache.spark:spark-core_$scala_binary_version:$spark_version"
-
-    implementation "org.apache.spark:spark-mllib_$scala_binary_version:$spark_ml_version"
+    shadow "org.apache.spark:spark-mllib_$scala_binary_version:$spark_version"
 }
 
 wrapper {
@@ -109,6 +111,13 @@ task mapReduceJar2(type: ShadowJar) {
 task sparkJar(type: ShadowJar) {
     archiveClassifier.set('spark')
     manifest.attributes 'Main-Class': 'it.unibo.bd1819.ScalaMain'
+    from(shadowJar.from())
+    zip64 true
+}
+
+task sparkMlJar(type: ShadowJar) {
+    archiveClassifier.set('spark2')
+    manifest.attributes 'Main-Class': 'it.unibo.bd1819.ScalaMainMlTest'
     from(shadowJar.from())
     zip64 true
 }

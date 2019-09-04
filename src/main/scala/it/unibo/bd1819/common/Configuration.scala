@@ -10,7 +10,7 @@ class Configuration {
 
 object Configuration {
   def apply(args: List[String]): Configuration = {
-    var c = new Configuration()
+    val c = new Configuration()
     c.partitions = args(1).toInt
     c.parallelism = args(2).toInt
     c.memorySize = args(3).toInt

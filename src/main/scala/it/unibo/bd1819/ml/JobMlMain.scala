@@ -1,29 +1,44 @@
 package it.unibo.bd1819.ml
 
-import it.unibo.bd1819.common.{Configuration, JobMainAbstract}
+import it.unibo.bd1819.common.{Configuration, DFBuilder, JobMainAbstract}
 import org.apache.spark.SparkContext
-import org.apache.spark.ml.linalg.{Matrix, Vectors}
-import org.apache.spark.ml.stat.Correlation
+import org.apache.spark.mllib.linalg.Vector
+import org.apache.spark.mllib.linalg.Vectors
+import org.apache.spark.mllib.stat.Statistics
+import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{Row, SQLContext}
 
 class JobMlMain extends JobMainAbstract {
+
   override def executeJob(sc: SparkContext, conf: Configuration, sqlCont: SQLContext): Unit = {
     import sqlCont.implicits._
+
+    val data = DFBuilder
+      .getQuestionsDF(sc, sqlCont, isTags = false)
+      .drop("Id", "CreationDate", "ClosedDate", "OwnerUserId")
+      .filter($"DeletionDate".contains("NA"))
+      .drop("DeletionDate")
+      .filter((!$"AnswerCount".contains("NA")).and(!$"AnswerCount".contains("-")))
+      .cache()
     
-    // TODO
-    val data = Seq(
-      Vectors.sparse(4, Seq((0, 1.0), (3, -2.0))),
-      Vectors.dense(4.0, 5.0, 0.0, 3.0),
-      Vectors.dense(6.0, 7.0, 0.0, 8.0),
-      Vectors.sparse(4, Seq((0, 9.0), (3, 1.0)))
-    )
+//    val score: RDD[Double] = data.select("Score").map(row => row.getString(0).toDouble).rdd
+//    val count: RDD[Double] = data.select("AnswerCount").map(row => row.getString(0).toDouble).rdd
+    
+//    val df = data.map( row => Vectors.dense(row.getString(0).toDouble, row.getString(1).toDouble) )
+    val df: RDD[Vector] = data.rdd.map { r: Row => Vectors.dense(r.getString(0).toDouble, r.getString(1).toDouble) }
+    val correlationP = Statistics.corr(df, "pearson")
+    println(s"Pearson Score/Count correlation: ${correlationP.toString}")
+    val correlationS = Statistics.corr(df, "spearman")
+    println(s"Spearman Score/Count correlation: ${correlationS.toString}")
+//    val scCorrelationP: Double = Statistics.corr(score, count, "pearson")
+//    val csCorrelationP: Double = Statistics.corr(count, score, "pearson")
+//    val scCorrelationS: Double = Statistics.corr(score, count, "spearman")
+//    val csCorrelationS: Double = Statistics.corr(count, score, "spearman")
 
-    val df = data.map(Tuple1.apply).toDF("features")
-    val Row(coeff1: Matrix) = Correlation.corr(df, "features").head
-    println(s"Pearson correlation matrix:\n $coeff1")
-
-    val Row(coeff2: Matrix) = Correlation.corr(df, "features", "spearman").head
-    println(s"Spearman correlation matrix:\n $coeff2")
+//    println(s"Pearson Score/Count correlation: $scCorrelationP")
+//    println(s"Pearson Count/Score correlation: $csCorrelationP")
+    // println(s"Spearman Score/Count correlation: $scCorrelationS")
+    // println(s"Spearman Count/Score correlation: $csCorrelationS")
   }
 }
 

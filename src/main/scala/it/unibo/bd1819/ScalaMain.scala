@@ -21,6 +21,7 @@ object ScalaMain {
       val spark: SparkSession = SparkSession.builder()
         .master("local")
         .appName("BD-StackLite-Job")
+        .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
         .getOrCreate()
       val sc: SparkContext = spark.sparkContext
       val sqlCtx: SQLContext = spark.sqlContext

@@ -39,6 +39,15 @@ class JobConfigurator {
   def setMemoryOffHeap(memory: Int): Unit = {
     sqlContext.setConf("spark.executor.memory", memory.toString + "g")
   }
+  
+  /**
+   * Set the memory size available
+   *
+   * @param memory
+   */
+  def setDriverMemory(memory: Int): Unit = {
+    sqlContext.setConf("spark.driver.memory", memory.toString + "g")
+  }
 
   /**
    * Return a SQLContext set
@@ -64,6 +73,7 @@ object JobConfigurator{
     jc.setPartitions(conf.partitions)
     jc.setParallelism(conf.parallelism)
     jc.setMemoryOffHeap(conf.memorySize)
+//    jc.setDriverMemory(conf.memorySize)
     jc
   }
 
@@ -73,6 +83,7 @@ object JobConfigurator{
     jc.setParallelism(8)
     jc.setPartitions(8)
     jc.setMemoryOffHeap(11)
+//    jc.setDriverMemory(11)
     jc
   }
 }
