@@ -30,7 +30,6 @@ object DFBuilder {
         .map(e => if(isTags) Row(e(0), e(1)) else Row(e(0), e(1), e(2), e(3), e(4), e(5), e(6)))
       val questionsDF = sqlContext.createDataFrame(questionsSchemaRDD, questionsSchemaType)
       questionsDF.createOrReplaceTempView( if(isTags) QUESTION_TAGS_TABLE_NAME else QUESTIONS_TABLE_NAME)
-      questionsDF.cache()
       questionsDF
     }
 }

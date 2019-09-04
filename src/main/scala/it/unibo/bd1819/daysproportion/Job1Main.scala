@@ -18,6 +18,7 @@ class Job1Main extends JobMainAbstract {
       .map(row => (row.getString(0), DateUtils.isWorkday(DateUtils.parseDateFromString(row.getString(1)))))
       .withColumnRenamed("_1", "Id")
       .withColumnRenamed("_2", "IsWorkDay")
+    onlyDateDF.cache()
     
     /* Join the previously obtained DF with the question_tags DF, to obtain a resulting DF that
      * shows the relationship between the tags and the boolean value (IsWorkDay) that tells if 
