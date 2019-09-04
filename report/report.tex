@@ -87,7 +87,7 @@
 
 \author{
   Niccolò~Maltoni - Mat. 000000840825\\%
-  Luca~Semprini - Mat. ????????????
+  Luca~Semprini - Mat. 000000854447
 }
 
 \date{\today}
@@ -103,11 +103,31 @@
   \section{Introduzione}\label{sec:intro}
   \subsection{Descrizione del dataset}\label{subsec:dataset}
 
-  TODO
+  Il dataset che abbiamo scelto di utilizzare per questo elaborato di progetto è una versione ridotta ed adattata del dump di StackOverflow che StackExchange ha reso disponibile sulla piattaforma Kaggle.
+  Il dataset, disponibile all'indirizzo \url{https://www.kaggle.com/stackoverflow/stacklite}, si presenta suddiviso in due file CSV formattati in UTF-8.
+  Ciascun file contiene nella prima riga la descrizione delle colonne in cui sono suddivisi i dati;
+  i dati mancanti sono contraddistinti dal valore ''NA``.
 
   \subsubsection{Descrizione dei file}\label{subsub:dataset:files}
 
-  TODO
+  Il dataset è composto dai seguenti file:
+
+  \begin{itemize}
+    \item
+      \texttt{questions.csv} contiene, per ogni domanda,
+      un ID univoco (\texttt{Id}),
+      la data di creazione (\texttt{CreationDate}),
+      l'eventuale data di chiusura (\texttt{ClosedDate}),
+      l'eventuale data di cancellazione (\texttt{DeletionDate}),
+      il punteggio ottenuto (\texttt{Score}),
+      l'eventuale ID utente creatore della domanda (\texttt{OwnerUserId}) (se la domanda non è stata cancellata)
+      e il numero di risposte ricevute (\texttt{AnswerCount}).
+
+    \item
+      \texttt{question_tags.csv} contiene coppie che mettono in relazione l'ID domanda (\texttt{Id}) con un tag (\texttt{Tag}) assegnato alla domanda.
+      Ogni domanda può avere assegnati più tag; in tal caso, l'ID sarà presente più volte, una per ogni tag assegnato.
+
+  \end{itemize}
 
   \section{Preparazione dei dati}\label{sec:preparation}
 
@@ -120,8 +140,6 @@
   ]{%
     Job 1: Effettuare la proporzione tra post realizzati in giorni feriali e in giorni festivi per ciascun tag%
   }\label{subsec:job1}
-
-  TODO
 
   \subsubsection{MapReduce implementation}\label{subsub:job1:mapreduce}
 
