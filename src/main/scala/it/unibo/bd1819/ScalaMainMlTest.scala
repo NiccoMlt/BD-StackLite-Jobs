@@ -37,8 +37,8 @@ object ScalaMainMlTest {
       .drop("DeletionDate")
       .filter((!$"AnswerCount".contains("NA")).and(!$"AnswerCount".contains("-")))
 
-    val score: RDD[Double] = data.select("Score").map(row => row.getString(0).toDouble).rdd.cache()
-    val count: RDD[Double] = data.select("AnswerCount").map(row => row.getString(0).toDouble).rdd.cache()
+    val score: RDD[Double] = data.select("Score").map(row => row.getString(0).toDouble).rdd
+    val count: RDD[Double] = data.select("AnswerCount").map(row => row.getString(0).toDouble).rdd
 
     val scCorrelationP: Double = Statistics.corr(score, count, "pearson")
     val scCorrelationS: Double = Statistics.corr(score, count, "spearman")
