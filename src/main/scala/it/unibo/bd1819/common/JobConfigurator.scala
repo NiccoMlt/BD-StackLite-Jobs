@@ -4,7 +4,7 @@ import org.apache.spark.sql.SQLContext
 
 class JobConfigurator {
 
-  var sqlContext : SQLContext = _
+  var sqlContext: SQLContext = _
 
   def setSqlContext(sqlc: SQLContext): Unit = {
     sqlContext = sqlc
@@ -13,6 +13,7 @@ class JobConfigurator {
 
   /**
    * Set the number of parallelisms to use
+   *
    * @param parallelism Number of parallelism
    *
    */
@@ -22,23 +23,35 @@ class JobConfigurator {
 
   /**
    * Set the number of partitions
+   *
    * @param partitions
    */
-  def setPartitions(partitions: Int): Unit={
+  def setPartitions(partitions: Int): Unit = {
     sqlContext.setConf("spark.sql.shuffle.partitions", partitions.toString);
   }
 
 
   /**
    * Set the memory size available
+   *
    * @param memory
    */
   def setMemoryOffHeap(memory: Int): Unit = {
     sqlContext.setConf("spark.executor.memory", memory.toString + "g")
   }
+  
+  /**
+   * Set the memory size available
+   *
+   * @param memory
+   */
+  def setDriverMemory(memory: Int): Unit = {
+    sqlContext.setConf("spark.driver.memory", memory.toString + "g")
+  }
 
   /**
    * Return a SQLContext set
+   *
    * @return
    */
   def getSetSqlContext: SQLContext = sqlContext
@@ -60,6 +73,7 @@ object JobConfigurator{
     jc.setPartitions(conf.partitions)
     jc.setParallelism(conf.parallelism)
     jc.setMemoryOffHeap(conf.memorySize)
+//    jc.setDriverMemory(conf.memorySize)
     jc
   }
 
@@ -69,6 +83,7 @@ object JobConfigurator{
     jc.setParallelism(8)
     jc.setPartitions(8)
     jc.setMemoryOffHeap(11)
+//    jc.setDriverMemory(11)
     jc
   }
 }
