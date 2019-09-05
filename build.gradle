@@ -1,5 +1,3 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-
 plugins {
     id 'idea'
     id 'eclipse'
@@ -11,77 +9,92 @@ plugins {
 group 'it.unibo.bd1819'
 version '1.0.0'
 
+import org.codehaus.groovy.runtime.GStringImpl
+
 // Versions enforced by University server environment
-def javaVersion = JavaVersion.VERSION_1_7
-def scalaBinaryVersion = "2.11"
-def scalaMinorVersion = "8"
-def scalaVersion = "$scalaBinaryVersion.$scalaMinorVersion"
-def clouderaHadoopSuffix = "cdh5.13.1"
-def clouderaHadoopCoreSuffix = "mr1-$clouderaHadoopSuffix"
-def clouderaSparkSuffix = "cloudera2"
-def hadoopStandardVersion = "2.6.0"
-def sparkStandardVersion = "2.1.0"
-def hadoopVersion = "$hadoopStandardVersion-$clouderaHadoopSuffix"
-def hadoopCoreVersion = "$hadoopStandardVersion-$clouderaHadoopCoreSuffix"
-def sparkVersion = "$sparkStandardVersion.$clouderaSparkSuffix"
-def slf4jVersion = "1.7.5"
+ext {
+    java_version = JavaVersion.VERSION_1_7
+    scala_binary_version = "2.11"
+    scala_minor_version = "8"
+    scala_version = "$scala_binary_version.$scala_minor_version" as GStringImpl
+    cloudera_hadoop_suffix = "cdh5.13.1"
+    cloudera_hadoop_core_suffix = "mr1-$cloudera_hadoop_suffix" as GStringImpl
+    cloudera_spark_suffix = "cloudera2"
+    hadoop_standard_version = "2.6.0"
+    spark_standard_version = "2.1.0"
+    spark_ml_version = "2.4.0.$cloudera_spark_suffix" as GStringImpl
+    hadoop_version = "$hadoop_standard_version-$cloudera_hadoop_suffix" as GStringImpl
+    hadoop_core_version = "$hadoop_standard_version-$cloudera_hadoop_core_suffix" as GStringImpl
+    spark_version = "$spark_standard_version.$cloudera_spark_suffix" as GStringImpl
+    slf4j_version = "1.7.5"
+
+    junit4_version = "4.12"
+    scalatest_version = "3.0.7"
+    scala_xml_version = "1.0.2"
+    joda_convert_version = "2.2.1"
+    joda_time_version = "2.10.3"
+    jollyday_version = "0.4.9"
+    jb_annotations_version = "17.0.0"
+    scallop_version = "3.1.3"
+}
 
 java {
-    sourceCompatibility = javaVersion
-    targetCompatibility = javaVersion
+    sourceCompatibility = java_version
+    targetCompatibility = java_version
 }
 
 repositories {
-    mavenLocal()
     maven { url "https://repository.cloudera.com/artifactory/cloudera-repos" }
     mavenCentral()
     jcenter()
 }
 
 dependencies {
-    shadow "org.scala-lang:scala-library:$scalaVersion"
-    shadow "org.scala-lang:scala-reflect:$scalaVersion"
-    shadow "org.scala-lang:scala-compiler:$scalaVersion"
+    shadow "org.scala-lang:scala-library:$scala_version"
+    shadow "org.scala-lang:scala-reflect:$scala_version"
+    shadow "org.scala-lang:scala-compiler:$scala_version"
 
-    testImplementation "junit:junit:$jUnit4Version"
-    testImplementation "org.scalatest:scalatest_$scalaBinaryVersion:$scalaTestVersion"
+    testImplementation "junit:junit:$junit4_version"
+    testImplementation "org.scalatest:scalatest_$scala_binary_version:$scalatest_version"
 
-    testRuntimeOnly "org.scala-lang.modules:scala-xml_$scalaBinaryVersion:$scalaXmlVersion"
+    testRuntimeOnly "org.scala-lang.modules:scala-xml_$scala_binary_version:$scala_xml_version"
 
     // annotations-java5 is compatible with JDK 1.5, 1.6 or 1.7
-    compileOnly "org.jetbrains:annotations-java5:$jetbrainsAnnotationsVersion"
+    compileOnly "org.jetbrains:annotations-java5:$jb_annotations_version"
 
-    implementation "joda-time:joda-time:$jodaTimeVersion"
-    implementation "de.jollyday:jollyday:$jollydayVersion"
+    implementation "joda-time:joda-time:$joda_time_version"
+    implementation "org.joda:joda-convert:$joda_convert_version"
 
-    shadow "org.apache.hadoop:hadoop-common:$hadoopVersion"
-    shadow "org.apache.hadoop:hadoop-core:$hadoopCoreVersion"
-    shadow "org.apache.hadoop:hadoop-hdfs:$hadoopVersion"
+    implementation "de.jollyday:jollyday:$jollyday_version"
+
+    shadow "org.apache.hadoop:hadoop-common:$hadoop_version"
+    shadow "org.apache.hadoop:hadoop-core:$hadoop_core_version"
+    shadow "org.apache.hadoop:hadoop-hdfs:$hadoop_version"
     
-    shadow "org.slf4j:slf4j-api:$slf4jVersion"
-    shadow "org.slf4j:slf4j-log4j12:$slf4jVersion"
-    shadow "org.slf4j:slf4j-simple:$slf4jVersion"
+    shadow "org.slf4j:slf4j-api:$slf4j_version"
+    shadow "org.slf4j:slf4j-log4j12:$slf4j_version"
+    shadow "org.slf4j:slf4j-simple:$slf4j_version"
     
-    shadow "org.apache.spark:spark-mllib_$scalaBinaryVersion:$sparkStandardVersion"
-    shadow "org.apache.spark:spark-sql_$scalaBinaryVersion:$sparkVersion"
-    shadow "org.apache.spark:spark-streaming-flume-assembly_$scalaBinaryVersion:$sparkStandardVersion"
-    shadow "org.apache.spark:spark-graphx_$scalaBinaryVersion:$sparkVersion"
-    shadow "org.apache.spark:spark-launcher_$scalaBinaryVersion:$sparkVersion"
-    shadow "org.apache.spark:spark-catalyst_$scalaBinaryVersion:$sparkVersion"
-    shadow "org.apache.spark:spark-streaming_$scalaBinaryVersion:$sparkVersion"
-    shadow "org.apache.spark:spark-core_$scalaBinaryVersion:$sparkVersion"
+    shadow "org.apache.spark:spark-sql_$scala_binary_version:$spark_version"
+    shadow "org.apache.spark:spark-graphx_$scala_binary_version:$spark_version"
+    shadow "org.apache.spark:spark-launcher_$scala_binary_version:$spark_version"
+    shadow "org.apache.spark:spark-catalyst_$scala_binary_version:$spark_version"
+    shadow "org.apache.spark:spark-streaming_$scala_binary_version:$spark_version"
+    shadow "org.apache.spark:spark-core_$scala_binary_version:$spark_version"
+    shadow "org.apache.spark:spark-mllib_$scala_binary_version:$spark_version"
 }
 
 wrapper {
     distributionType = Wrapper.DistributionType.ALL
 }
 
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
 shadowJar {
     zip64 true
 }
 
 task mapReduceJar1(type: ShadowJar) {
-    //noinspection GroovyAssignabilityCheck
     archiveClassifier.set('mr1')
     manifest.attributes 'Main-Class': 'it.unibo.bd1819.daysproportion.Main'
     from(shadowJar.from())
@@ -89,7 +102,6 @@ task mapReduceJar1(type: ShadowJar) {
 }
 
 task mapReduceJar2(type: ShadowJar) {
-    //noinspection GroovyAssignabilityCheck
     archiveClassifier.set('mr2')
     manifest.attributes 'Main-Class': 'it.unibo.bd1819.scoreanswersbins.Main'
     from(shadowJar.from())
@@ -97,9 +109,15 @@ task mapReduceJar2(type: ShadowJar) {
 }
 
 task sparkJar(type: ShadowJar) {
-    //noinspection GroovyAssignabilityCheck
     archiveClassifier.set('spark')
     manifest.attributes 'Main-Class': 'it.unibo.bd1819.ScalaMain'
+    from(shadowJar.from())
+    zip64 true
+}
+
+task sparkMlJar(type: ShadowJar) {
+    archiveClassifier.set('spark2')
+    manifest.attributes 'Main-Class': 'it.unibo.bd1819.ScalaMainMlTest'
     from(shadowJar.from())
     zip64 true
 }

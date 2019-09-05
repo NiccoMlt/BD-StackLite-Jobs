@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <bytecodeTargetLevel>
+      <module name="bd-stacklite-jobs.sources.common.main" target="1.7" />
+      <module name="bd-stacklite-jobs.sources.common.test" target="1.7" />
+      <module name="bd-stacklite-jobs.sources.mapreduce.main" target="1.7" />
+      <module name="bd-stacklite-jobs.sources.mapreduce.test" target="1.7" />
+      <module name="bd-stacklite-jobs.sources.spark-ml.main" target="1.7" />
+      <module name="bd-stacklite-jobs.sources.spark-ml.test" target="1.7" />
+      <module name="bd-stacklite-jobs.sources.spark-sql.main" target="1.7" />
+      <module name="bd-stacklite-jobs.sources.spark-sql.test" target="1.7" />
+    </bytecodeTargetLevel>
+  </component>
+</project>

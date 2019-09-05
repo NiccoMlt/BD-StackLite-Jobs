@@ -46,7 +46,7 @@ class Job1Main extends JobMainAbstract {
   }
 }
 
-object Job1Main{
-  def apply: Job1Main = new Job1Main()
+object Job1Main {
+  def apply(): Job1Main = new Job1Main()
 }
 
