@@ -6,7 +6,6 @@ import org.apache.spark.SparkContext
 import org.apache.spark.mllib.stat.Statistics
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{Row, SQLContext, SparkSession}
-import org.apache.spark.storage.StorageLevel
 
 object ScalaMainMlTest {
   def main(args: Array[String]): Unit = {
@@ -24,7 +23,7 @@ object ScalaMainMlTest {
 
     import sqlCtx.implicits._
 
-    val tmpQuestionsCsv = sc.textFile(PathVariables.QUESTIONS_PATH).sample(withReplacement = false, 0.001)
+    val tmpQuestionsCsv = sc.textFile(PathVariables.QUESTIONS_PATH)
 
     val questionsSchema = tmpQuestionsCsv.first()
     val questionsCsv = tmpQuestionsCsv.filter(row => row != questionsSchema)
@@ -38,8 +37,8 @@ object ScalaMainMlTest {
       .drop("DeletionDate")
       .filter((!$"AnswerCount".contains("NA")).and(!$"AnswerCount".contains("-")))
 
-    val score: RDD[Double] = data.select("Score").map(row => row.getString(0).toDouble).rdd.persist(StorageLevel.MEMORY_AND_DISK)
-    val count: RDD[Double] = data.select("AnswerCount").map(row => row.getString(0).toDouble).rdd.persist(StorageLevel.MEMORY_AND_DISK)
+    val score: RDD[Double] = data.select("Score").map(row => row.getString(0).toDouble).rdd
+    val count: RDD[Double] = data.select("AnswerCount").map(row => row.getString(0).toDouble).rdd
 
     val scCorrelationP: Double = Statistics.corr(score, count, "pearson")
     val scCorrelationS: Double = Statistics.corr(score, count, "spearman")
