@@ -12,10 +12,10 @@ object FileParsing {
    * @param schemaString   the string containing the schema
    * @param fieldSeparator the file separator used inside the schema string
    * @param filterCriteria a filter criteria for the fields, if necessary
-   * @return a StructType containing the schemastring
+   * @return a StructType containing the schema string
    */
   def StringToSchema(schemaString: String, fieldSeparator: String = FIELD_SEPARATOR,
-                     filterCriteria: String => Boolean = _ => true) =
+                     filterCriteria: String => Boolean = _ => true): StructType =
     StructType(schemaString.split(fieldSeparator)
       .filter(filterCriteria)
       .map(fieldName => StructField(fieldName, StringType, nullable = true)))

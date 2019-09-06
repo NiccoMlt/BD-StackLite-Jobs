@@ -10,15 +10,14 @@ import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.hadoop.mapreduce.Reducer;
 
 public final class JobUtils {
-    public static final String PERSONAL_HOME_PATH = "hdfs:///user/nmaltoni/";
+    public static final String PERSONAL_HOME_PATH = "hdfs:///user/lsemprini/";
     public static final String GENERIC_INPUT_PATH = PERSONAL_HOME_PATH + "dataset/";
     public static final String GENERIC_OUTPUT_PATH = PERSONAL_HOME_PATH + "mapreduce/";
     private static final String QUESTION_TAGS = "question_tags.csv";
     private static final String QUESTIONS = "questions.csv";
     private static final String MAIN_OUTPUT_FOLDER = "output";
 
-    private JobUtils() {
-    }
+    private JobUtils() { }
 
     public static <K1, V1, K2, V2> void configureMapper(final Job job,
                                                         final Class<? extends InputFormat<K1, V1>> inputFormat,

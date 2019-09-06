@@ -4,6 +4,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.util.Tool;
+import org.apache.hadoop.util.ToolRunner;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -21,6 +22,11 @@ public abstract class AbstractMain extends Configured implements Tool {
             // If jar file is generated with this class as a main class, that param should be ignored
             if (!arg.equals(this.getClass().getName())) {
                 filteredArgs.add(arg);
+            }
+            
+            if (arg.equals("-h") || arg.equals("--help")) {
+                ToolRunner.printGenericCommandUsage(System.out);
+                System.exit(0);
             }
         }
 
