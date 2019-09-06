@@ -12,30 +12,45 @@
   Durante la fase di studio del dataset, è risultato subito evidente l'esigenza di utilizzare entrambi i file, effettuando un \textit{join} per ID della domanda in modo da poter mettere in relazioni i singoli tag con le informazioni relative ai giorni di apparizione;
   il passo logico successivo è il raggruppamento per tag ai fini del calcolo del numero di apparizioni e della proporzione.
 
-  Le colonne necessarie al raggiungimento dell'obiettivo dell'analisi sono \texttt{Id} e \texttt{CreationDate} per il file \texttt{questions.csv} ed \texttt{Id} e \texttt{Tag} per \texttt{question\_tags.csv}.
-
   Si è inoltre ritenuto non necessario mantenere la data di creazione come stringa nella pipeline, in quanto più che sufficiente un booleano che modellasse la festività o meno del giorno di creazione;
-  per verificare se unComando per eseguire il Job: giorno è festivo o meno si è deciso di appoggiarsi alla libreria \textit{Jollyday}\footnote{\url{http://jollyday.sourceforge.net/}} utilizzando il calendario italiano come riferimento per le festività.
+  per verificare se un giorno è festivo o meno si è deciso di appoggiarsi alla libreria \textit{Jollyday}\footnote{\url{http://jollyday.sourceforge.net/}} utilizzando il calendario italiano come riferimento per le festività.
 
   \subsubsection{MapReduce implementation}\label{subsub:job1:mapreduce}
 
   \paragraph{Comando per eseguire il Job}\label{par:job1:mapreduce:cmd}
 
-  TODO
+  \texttt{hadoop jar bd-stacklite-jobs-1.0.0-mr1.jar}
 
-  \paragraph{Link all’esecuzione su YARN}\label{par:job1:mapreduce:yarn}
+  Essendo la classe \textit{main} eseguita tramite \texttt{ToolRunner} di Hadoop, supporta il parsing di parametri standard\footnote{\url{https://hadoop.apache.org/docs/r2.6.0/hadoop-project-dist/hadoop-common/CommandsManual.html}} quali ad esempio:
+  \begin{itemize}
+    \item \texttt{-conf} per caricare una configurazione esterna;
+    \item \texttt{-D} per specificare proprietà specifiche per la configurazione;
+    \item \texttt{-h} o \texttt{--help} per stampare le opzioni accettate.
+  \end{itemize}
 
-  TODO
+  Inoltre, è possibile specificare come primo parametro il path della cartella in ingresso e come secondo paramtero quello della cartella in uscita.
+
+  \paragraph{Link all'esecuzione su YARN}\label{par:job1:mapreduce:yarn}
+
+  \textbf{TODO}
 
   \paragraph{File/Tabelle di Input}\label{par:job1:mapreduce:input}
 
-  TODO
+  Le colonne necessarie al raggiungimento dell'obiettivo dell'analisi sono \texttt{Id} e \texttt{CreationDate} per il file \texttt{questions.csv}
+  e \texttt{Id} e \texttt{Tag} per \texttt{question\_tags.csv}.
+
+  Se non si effettua override dei percorsi tramite parametri di lancio, i file si trovano al percorso specificato nella \Cref{sec:preparation}.
 
   \paragraph{File/Tabelle di Output}\label{par:job1:mapreduce:output}
 
-  TODO
+  Viene generato un output per ogni passo di MapReduce che viene concluso;
+  se non si effettua override dei percorsi tramite parametri di lancio, i file si trovano al percorso specificato nella \Cref{sec:preparation}.
 
-  \paragraph{Descrizione dell’implementazione}\label{par:job1:mapreduce:implementation}
+  \textbf{TODO}
+
+  L'output finale è nella forma: \textbf{TODO}
+
+  \paragraph{Descrizione dell'implementazione}\label{par:job1:mapreduce:implementation}
 
   TODO
 
@@ -49,7 +64,7 @@
 
   TODO
 
-  \paragraph{Link all’esecuzione su YARN}\label{par:job1:spark:yarn}
+  \paragraph{Link all'esecuzione su YARN}\label{par:job1:spark:yarn}
 
   TODO
 
@@ -61,7 +76,7 @@
 
   TODO
 
-  \paragraph{Descrizione dell’implementazione}\label{par:job1:spark:implementation}
+  \paragraph{Descrizione dell'implementazione}\label{par:job1:spark:implementation}
 
   TODO
 
