@@ -1,18 +1,10 @@
 %% Direttive TeXworks:
 % !TeX root = ./report.tex
 % !TEX encoding = UTF-8 Unicode
-% !TEX program = arara
-% !TEX TS-program = arara
 % !TeX spellcheck = it-IT
 
 % arara: pdflatex: { synctex: yes, shell: yes }
 % arara: pdflatex: { synctex: yes, shell: yes }
-
-%% Genera un file report.xmpdata con i dati di titolo e autore per il formato PDF/A %%
-\begin{filecontents*}{\jobname.xmpdata}
-\Title{Big Data - Tema finale: StackLite}
-\Author{Niccolò Maltoni\sep Luca Semprini}
-\end{filecontents*}
 
 \documentclass[
   a4paper,            % specifica il formato A4 (default: letter)
@@ -40,6 +32,17 @@
 ]{csquotes}                     % serve a impostare lo stile delle virgolette
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\usepackage{filecontents}       % permette di definire ambienti filecontents (senza * finale) per sovrascrivere il file
+\usepackage{silence}            % silenzia warning attesi
+\WarningFilter{latex}{Writing file}
+\WarningFilter{latex}{Overwriting file}
+
+%% Genera un file report.xmpdata con i dati di titolo e autore per il formato PDF/A %%
+\begin{filecontents}{\jobname.xmpdata}
+  \Title{Big Data - Tema finale: StackLite}
+  \Author{Niccolò Maltoni\sep Luca Semprini}
+\end{filecontents}
+
 \usepackage{indentfirst}        % serve per avere l'indentazione nel primo paragrafo
 \usepackage{setspace}           % serve a fornire comandi di interlinea standard
 \usepackage{xcolor}             % serve per la gestione dei colori nel testo
@@ -47,18 +50,20 @@
 
 \onehalfspacing%                % Imposta interlinea a 1,5 ed equivale a \linespread{1,5}
 
-\setcounter{secnumdepth}{2}     % Numera fino alla sottosezione nel corpo del testo
+\setcounter{secnumdepth}{3}     % Numera fino alla sottosezione nel corpo del testo
 \setcounter{tocdepth}{3}        % Numera fino alla sotto-sottosezione nell'indice
 
 % Rende \paragraph simile alle sezioni
 \usepackage{titlesec}
+
+\usepackage[a-1b]{pdfx}         % permette di generare PDF/A; importa anche hyperref
 
 \usepackage[%
   depth=3,              % equivale a bookmarksdepth di hyperref
   open=false,           % equivale a bookmarksopen di hyperref
   numbered=true         % equivale a bookmarksnumbered di hyperref
 ]{bookmark}                     % Gestisce i segnalibri meglio di hyperref
-\usepackage{hyperref}           % Gestisce tutte le cose ipertestuali del pdf
+
 \hypersetup{%
   pdfpagemode={UseNone},
   hidelinks,            % nasconde i collegamenti (non vengono quadrettati)
@@ -70,24 +75,23 @@
   plainpages=false,
   breaklinks,
   pdfstartview={Fit},
-  pdfauthor={Niccolò Maltoni, Luca Semprini},
-  pdfcreator={Niccolò Maltoni, Luca Semprini},
-  pdftitle={Big Data - Tema finale: StackLite}, % chktex 8
   pdflang={it}
 }
 
-\usepackage[a-1b]{pdfx}
 \usepackage[%
   italian,            % definizione delle lingue da usare
   nameinlink          % inserisce i link nei riferimenti
 ]{cleveref}                     % permette di usare riferimenti migliori dei \ref e dei varioref
-
+\Crefname{subsection}{Sottosezione}{Sottosezioni}
+\Crefname{subsubsection}{Sottosezione}{Sottosezioni}
+\crefname{subsection}{sottosezione}{sottosezioni}
+\crefname{subsubsection}{sottosezione}{sottosezioni}
 
 \title{\textbf{Report on Big Data project: \\(StackLite-Jobs)}}
 
 \author{
-  Niccolò~Maltoni - Mat. 000000840825\\%
-  Luca~Semprini - Mat. 000000854447
+  Niccolò~Maltoni --- Mat. 000000840825\\%
+  Luca~Semprini --- Mat. 000000854447
 }
 
 \date{\today}
@@ -106,7 +110,7 @@
   Il dataset che abbiamo scelto di utilizzare per questo elaborato di progetto è una versione ridotta ed adattata del dump di StackOverflow che StackExchange ha reso disponibile sulla piattaforma Kaggle.
   Il dataset, disponibile all'indirizzo \url{https://www.kaggle.com/stackoverflow/stacklite}, si presenta suddiviso in due file CSV formattati in UTF-8.
   Ciascun file contiene nella prima riga la descrizione delle colonne in cui sono suddivisi i dati;
-  i dati mancanti sono contraddistinti dal valore ''NA``.
+  i dati mancanti sono contraddistinti dal valore ``NA''.
 
   \subsubsection{Descrizione dei file}\label{subsub:dataset:files}
 
@@ -114,64 +118,57 @@
 
   \begin{itemize}
     \item
-      \texttt{questions.csv} contiene, per ogni domanda,
-      un ID univoco (\texttt{Id}),
-      la data di creazione (\texttt{CreationDate}),
-      l'eventuale data di chiusura (\texttt{ClosedDate}),
-      l'eventuale data di cancellazione (\texttt{DeletionDate}),
-      il punteggio ottenuto (\texttt{Score}),
-      l'eventuale ID utente creatore della domanda (\texttt{OwnerUserId}) (se la domanda non è stata cancellata)
-      e il numero di risposte ricevute (\texttt{AnswerCount}).
-
+      \texttt{questions.csv}\footnote{\url{https://www.kaggle.com/stackoverflow/stacklite/downloads/questions.csv}} contiene, per ogni domanda:
+      \begin{itemize}
+        \item un ID univoco (\texttt{Id}),
+        \item la data di creazione (\texttt{CreationDate}),
+        \item l'eventuale data di chiusura (\texttt{ClosedDate}),
+        \item l'eventuale data di cancellazione (\texttt{DeletionDate}),
+        \item il punteggio ottenuto (\texttt{Score}),
+        \item l'eventuale ID utente creatore della domanda (\texttt{OwnerUserId}) (se la domanda non è stata cancellata)
+        \item il numero di risposte ricevute (\texttt{AnswerCount}).
+      \end{itemize}
     \item
-      \texttt{question_tags.csv} contiene coppie che mettono in relazione l'ID domanda (\texttt{Id}) con un tag (\texttt{Tag}) assegnato alla domanda.
+      \texttt{question\_tags.csv}\footnote{\url{https://www.kaggle.com/stackoverflow/stacklite/downloads/question_tags.csv}}
+      contiene coppie che mettono in relazione l'ID domanda (\texttt{Id}) con un tag (\texttt{Tag}) assegnato alla domanda.
       Ogni domanda può avere assegnati più tag; in tal caso, l'ID sarà presente più volte, una per ogni tag assegnato.
 
   \end{itemize}
 
   \section{Preparazione dei dati}\label{sec:preparation}
 
-  TODO
+  Il referente del gruppo è Luca Semprini.
+  Tutti i file necessari alla consegna si trovano nella sua home.
+  I file jar eseguibili sono presenti nella cartella \texttt{exam} nel nodo \texttt{isi-vclust8} nella home di \texttt{lsemprini} e sono i seguenti:
+  \begin{itemize}
+    \item
+      \texttt{bd-stacklite-jobs-1.0.0-mr1.jar} permette il lancio del Job 1 con MapReduce (\Cref{subsub:job1:mapreduce})
+    \item
+      \texttt{bd-stacklite-jobs-1.0.0-mr2.jar} permette il lancio del Job 2 con MapReduce (\Cref{subsub:job2:mapreduce})
+    \item
+      \texttt{bd-stacklite-jobs-1.0.0-spark2.jar} permette il lancio dei Job Spark tramite l'ausilio di parametri per la selezione:
+      \begin{itemize}
+        \item il parametro \texttt{JOB1} permette il lancio del Job 1 (\Cref{subsub:job1:spark})
+        \item il parametro \texttt{JOB2} permette il lancio del Job 2 (\Cref{subsub:job2:spark})
+        \item il parametro \texttt{JOBML} permette il lancio del Job 3 (\Cref{subsec:job3})
+      \end{itemize}
+  \end{itemize}
+
+  Per quanto riguarda invece i singoli file di input-output, essi sono memorizzati su HDFS\@:
+  i due file che costituiscono il dataset in input sono memorizzati al percorso \texttt{hdfs://user/lsemprini/bigdata/dataset/};
+  trattando dell’output, invece, i risultati parziali dell’implementazione Map-Reduce sono salvati in cartelle all’indirizzo \texttt{hdfs://user/lsemprini/mapreduce/}
+  e i risultati finali sono disponibili dentro la sottocartella \texttt{output};
+  i job implementati in SparkSQL producono come output tabelle che sono salvate sulla piattaforma HIVE nel database \texttt{lsemprini\_nmaltoni\_stacklite\_db}.
+
+  \subsection{Pre-processing dei dati}\label{subsec:preprocessing}
+
+  Essendo il dataset già una versione ridotta e pulita del dump principale del network StackExchange, non è stata necessaria alcuna pulizia da parte nostra.
 
   \section{Job}\label{sec:job}
 
-  \subsection[%
-    Job 1: Proporzione giorni feriali/festivi per tag%
-  ]{%
-    Job 1: Effettuare la proporzione tra post realizzati in giorni feriali e in giorni festivi per ciascun tag%
-  }\label{subsec:job1}
-
-  \subsubsection{MapReduce implementation}\label{subsub:job1:mapreduce}
-
-  TODO
-
-  \subsubsection{Spark SQL implementation}\label{subsub:job1:spark}
-
-  TODO
-
-  \subsection[%
-    Job 2: Suddividere tag in base a score e risposte%
-  ]{%
-    Job 2: Suddividere i tag in 4 bin per score e risposte e ottenere i top 10 per ciascun bin%
-  }\label{subsec:job2}
-
-  TODO
-
-  \subsubsection{MapReduce implementation}\label{subsub:job2:mapreduce}
-
-  TODO
-
-  \subsubsection{Spark SQL implementation}\label{subsub:job2:spark}
-
-  TODO
-
-  \subsection[%
-    Job 3: Machine learning%
-  ]{%
-    Job 3: Machine learning TODO%
-  }\label{subsec:job3}
-
-  TODO
+  \input{src/job1.tex}
+  \input{src/job2.tex}
+  \input{src/job3.tex}
 
   \section{Miscellanea}\label{sec:miscellaneous}
 
