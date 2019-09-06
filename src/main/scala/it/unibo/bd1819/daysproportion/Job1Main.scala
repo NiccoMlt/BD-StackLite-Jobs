@@ -40,9 +40,9 @@ class Job1Main extends JobMainAbstract {
       "2)) as Proportion, " +
       "count(*) as Count " +
       "from dateAndTagDF group by tag")
-    
-    /* Show the first 20 rows for this DF */
-    finalDF.show()
+
+    /* Save DF as Table on our Hive DB */
+    finalDF.write.saveAsTable(job1FinalTableName)
   }
 }
 
