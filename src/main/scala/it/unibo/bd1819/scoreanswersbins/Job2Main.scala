@@ -26,9 +26,9 @@ class Job2Main extends JobMainAbstract {
       .map(row => (row.getString(0),
         Bin.getBinFor(
         Integer.parseInt(if (row.getString(1) == "null" || row.getString(1) == "NA") "0" else row.getString(1)),
-          Bin.DEFAULT_SCORE_THRESHOLD,
+          Job2Main.IMPROVED_SCORE_THRESHOLD,
           Integer.parseInt(if (row.getString(2) == "null" || row.getString(2) == "NA") "0" else row.getString(2)),
-          Bin.DEFAULT_ANSWERS_COUNT_THRESHOLD).toString))
+          Job2Main.IMPROVED_ANSWER_THRESHOLD).toString))
       .withColumnRenamed("_1", "Tag")
       .withColumnRenamed("_2", "Bin")
     binDF.createOrReplaceTempView("binDF")
@@ -42,10 +42,20 @@ class Job2Main extends JobMainAbstract {
     /* Generate a DF that shows a column with the four bins, and, for each one of them, a list of couples (Tag - Count) */
     val finalDF = sqlContext.sql("select Bin, collect_list(distinct concat(Tag,' - ',Count)) as ListTagCount " +
       "from binCountDF group by Bin")
-    finalDF.show()
+
+    /* Save DF as Table on our Hive DB */
+    finalDF.write.saveAsTable(job2FinalTableName)
   }
 }
 
 object Job2Main {
+
+  /**
+   * Improved thresholds for Score and AnswerCount, modified due to multiple trials.
+   * These values should balance enough the dataset into the four bins.
+   */
+  private val IMPROVED_SCORE_THRESHOLD = 200
+  private val IMPROVED_ANSWER_THRESHOLD = 50
+  
   def apply(): Job2Main = new Job2Main()
 }
