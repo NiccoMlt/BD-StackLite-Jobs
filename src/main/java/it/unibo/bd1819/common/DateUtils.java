@@ -1,5 +1,6 @@
 package it.unibo.bd1819.common;
 
+import de.jollyday.HolidayCalendar;
 import de.jollyday.HolidayManager;
 import de.jollyday.util.CalendarUtil;
 import org.jetbrains.annotations.Contract;
@@ -12,7 +13,7 @@ import org.joda.time.format.DateTimeFormat;
 public final class DateUtils {
     private static final String UTC_DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss'Z'";
 
-    private static final HolidayManager HOLIDAY_MANAGER = HolidayManager.getInstance();
+    private static final HolidayManager HOLIDAY_MANAGER = HolidayManager.getInstance(HolidayCalendar.ITALY);
     private static final CalendarUtil CALENDAR_UTIL = new CalendarUtil();
 
     @Contract(pure = true)

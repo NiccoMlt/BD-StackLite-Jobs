@@ -7,6 +7,15 @@
 % arara: pdflatex: { synctex: yes, shell: yes, interaction: nonstopmode }
 
 \subsection{Job 1: Proporzione giorni feriali/festivi per tag}\label{subsec:job1}
+  Il job concordato consiste nel calcolo, per ciascun tag, della proporzione tra la quantità di post che lo utilizzano creati in giorni feriali e giorni festivi, tenendo traccia della quantità totale ai fini dell'ordinamento.
+
+  Durante la fase di studio del dataset, è risultato subito evidente l'esigenza di utilizzare entrambi i file, effettuando un \textit{join} per ID della domanda in modo da poter mettere in relazioni i singoli tag con le informazioni relative ai giorni di apparizione;
+  il passo logico successivo è il raggruppamento per tag ai fini del calcolo del numero di apparizioni e della proporzione.
+
+  Le colonne necessarie al raggiungimento dell'obiettivo dell'analisi sono \texttt{Id} e \texttt{CreationDate} per il file \texttt{questions.csv} ed \texttt{Id} e \texttt{Tag} per \texttt{question\_tags.csv}.
+
+  Si è inoltre ritenuto non necessario mantenere la data di creazione come stringa nella pipeline, in quanto più che sufficiente un booleano che modellasse la festività o meno del giorno di creazione;
+  per verificare se unComando per eseguire il Job: giorno è festivo o meno si è deciso di appoggiarsi alla libreria \textit{Jollyday}\footnote{\url{http://jollyday.sourceforge.net/}} utilizzando il calendario italiano come riferimento per le festività.
 
   \subsubsection{MapReduce implementation}\label{subsub:job1:mapreduce}
 

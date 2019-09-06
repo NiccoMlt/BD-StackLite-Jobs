@@ -169,6 +169,29 @@
 
   \section{Job}\label{sec:job}
 
+  L'obiettivo del progetto è realizzare 2 job utilizzando sia \textbf{Hadoop MapReduce} che \textbf{Spark} (nel nostro caso si è scelto di utilizzare \textit{SparkSQL})
+  e un job di correlazione tramite la libreria \textbf{MLlib} di Spark.
+  Di seguito sono esposti i singoli job assegnati:
+
+  \begin{enumerate}
+    \item
+      effettuare la proporzione tra la quantità di post realizzati in giorni feriali e la quantità di post realizzati in giorni festivi in relazione a ciascun tag;
+      ordinare i risultati per valore della proporzione e per quantità di post.
+
+    \item
+      suddividere i dati in 4 bin in base a valori di soglia arbitrari su score e numero di risposte; i 4 bin saranno:
+      \begin{itemize}
+        \item score basso, numero di risposte basso,
+        \item score basso, numero di risposte alto,
+        \item score alto, numero di risposte basso,
+        \item score alto, numero di risposte alto.
+      \end{itemize}
+      Per ogni coppia visualizzare i primi 10 tag più utilizzati.
+
+    \item
+      utilizzare la libreria di Machine Learning per studiare la correlazione tra score e numero di risposte, avendo cura di escludere le domande cancellate.
+  \end{enumerate}
+
   \input{src/job1.tex}
   \input{src/job2.tex}
   \input{src/job3.tex}
