@@ -3,8 +3,8 @@
 % !TEX encoding = UTF-8 Unicode
 % !TeX spellcheck = it-IT
 
-% arara: pdflatex: { synctex: yes, shell: yes }
-% arara: pdflatex: { synctex: yes, shell: yes }
+% arara: pdflatex: { synctex: yes, shell: yes, interaction: nonstopmode }
+% arara: pdflatex: { synctex: yes, shell: yes, interaction: nonstopmode }
 
 \documentclass[
   a4paper,            % specifica il formato A4 (default: letter)
@@ -54,7 +54,10 @@
 \setcounter{tocdepth}{3}        % Numera fino alla sotto-sottosezione nell'indice
 
 % Rende \paragraph simile alle sezioni
-\usepackage{titlesec}
+\usepackage[explicit]{titlesec}
+
+\titleformat{\paragraph}[hang]{\normalfont\normalsize\bfseries}{\theparagraph}{1em}{#1}
+\titlespacing*{\paragraph}{0pt}{3.25ex plus 1ex minus .2ex}{0.5em}
 
 \usepackage[a-1b]{pdfx}         % permette di generare PDF/A; importa anche hyperref
 
