@@ -1,6 +1,6 @@
 package it.unibo.bd1819.scoreanswersbins
 
-import it.unibo.bd1819.common.{Configuration, JobMainAbstract}
+import it.unibo.bd1819.common.JobMainAbstract
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
 
@@ -44,7 +44,11 @@ class Job2Main extends JobMainAbstract {
       "from binCountDF group by Bin")
 
     /* Save DF as Table on our Hive DB */
-    finalDF.write.saveAsTable(job2FinalTableName)
+    finalDF.write./*mode(SaveMode.Overwrite).*/saveAsTable(job2FinalTableName)
+  }
+
+  override protected def dropTables(sqlCont: SQLContext): Unit = {
+    sqlCont.sql("drop table if exists " + job2FinalTableName)
   }
 }
 

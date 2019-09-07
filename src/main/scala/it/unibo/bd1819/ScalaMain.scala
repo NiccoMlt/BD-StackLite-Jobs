@@ -15,16 +15,18 @@ object ScalaMain {
 
   def main(args: Array[String]): Unit = {
     if (args.length != 1 && args.length != 4) {
-      println("USAGE: ./bd-stacklite-jobs-1.0.0-spark.jar <JOB1 | JOB2>  [PARTITIONS PARALLELISM MEMORY]")
+      println("USAGE: ./bd-stacklite-jobs-1.0.0-spark.jar <JOB1 | JOB2 | JOBML> [PARTITIONS] [PARALLELISM] [MEMORY]")
       println("Found: " + args.length)
     } else {
       val jobName = args(0)
       val conf = if (args.length == 4) Configuration(args.toList) else Configuration()
       val spark: SparkSession = SparkSession
         .builder()
-        .appName(s"StackLite Job: ${jobName}")
+//        .master("local[*]") // Run Spark locally with as many worker threads as logical cores on your machine
+        .appName(s"StackLite Job: $jobName")
         .config("spark.default.parallelism", conf.parallelism.toString)
         .config("spark.sql.shuffle.partitions", conf.partitions.toString)
+        .config("spark.driver.memory", s"${conf.memorySize}g")
         .config("spark.executor.memory", s"${conf.memorySize}g")
         .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
         .getOrCreate()

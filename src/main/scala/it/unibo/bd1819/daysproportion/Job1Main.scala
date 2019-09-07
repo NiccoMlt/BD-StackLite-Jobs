@@ -1,6 +1,6 @@
 package it.unibo.bd1819.daysproportion
 
-import it.unibo.bd1819.common.{Configuration, DateUtils, JobMainAbstract}
+import it.unibo.bd1819.common.{DateUtils, JobMainAbstract}
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
 
@@ -42,7 +42,11 @@ class Job1Main extends JobMainAbstract {
       "from dateAndTagDF group by tag")
 
     /* Save DF as Table on our Hive DB */
-    finalDF.write.saveAsTable(job1FinalTableName)
+    finalDF.write/*.mode(SaveMode.Overwrite)*/.saveAsTable(job1FinalTableName)
+  }
+
+  override protected def dropTables(sqlCont: SQLContext): Unit = {
+    sqlCont.sql("drop table if exists " + job1FinalTableName)
   }
 }
 
