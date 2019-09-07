@@ -21,7 +21,8 @@
 
   \texttt{hadoop jar bd-stacklite-jobs-1.0.0-mr1.jar}
 
-  Essendo la classe \textit{main} eseguita tramite \texttt{ToolRunner} di Hadoop, supporta il parsing di parametri standard\footnote{\url{https://hadoop.apache.org/docs/r2.6.0/hadoop-project-dist/hadoop-common/CommandsManual.html}} quali ad esempio:
+  Essendo la classe \textit{main} eseguita tramite \texttt{ToolRunner} di Hadoop,
+  supporta il parsing di parametri standard di Hadoop\footnote{\url{https://hadoop.apache.org/docs/r2.6.0/hadoop-project-dist/hadoop-common/CommandsManual.html}}, quali ad esempio:
   \begin{itemize}
     \item \texttt{-conf} per caricare una configurazione esterna;
     \item \texttt{-D} per specificare proprietà specifiche per la configurazione;
@@ -52,34 +53,63 @@
 
   \paragraph{Descrizione dell'implementazione}\label{par:job1:mapreduce:implementation}
 
-  TODO
+  Il job è stato realizzato con tre passi di MapReduce.
+  Il primo passo prevede il caricamento di entrambi i file:
+  \begin{itemize}
+    \item
+      nella fase di Map, il file contenente i tag viene caricato direttamente senza manipolazione delle informazioni caricate,
+      mentre il secondo file è mappato su una coppia \textit{key-value} avente come chiave l'ID della domanda
+      e come valore un booleano che è \texttt{true} qualora la data di creazione sia un giorno feriale, o altrimenti \texttt{false}.
+    \item
+      nella fase di Reduce, viene effettuato il \textit{join} tra le informazioni caricate dai due file sulla base dell'ID della domanda,
+      in modo da avere in output coppie \textit{key-value} aventi come chiave il tag e come valore il booleano di cui sopra.
+  \end{itemize}
+
+  Nel secondo passo, invece, si occupa di effettuare i calcoli richiesti per l'analisi:
+  \begin{itemize}
+    \item
+      nella fase di Map, l'output del passo precedente viene caricato, senza manipolazioni particolari;
+      è infatti sufficiente l'aggregazione per chiave (il tag) effettuata dal partitioner in ingresso al Reducer.
+    \item
+      nella fase di Reduce, per ciascun tag vengono mantenuti due contatori per le apparizioni in giorni feriali e festivi,
+      in modo da poter generare in output delle coppie \textit{key-value} aventi come chiave il singolo tag e come valore la proporzione tra giorni feriali e festivi e il totale delle apparizioni del tag.
+  \end{itemize}
+
+  Il terzo passo costituisce infine il passo di ordinamento secondo le specifiche:
+  \begin{itemize}
+    \item
+      nella fase di Map, le coppie chiave-valore ottenute dall'output al passo precedente sono invertite, in modo da poter aggregare per proporzione e contatore;
+      inoltre, per poter garantire un ordine per quanto riguarda proporzione, contatore, e, in caso di parità, anche alfabetico per tag,
+      si è utilizzata nell'implementazione pratica una chiave \textbf{TODO}
+    \item nella fase di Reduce,
+  \end{itemize}
 
   \paragraph{Considerazioni sulle performance}\label{par:job1:mapreduce:performance}
 
-  TODO
+  \textbf{TODO}
 
   \subsubsection{Spark SQL implementation}\label{subsub:job1:spark}
 
   \paragraph{Comando per eseguire il Job}\label{par:job1:spark:cmd}
 
-  TODO
+  \textbf{TODO}
 
   \paragraph{Link all'esecuzione su YARN}\label{par:job1:spark:yarn}
 
-  TODO
+  \textbf{TODO}
 
   \paragraph{File/Tabelle di Input}\label{par:job1:spark:input}
 
-  TODO
+  \textbf{TODO}
 
   \paragraph{File/Tabelle di Output}\label{par:job1:spark:output}
 
-  TODO
+  \textbf{TODO}
 
   \paragraph{Descrizione dell'implementazione}\label{par:job1:spark:implementation}
 
-  TODO
+  \textbf{TODO}
 
   \paragraph{Considerazioni sulle performance}\label{par:job1:spark:performance}
 
-  TODO
+  \textbf{TODO}
