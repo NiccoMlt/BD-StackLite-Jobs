@@ -18,23 +18,26 @@ object ScalaMain {
       println("USAGE: ./bd-stacklite-jobs-1.0.0-spark.jar <JOB1 | JOB2>  [PARTITIONS PARALLELISM MEMORY]")
       println("Found: " + args.length)
     } else {
-      val spark: SparkSession = SparkSession.builder()
-        .master("local")
-        .appName("BD-StackLite-Job")
+      val jobName = args(0)
+      val conf = if (args.length == 4) Configuration(args.toList) else Configuration()
+      val spark: SparkSession = SparkSession
+        .builder()
+        .appName(s"StackLite Job: ${jobName}")
+        .config("spark.default.parallelism", conf.parallelism.toString)
+        .config("spark.sql.shuffle.partitions", conf.partitions.toString)
+        .config("spark.executor.memory", s"${conf.memorySize}g")
         .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
         .getOrCreate()
       val sc: SparkContext = spark.sparkContext
       val sqlCtx: SQLContext = spark.sqlContext
 
-      (args(0) match {
+      System.out.println(sc.getConf.toDebugString)
+
+      (jobName match {
         case JOB1 => Job1Main()
         case JOB2 => Job2Main()
         case JOBML => JobMlMain()
-      }).executeJob(
-        sc,
-        if (args.length == 4) Configuration(args.toList)
-        else Configuration(),
-        sqlCtx)
+      }).executeJob(sc, sqlCtx)
     }
   }
 }

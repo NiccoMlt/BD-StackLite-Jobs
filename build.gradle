@@ -114,13 +114,6 @@ task sparkJar(type: ShadowJar) {
     zip64 true
 }
 
-task sparkMlJar(type: ShadowJar) {
-    archiveClassifier.set('spark2')
-    manifest.attributes 'Main-Class': 'it.unibo.bd1819.ScalaMainMlTest'
-    from(shadowJar.from())
-    zip64 true
-}
-
 eclipse {
     classpath {
         downloadJavadoc = true

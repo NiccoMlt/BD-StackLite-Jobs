@@ -31,11 +31,11 @@ public abstract class AbstractMain extends Configured implements Tool {
         }
 
         final String inputPath = filteredArgs.size() > 0
-            ? JobUtils.PERSONAL_HOME_PATH + filteredArgs.get(0)
-            : JobUtils.GENERIC_INPUT_PATH;
+            ? PathVariables.PERSONAL_HOME_PATH + filteredArgs.get(0)
+            : PathVariables.GENERIC_INPUT_PATH;
         final String outputPath = filteredArgs.size() > 0
-            ? JobUtils.PERSONAL_HOME_PATH + filteredArgs.get(1)
-            : JobUtils.GENERIC_OUTPUT_PATH;
+            ? PathVariables.PERSONAL_HOME_PATH + filteredArgs.get(1)
+            : PathVariables.GENERIC_OUTPUT_PATH;
 
         final List<Job> jobs = getMainJobs(inputPath, outputPath, conf);
 
