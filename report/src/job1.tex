@@ -47,9 +47,9 @@
   Viene generato un output per ogni passo di MapReduce che viene concluso;
   se non si effettua override dei percorsi tramite parametri di lancio, i file si trovano al percorso specificato nella \Cref{sec:preparation}.
 
-  \textbf{TODO}
+  L'output finale è composto da un singolo file nella cartella output contenente, per ogni linea, un tag separato con un tab da proporzione e numero di apparizioni separate da virgola.
 
-  L'output finale è nella forma: \textbf{TODO}
+  Qualora il tag appaia solo in giorni feriali, la proporzione avrà valore \texttt{0.0}, mentre se appare solo in giorni festivi, essa ha valore \texttt{Infinity}.
 
   \paragraph{Descrizione dell'implementazione}\label{par:job1:mapreduce:implementation}
 
@@ -69,20 +69,26 @@
   \begin{itemize}
     \item
       nella fase di Map, l'output del passo precedente viene caricato, senza manipolazioni particolari;
-      è infatti sufficiente l'aggregazione per chiave (il tag) effettuata dal partitioner in ingresso al Reducer.
+      è infatti sufficiente l'aggregazione per chiave (il tag) effettuata dal \textbf{TODO} in ingresso al Reducer.
+
     \item
       nella fase di Reduce, per ciascun tag vengono mantenuti due contatori per le apparizioni in giorni feriali e festivi,
       in modo da poter generare in output delle coppie \textit{key-value} aventi come chiave il singolo tag e come valore la proporzione tra giorni feriali e festivi e il totale delle apparizioni del tag.
   \end{itemize}
 
-  Il terzo passo costituisce infine il passo di ordinamento secondo le specifiche:
+  Il terzo passo costituisce infine il passo di ordinamento secondo le specifiche; per effettuare l'ordinamento, si è realizzato una classe specifica
   \begin{itemize}
     \item
       nella fase di Map, le coppie chiave-valore ottenute dall'output al passo precedente sono invertite, in modo da poter aggregare per proporzione e contatore;
       inoltre, per poter garantire un ordine per quanto riguarda proporzione, contatore, e, in caso di parità, anche alfabetico per tag,
-      si è utilizzata nell'implementazione pratica una chiave \textbf{TODO}
-    \item nella fase di Reduce,
+      per l'implementazione pratica, si è realizzato una classe specifica per la chiave composita (\texttt{TextTriplet}) e dei comparatori dedicati per l'ordinamento e il raggruppamento.
+
+    \item
+      nella fase di Reduce, la chiave composita viene rimossa e si inverte nuovamente chiave e valore, avendo così coppie tag e valori ordinati per valore;
+      per garantire un singolo file di output ordinato, si utilizza un singolo task di reduce.
   \end{itemize}
+
+  I job leggono e producono dati formattati secondo il paradigma chiave-valore utilizzando come formato la classe \texttt{Text} tranne per quanto riguarda l'output del Map nel job di ordinamento.
 
   \paragraph{Considerazioni sulle performance}\label{par:job1:mapreduce:performance}
 
@@ -103,12 +109,15 @@
     \item JOBML
   \end{itemize}
 
-  Il comando di lancio del Jar accetta, inoltre altri tre parametri, che permettono di settare le seguenti configurazioni di Spark SQL:
+  Il comando di lancio del Jar accetta, inoltre altri tre parametri, che permettono di settare le seguenti configurazioni di Spark SQL\@:
   \begin{itemize}
-    \item \texttt{spark.default.parallelism} : di default settato a 8, è il secondo parametro (dopo la specificazione del Job).
-    \item \texttt{spark.sql.shuffle.partitions} : di default settato a 8, è il terzo parametro.
-    \item \texttt{spark.executor.memory} : di default settato a 11, è il quarto parametro.
-  \item \end{itemize}
+    \item \texttt{spark.default.parallelism}: di default settato a 8, è il secondo parametro (dopo la specificazione del Job).
+    \item \texttt{spark.sql.shuffle.partitions}: di default settato a 8, è il terzo parametro.
+    \item \texttt{spark.executor.memory}: di default settato a 11, è il quarto parametro.
+  \end{itemize}
+
+  Infine, è possibile utilizzare tutti i parametri standard ammessi dall'operazione submit di Spark\footnote{\url{https://spark.apache.org/docs/2.1.0/submitting-applications.html}},
+  in quando la configurazione della SparkSession è solamente estesa.
 
   \paragraph{Link all'esecuzione su YARN}\label{par:job1:spark:yarn}
 
@@ -123,8 +132,8 @@
 
   \paragraph{File/Tabelle di Output}\label{par:job1:spark:output}
 
-  Il Job genera un Data Frame di output, che viene salvato come tabella (nominata \texttt{FinalTableJob1})
-  sulla piattaforma Hive all'interno del database \texttt{lsemprini_nmaltoni_stacklite_db}.
+  Il Job genera un DataFrame di output, che viene salvato come tabella (nominata \texttt{FinalTableJob1})
+  sulla piattaforma Hive all'interno del database \texttt{lsemprini\_nmaltoni\_stacklite\_db}.
 
   \paragraph{Descrizione dell'implementazione}\label{par:job1:spark:implementation}
 
