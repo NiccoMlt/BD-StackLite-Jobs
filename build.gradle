@@ -81,6 +81,8 @@ dependencies {
     shadow "org.apache.spark:spark-streaming_$scala_binary_version:$spark_version"
     shadow "org.apache.spark:spark-core_$scala_binary_version:$spark_version"
     shadow "org.apache.spark:spark-mllib_$scala_binary_version:$spark_version"
+    implementation 'com.github.fommil.netlib:all:1.1.2'
+
 }
 
 wrapper {
