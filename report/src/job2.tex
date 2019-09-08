@@ -183,10 +183,10 @@
     \item \textbf{Ottenimento delle liste per ogni Bin} : In questo ultimo step è stata eseguita una query sul Data Frame
     \texttt{binCountDF} che permette, per ognuno dei quattro Bin di ottenere una lista delle prime dieci coppie
     (\texttt{Tag}, \texttt{Count}) ordinate per \texttt{Count}.
-    Nella query viene utilizzata la funzione \texttt{COLLECT_LIST}, combinata con la funzione \texttt{CONCAT} per accorpare
+    Nella query viene utilizzata la funzione \texttt{COLLECT\_LIST}, combinata con la funzione \texttt{CONCAT} per accorpare
     le due colonne \texttt{Tag} e \texttt{Count} all'interno di una lista.
     La query usata è la seguente:
-    \texttt{SELECT Bin, COLLECT_LIST(CONCAT(Tag,' - ',Count)) AS ListTagCount FROM binCountDF GROUP BY Bin}
+    \texttt{SELECT Bin, COLLECT\_LIST(CONCAT(Tag,' - ',Count)) AS ListTagCount FROM binCountDF GROUP BY Bin}
 
     A questo punto ottengo un Data Frame in cui si va a mappare la seconda colonna (\texttt{ListTagCount}) in modo da ottenere
     solo le prime dieci coppie (\texttt{Tag}, \texttt{Count}), che sono già state ordinate nello step precedente.
