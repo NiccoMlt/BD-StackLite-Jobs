@@ -61,12 +61,13 @@
       nella fase di Map, il file contenente i tag viene caricato direttamente senza manipolazione delle informazioni caricate,
       mentre il secondo file è mappato su una coppia \textit{key-value} avente come chiave l'ID della domanda
       e come valore un booleano che è \texttt{true} qualora la data di creazione sia un giorno feriale, o altrimenti \texttt{false}.
+
     \item
       nella fase di Reduce, viene effettuato il \textit{join} tra le informazioni caricate dai due file sulla base dell'ID della domanda,
       in modo da avere in output coppie \textit{key-value} aventi come chiave il tag e come valore il booleano di cui sopra.
   \end{itemize}
 
-  Nel secondo passo, invece, si occupa di effettuare i calcoli richiesti per l'analisi:
+  Nel secondo passo, invece, si effettuano i calcoli richiesti per l'analisi:
   \begin{itemize}
     \item
       nella fase di Map, l'output del passo precedente viene caricato, senza manipolazioni particolari;

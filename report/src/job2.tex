@@ -68,7 +68,39 @@
 
   \paragraph{Descrizione dell'implementazione}\label{par:job2:mapreduce:implementation}
 
-  \textbf{TODO}
+  Anche questo job è realizzato con tre passi di MapReduce.
+  Il primo passo prevede il caricamento di entrambi i file:
+  \begin{itemize}
+    \item
+      nella fase di Map, il file contenente i tag viene caricato direttamente senza manipolazione delle informazioni caricate,
+      mentre il secondo file è mappato su una coppia \textit{key-value} avente come chiave l'ID della domanda
+      e come valore una coppia contenente il punteggio e il numero di risposte.
+
+    \item
+      nella fase di Reduce, viene effettuato il \textit{join} tra le informazioni caricate dai due file sulla base dell'ID della domanda,
+      in modo da avere in output coppie \textit{key-value} aventi come chiave il tag e come valore la coppia di cui sopra.
+  \end{itemize}
+
+  Il secondo passo ci si occupa di effettuare i calcoli richiesti per l'analisi:
+  \begin{itemize}
+    \item
+      nella fase di Map, l'output del passo precedente viene caricato mappando la coppia costituita da punteggio e numero di risposte in uno dei 4 bin.
+    \item
+      la fase di Reduce riceve dunque in ingresso le coppie chiave-valore che mettono in relazione i singoli tag con il bin di appartenenza, aggregate per tag;
+      in questa fase è stato dunque possibile mantenere, per ogni tag, una mappa che conta il numero di apparizioni di ciascun tag in ciascun bin.
+
+      In output a questa fase sono prodotte coppie \textit{key-value} aventi come chiave la coppia di tag e bin e come valore il contatore.
+  \end{itemize}
+
+  Infine, nel terzo passo, i dati vengono raccolti e ordinati:
+  \begin{itemize}
+    \item
+      nella fase di Map, le coppie chiave-valore in output alla fase precedente vengono manipolate
+      al fine di generare, per ciascuna, nuove coppie aventi come chiave il bin e come valore la coppia di tag e numero di apparizioni.
+    \item
+      nella fase di Reduce, per ciascun bin le coppie in uscita dalla fase di Map vengono raccolte in una mappa;
+      in questo modo, al termine della riduzione, la lista di \textit{entry} della mappa viene ordinata e vengono emesse in output le prime 10 entry per ogni bin.
+  \end{itemize}
 
   \paragraph{Considerazioni sulle performance}\label{par:job2:mapreduce:performance}
 
