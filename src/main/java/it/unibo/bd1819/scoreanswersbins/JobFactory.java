@@ -6,8 +6,9 @@ import it.unibo.bd1819.scoreanswersbins.map.QuestionTagMap;
 import it.unibo.bd1819.scoreanswersbins.map.ScoreCountTagMap;
 import it.unibo.bd1819.scoreanswersbins.reduce.BinCountReduce;
 import it.unibo.bd1819.scoreanswersbins.reduce.ScoreCountTagJoin;
+import it.unibo.bd1819.scoreanswersbins.sort.BinPartitioner;
 import it.unibo.bd1819.scoreanswersbins.sort.BinSortMapper;
-import it.unibo.bd1819.scoreanswersbins.sort.BinSortReducer;
+import it.unibo.bd1819.scoreanswersbins.sort.OptimizedBinSortReducer;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -96,10 +97,11 @@ public class JobFactory {
         KeyValueTextInputFormat.addInputPath(job, getTaskOutputPath(outputPath, JOB_NAME, SECOND_TASK_NAME));
 
         JobUtils.configureJobForKeyValue(job, KeyValueTextInputFormat.class, BinSortMapper.class, Text.class,
-            Text.class, BinSortReducer.class, Text.class, Text.class, TextOutputFormat.class);
+            Text.class, OptimizedBinSortReducer.class, Text.class, Text.class, TextOutputFormat.class);
         
         TextOutputFormat.setOutputPath(job, jobOutputPath);
-        
+
+        job.setPartitionerClass(BinPartitioner.class);
         job.setNumReduceTasks(Bin.values().length);
 
         return job;
