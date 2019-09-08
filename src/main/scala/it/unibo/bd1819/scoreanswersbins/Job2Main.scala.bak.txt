@@ -1,0 +1,117 @@
+package it.unibo.bd1819.scoreanswersbins
+
+import it.unibo.bd1819.common.JobMainAbstract
+import org.apache.spark.SparkContext
+import org.apache.spark.sql.{Column, Dataset, Row, SQLContext, SaveMode, expressions}
+import org.apache.spark.sql.functions._
+import org.apache.spark.sql.expressions._
+
+class Job2Main extends JobMainAbstract {
+
+  def limitSize(n: Int, arrCol: String): String = Array( (0 until n).map( arrCol ): _* ).mkString(" ")
+  
+  def executeJob(sc: SparkContext, sqlCont: SQLContext): Unit = {
+    this.configureEnvironment(sc, sqlCont)
+    import sqlCont.implicits._
+
+    /* Select only Id and Score and AnswerCount columns from the questions DF */
+    val scoreAnswersDF = sqlCont.sql("select Id, Score, AnswerCount from questions")
+    scoreAnswersDF.cache()
+    
+    /* Join the previously obtained DF to the question_tags DF, dropping the useless column containing the Ids.
+     * Select then all columns from the resulting DF, filter "NA" values that will affect the analysis
+     * and finally map the Score and AnswerCount columns into one Bin
+     * column that will have data representing in which Bin
+     * (Between HIGH_SCORE_HIGH_COUNT, HIGH_SCORE_LOW_COUNT, LOW_SCORE_HIGH_COUNT, LOW_SCORE_LOW_COUNT) the pair
+     * (Score, AnswerCount) must be located.
+     * The resulting DF will only have two columns: tag and Bin.
+     */
+    val binDF = questionTagsDF.join(scoreAnswersDF, "Id").drop("Id")
+      .select("Tag", "Score", "AnswerCount")
+      .filter($"Score" notEqual "NA")
+      .filter($"AnswerCount" notEqual "NA")
+      .map(row => (row.getString(0),
+        Bin.getBinFor(Integer.parseInt(row.getString(1)), Job2Main.IMPROVED_SCORE_THRESHOLD,
+          Integer.parseInt(row.getString(2)), Job2Main.IMPROVED_ANSWER_THRESHOLD).toString))
+      .withColumnRenamed("_1", "Tag")
+      .withColumnRenamed("_2", "Bin")
+    binDF.createOrReplaceTempView("binDF")
+    
+//    binDF.show()
+    
+//    sqlCont
+//      .sql("SELECT Tag, Bin, COUNT(*) AS Count FROM binDF")
+//      .orderBy("Count")
+//      .groupBy("Tag", "Bin")
+//      .agg(
+//        sort_array(collect_list("Count")), 
+//        collect_list("Bin"))
+//      .show()
+
+//    binDF.groupBy("Tag", "Bin").count()
+    
+    
+    /*binDF
+      .groupBy("Tag", "Bin")
+      .count()
+      .withColumnRenamed("count", "Count")
+      .orderBy("Count")
+      .groupBy("Bin", "Tag")
+      .agg(sort_array(collect_list(struct($"Tag", $"Count")), asc = true).as("Tag"))
+      .show()*/
+
+    binDF
+      .groupBy("Tag", "Bin")
+      .count()
+      .withColumnRenamed("count", "Count")
+//      .withColumn("Combo", struct("Tag", "Count"))
+//      .drop("Tag", "Count")
+      .groupBy("Bin")
+      .agg(collect_list(struct($"Count", $"Tag")).as("Tag"))
+      .show()
+
+    /*example.orderBy(“hour”)
+    .groupBy(“id”)
+    .agg(functions.sort_array(
+      functions.collect_list(
+        functions.struct(dataRow.col(“hour”),
+    dataRow.col(“count”))),false)
+    .as(“hourly_count”));*/
+    
+//    /* Add to the previous DF a column representing the amount of the occurrences of (Tag, Bin)
+//     * are into the DF itself. And order the table by the count and Bin.
+//     */
+//    val binCountDF = sqlCont.sql("select Tag, Bin, count(*) as Count from binDF group by Tag, Bin order by Bin, Count desc")
+//    binCountDF.createOrReplaceTempView("binCountDF")
+//    
+//    /* Generate a DF that shows a column with the four bins, and, for each one of them, a list of couples (Tag - Count) */
+//    val finalDF = sqlCont.sql("select Bin, collect_list(concat(Tag,' - ',Count)) as ListTagCount " +
+//      "from binCountDF group by Bin")
+//        .map(row => (row.getString(0), row.getList(1).toArray.take(Job2Main.topNumberOfTagsForEachBin).mkString(" , ")))
+//      .withColumnRenamed("_1", "Bin")
+//      .withColumnRenamed("_2", "ListTagCount")
+//    finalDF.write.mode(SaveMode.Overwrite).saveAsTable(job2FinalTableName)
+  }
+
+  override protected def dropTables(sqlCont: SQLContext): Unit = {
+    sqlCont.sql("drop table if exists " + job2FinalTableName)
+  }
+}
+
+object Job2Main {
+
+  /**
+   * Improved thresholds for Score and AnswerCount, modified due to multiple trials.
+   * These values should balance enough the dataset into the four bins.
+   */
+  private val IMPROVED_SCORE_THRESHOLD = Bin.DEFAULT_SCORE_THRESHOLD
+  private val IMPROVED_ANSWER_THRESHOLD = Bin.DEFAULT_ANSWERS_COUNT_THRESHOLD
+  
+  private val topNumberOfTagsForEachBin = 10
+  /*
+  * Circa 1/3 delle domande hanno 0 risposte.
+  * Circa 2/5 delle domande hanno meno di 4 come score.
+  */
+  
+  def apply(): Job2Main = new Job2Main()
+}
