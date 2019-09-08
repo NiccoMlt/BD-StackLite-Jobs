@@ -25,9 +25,6 @@ class JobMlMain extends JobMainAbstract {
     val scCorrelationP: Double = Statistics.corr(score, count, JobMlMain.PEARSON)
     val scCorrelationS: Double = Statistics.corr(score, count, JobMlMain.SPEARMAN)
 
-    println(s"Pearson Score/Count correlation: $scCorrelationP")
-    println(s"Spearman Score/Count correlation: $scCorrelationS")
-
     sqlCont.createDataFrame(sc
       .parallelize(Seq((JobMlMain.PEARSON, scCorrelationP), (JobMlMain.SPEARMAN, scCorrelationS)), numSlices = 1))
       .toDF("Coefficient", "value")
@@ -42,7 +39,7 @@ class JobMlMain extends JobMainAbstract {
   }
 
   override protected def dropTables(sqlCont: SQLContext): Unit = {
-    // TODO
+    // override just to do nothing (disable default table drop)
   }
 }
 

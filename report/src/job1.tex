@@ -104,14 +104,8 @@
 
   La classe \texttt{ScalaMain} è stata costruita in modo tale da permettere all'utente di eseguire tutti i Job implementati tramite
   Spark SQL attraverso un unico jar, avendo la possibilità di specificare, tramite parametro, il Job specifico da lanciare.
-  I differenti Job sono definiti dai seguenti parametri:
-  \begin{itemize}
-    \item JOB1
-    \item JOB2
-    \item JOBML
-  \end{itemize}
 
-  Il comando di lancio del Jar accetta, inoltre altri tre parametri, che permettono di settare le seguenti configurazioni di Spark SQL\@:
+  Il comando di lancio del Jar accetta inoltre altri tre parametri, che permettono di settare le seguenti configurazioni di Spark\@:
   \begin{itemize}
     \item \texttt{spark.default.parallelism}: di default settato a 8, è il secondo parametro (dopo la specificazione del Job).
     \item \texttt{spark.sql.shuffle.partitions}: di default settato a 8, è il terzo parametro.
@@ -133,7 +127,7 @@
   I due file si trovano al percorso specificato nella \Cref{sec:preparation}.
 
   \paragraph{File/Tabelle di Output}\label{par:job1:spark:output}
-\textbf{TODO: cambiare nome del DB}
+  \textbf{TODO: cambiare nome del DB}
   Il Job genera un DataFrame di output, che viene salvato come tabella (nominata \texttt{FinalTableJob1})
   sulla piattaforma Hive all'interno del database \texttt{lsemprini\_nmaltoni\_stacklite\_db}.
 
