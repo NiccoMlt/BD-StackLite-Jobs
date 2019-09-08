@@ -1,20 +1,20 @@
 package it.unibo.bd1819.daysproportion
 
-import it.unibo.bd1819.common.{Configuration, DateUtils, JobMainAbstract}
+import it.unibo.bd1819.common.{DateUtils, JobMainAbstract}
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
 
 class Job1Main extends JobMainAbstract {
 
-  def executeJob(sc: SparkContext, conf: Configuration, sqlCont: SQLContext): Unit = {
-    this.configureEnvironment(sc, conf, sqlCont)
+  def executeJob(sc: SparkContext, sqlCont: SQLContext): Unit = {
+    this.configureEnvironment(sc, sqlCont)
     import sqlCont.implicits._
 
     /* Select only Id and CreationDate columns from the questions DF, and then map the second one
      * into a boolean that will represent weather that date is a workday (true) or not (false).
      * Then create a DF with this information contained
      */
-    val onlyDateDF = sqlContext.sql("select Id, CreationDate from questions")
+    val onlyDateDF = sqlCont.sql("select Id, CreationDate from questions")
       .map(row => (row.getString(0), DateUtils.isWorkday(DateUtils.parseDateFromString(row.getString(1)))))
       .withColumnRenamed("_1", "Id")
       .withColumnRenamed("_2", "IsWorkDay")
@@ -34,7 +34,7 @@ class Job1Main extends JobMainAbstract {
      * This DF will also have a column that represents how many questions with a specific Tag appear
      * in the Data Frame.
      */
-    val finalDF = sqlContext.sql("select tag, (round(" +
+    val finalDF = sqlCont.sql("select tag, (round(" +
       "(cast(sum(case when IsWorkDay = true then 1 else 0 end) as float)) / " +
       "(cast(sum(case when IsWorkDay = false then 1 else 0 end) as float)), " +
       "2)) as Proportion, " +
@@ -42,7 +42,11 @@ class Job1Main extends JobMainAbstract {
       "from dateAndTagDF group by tag")
 
     /* Save DF as Table on our Hive DB */
-    finalDF.write.saveAsTable(job1FinalTableName)
+    finalDF.write/*.mode(SaveMode.Overwrite)*/.saveAsTable(job1FinalTableName)
+  }
+
+  override protected def dropTables(sqlCont: SQLContext): Unit = {
+    sqlCont.sql("drop table if exists " + job1FinalTableName)
   }
 }
 

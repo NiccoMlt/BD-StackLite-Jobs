@@ -10,12 +10,6 @@ import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.hadoop.mapreduce.Reducer;
 
 public final class JobUtils {
-    public static final String PERSONAL_HOME_PATH = "hdfs:///user/lsemprini/";
-    public static final String GENERIC_INPUT_PATH = PERSONAL_HOME_PATH + "dataset/";
-    public static final String GENERIC_OUTPUT_PATH = PERSONAL_HOME_PATH + "mapreduce/";
-    private static final String QUESTION_TAGS = "question_tags.csv";
-    private static final String QUESTIONS = "questions.csv";
-    private static final String MAIN_OUTPUT_FOLDER = "output";
 
     private JobUtils() { }
 
@@ -61,11 +55,11 @@ public final class JobUtils {
     }
 
     public static Path getQuestionsInputPath(final String inputFolder) {
-        return new Path(inputFolder + QUESTIONS);
+        return new Path(inputFolder + PathVariables.QUESTIONS);
     }
 
     public static Path getQuestionTagsInputPath(final String inputFolder) {
-        return new Path(inputFolder, QUESTION_TAGS);
+        return new Path(inputFolder, PathVariables.QUESTION_TAGS);
     }
 
     public static Path getTaskOutputPath(final String baseOutput, final String jobName, final String taskName) {
@@ -73,6 +67,6 @@ public final class JobUtils {
     }
 
     public static Path getJobOutputPath(final String baseOutput, final String jobName) {
-        return getTaskOutputPath(baseOutput, jobName, MAIN_OUTPUT_FOLDER);
+        return getTaskOutputPath(baseOutput, jobName, PathVariables.MAIN_OUTPUT_FOLDER);
     }
 }

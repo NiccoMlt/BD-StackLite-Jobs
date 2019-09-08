@@ -1,6 +1,6 @@
 package it.unibo.bd1819.scoreanswersbins
 
-import it.unibo.bd1819.common.{Configuration, JobMainAbstract}
+import it.unibo.bd1819.common.JobMainAbstract
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.{Column, SQLContext}
 
@@ -8,12 +8,12 @@ class Job2Main extends JobMainAbstract {
 
   // def limitSize(n: Int, arrCol: Column): Column = array( (0 until n).map( arrCol.getItem ): _* )
   
-  def executeJob(sc: SparkContext, conf: Configuration, sqlCont: SQLContext): Unit = {
-    this.configureEnvironment(sc, conf, sqlCont)
+  def executeJob(sc: SparkContext, sqlCont: SQLContext): Unit = {
+    this.configureEnvironment(sc, sqlCont)
     import sqlCont.implicits._
 
     /* Select only Id and Score and AnswerCount columns from the questions DF */
-    val scoreAnswersDF = sqlContext.sql("select Id, Score, AnswerCount from questions")
+    val scoreAnswersDF = sqlCont.sql("select Id, Score, AnswerCount from questions")
     scoreAnswersDF.cache()
     
     /* Join the previously obtained DF to the question_tags DF, dropping the useless column containing the Ids.
@@ -38,15 +38,19 @@ class Job2Main extends JobMainAbstract {
     /* Add to the previous DF a column representing the amount of the occurrences of (Tag, Bin)
      * are into the DF itself.
      */
-    val binCountDF = sqlContext.sql("select Tag, Bin, count(*) as Count from binDF group by Tag, Bin")
+    val binCountDF = sqlCont.sql("select Tag, Bin, count(*) as Count from binDF group by Tag, Bin")
     binCountDF.createOrReplaceTempView("binCountDF")
     
     /* Generate a DF that shows a column with the four bins, and, for each one of them, a list of couples (Tag - Count) */
-    val finalDF = sqlContext.sql("select Bin, collect_list(distinct concat(Tag,' - ',Count)) as ListTagCount " +
+    val finalDF = sqlCont.sql("select Bin, collect_list(distinct concat(Tag,' - ',Count)) as ListTagCount " +
       "from binCountDF group by Bin")
       // .select($"Bin", limitSize(10, $"ListTagCount").as("ListTagCountLimited"))
     
-    finalDF.write.saveAsTable(job2FinalTableName)
+    finalDF.write./*mode(SaveMode.Overwrite).*/saveAsTable(job2FinalTableName)
+  }
+
+  override protected def dropTables(sqlCont: SQLContext): Unit = {
+    sqlCont.sql("drop table if exists " + job2FinalTableName)
   }
 }
 
