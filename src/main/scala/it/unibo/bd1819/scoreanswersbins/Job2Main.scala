@@ -61,8 +61,8 @@ object Job2Main {
    * Improved thresholds for Score and AnswerCount, modified due to multiple trials.
    * These values should balance enough the dataset into the four bins.
    */
-  private val IMPROVED_SCORE_THRESHOLD = 10
-  private val IMPROVED_ANSWER_THRESHOLD = 5
+  private val IMPROVED_SCORE_THRESHOLD = Bin.DEFAULT_SCORE_THRESHOLD
+  private val IMPROVED_ANSWER_THRESHOLD = Bin.DEFAULT_ANSWERS_COUNT_THRESHOLD
   
   private val topNumberOfTagsForEachBin = 10
   /*
