@@ -2,10 +2,12 @@ package it.unibo.bd1819.scoreanswersbins
 
 import it.unibo.bd1819.common.{Configuration, JobMainAbstract}
 import org.apache.spark.SparkContext
-import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.{Column, SQLContext}
 
 class Job2Main extends JobMainAbstract {
 
+  // def limitSize(n: Int, arrCol: Column): Column = array( (0 until n).map( arrCol.getItem ): _* )
+  
   def executeJob(sc: SparkContext, conf: Configuration, sqlCont: SQLContext): Unit = {
     this.configureEnvironment(sc, conf, sqlCont)
     import sqlCont.implicits._
@@ -42,8 +44,8 @@ class Job2Main extends JobMainAbstract {
     /* Generate a DF that shows a column with the four bins, and, for each one of them, a list of couples (Tag - Count) */
     val finalDF = sqlContext.sql("select Bin, collect_list(distinct concat(Tag,' - ',Count)) as ListTagCount " +
       "from binCountDF group by Bin")
-
-    /* Save DF as Table on our Hive DB */
+      // .select($"Bin", limitSize(10, $"ListTagCount").as("ListTagCountLimited"))
+    
     finalDF.write.saveAsTable(job2FinalTableName)
   }
 }

@@ -98,8 +98,53 @@
 
 \paragraph{Descrizione dell'implementazione}\label{par:job1:spark:implementation}
 
-  TODO
+  L'implementazione del Job è stata realizzata utilizzando SparkSQL, contenuta all'interno del metodo \texttt{executeJob()}
+  della classe \texttt{it.unibo.bd1819.daysproportion.Job1Main}.
+  Il problema è stato affrontato attraverso diversi steps successivi, descritti di seguito:
+
+  \begin{itemize}
+    \item \textbf{Creazione DataFrame} : Come passo iniziale, ovviamente siamo partiti dalla creazione dei Data Frame iniziali
+    necessari all'ottenimento delle informazioni principali; questa operazione viene svolta interamente da un metodo presente nella
+    classe \texttt{DFBuilder}, che permette di leggere i due file di input del dataset (\texttt{question\_tags.csv} e
+    \texttt{questions.csv}), ricavarne lo schema tramite la prima riga, generando l'RDD e creare il Data Frame definitivo,
+    salvandolo come tabella temporanea.
+    \item \textbf{Mapping delle date di creazione} : Il secondo step consiste nell'ottenere un Data Frame che associ, a partire dalla
+    tabella \texttt{questions} un Id della domanda ad un booleano che mi dica se la data di creazione (campo \texttt{CreationDate})
+    di quella domanda sia feriale o festiva.
+    Inizialmente vengono selezionate dalla tabella \texttt{questions} solo le colonne necessarie, ovvero \texttt{Id} e
+    \texttt{CreationDate}, poi vengono mappate le righe ottenute: il primo field della riga viene lasciato intatto (in quanto gli
+    Id devono essere mantenuti tali), ed il secondo viene dato in pasto ad un metodo della classe \texttt{DateUtils}, che,
+    appoggiandosi alla libreria \textit{Jollyday} trasformerà quel campo in un valore booleano (\texttt{true} se la data è
+    feriale, \texttt{false} se festiva).
+    Il Data Frame risultante da questo primo step viene poi salvato in cache, per ottimizzare le operazioni successive.
+    \item \textbf{Join con \texttt{question\_tags}} : Il Data Frame ottenuto dallo step precedente viene subito messo in join
+    con il Data Frame corrispondente al file \texttt{question\_tags.csv}, in quanto dovrò associare il valore booleano ad ogni
+    campo \texttt{Tag}.
+    A questo punto viene tagliato dal Data Frame risultante il campo \texttt{Id}, in quanto inutile per gli steps successivi, per
+    rendere più leggera la mole di dati da analizzare.
+    Questo Data Frame viene salvato come tabella temporanea dal nome \texttt{dateTagDF}.
+    \item \textbf{Creazione del Data Frame finale} : L'obiettivo di questo step è creare un Data Frame che associ ad ogni tag
+    il rapporto tra quante domande con quel tag sono state postate in giorni feriali e quante nei giorni festivi.
+    Il DF dovrà avere, inoltre, associato ad ogni tag, il conteggio di quante volte quello specifico Tag appare nel dataset.
+    Per effettuare l'operazione è stata dunque utilizzata la seguente query:
+    \texttt{SELECT tag, (ROUND(
+    (CAST(SUM(CASE WHEN IsWorkDay = true THEN 1 ELSE 0 END) AS float)) /
+    (CAST(SUM(CASE WHEN IsWorkDay = false THEN 1 ELSE 0 END) AS float)), 2)
+    ) AS Proportion,
+    COUNT(*) AS Count
+    FROM dateAndTagDF GROUP BY tag}
+
+    Il Data Frame ottenuto sarà il risultato finale del Job e viene salvato come tabella su Hive tramite il metodo
+    \texttt{saveAsTable()}.
+  \end{itemize}
 
   \paragraph{Considerazioni sulle performance}\label{par:job1:spark:performance}
 
-  TODO
+  Il Job implementato in Spark SQL impiega circa 5 minuti per essere portato a compimento.
+  Tempo di esecuzione che è stato pressoché dimezzato da alcuni accorgimenti apportati durante la fase di ottimizzazione.
+  Evitare di salvare in cache eccessivamente i Data Frame ottenuti dalle varie operazioni ha aiutato molto a migliorare
+  le performance complessive.
+  Un altra intuizione è stata quella di accorpare le operazioni descritte nell' ultimo step in un'unica query, quando inizialmente
+  veniva eseguito a parte il conteggio dei Tag, cosa che, è stato riscontrato, andava ad inficiare le performance di esecuzione.
+
+  TODO?
