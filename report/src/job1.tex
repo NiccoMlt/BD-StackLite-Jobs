@@ -133,7 +133,7 @@
   I due file si trovano al percorso specificato nella \Cref{sec:preparation}.
 
   \paragraph{File/Tabelle di Output}\label{par:job1:spark:output}
-
+\textbf{TODO: cambiare nome del DB}
   Il Job genera un DataFrame di output, che viene salvato come tabella (nominata \texttt{FinalTableJob1})
   sulla piattaforma Hive all'interno del database \texttt{lsemprini\_nmaltoni\_stacklite\_db}.
 
@@ -144,7 +144,8 @@
   Il problema è stato affrontato attraverso diversi steps successivi, descritti di seguito:
 
   \begin{itemize}
-    \item \textbf{Creazione DataFrame} : Come passo iniziale, ovviamente siamo partiti dalla creazione dei Data Frame iniziali
+    \item \textbf{Creazione DataFrame} \label{par:job1:spark:implementation:firststep} : Come passo iniziale, ovviamente siamo partiti
+    dalla creazione dei Data Frame di base
     necessari all'ottenimento delle informazioni principali; questa operazione viene svolta interamente da un metodo presente nella
     classe \texttt{DFBuilder}, che permette di leggere i due file di input del dataset (\texttt{question\_tags.csv} e
     \texttt{questions.csv}), ricavarne lo schema tramite la prima riga, generando l'RDD e creare il Data Frame definitivo,
@@ -188,4 +189,3 @@
   Un altra intuizione è stata quella di accorpare le operazioni descritte nell' ultimo step in un'unica query, quando inizialmente
   veniva eseguito a parte il conteggio dei Tag, cosa che, è stato riscontrato, andava ad inficiare le performance di esecuzione.
 
-  TODO?
