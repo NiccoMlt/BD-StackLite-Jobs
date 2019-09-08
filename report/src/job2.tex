@@ -79,7 +79,26 @@
 
   \paragraph{Comando per eseguire il Job}\label{par:job2:spark:cmd}
 
-  \textbf{TODO}
+  \texttt{spark2-submit bd-stacklite-jobs-1.0.0-spark.jar JOB2}
+
+  La classe \texttt{ScalaMain} è stata costruita in modo tale da permettere all'utente di eseguire tutti i Job implementati tramite
+  Spark SQL attraverso un unico jar, avendo la possibilità di specificare, tramite parametro, il Job specifico da lanciare.
+  I differenti Job sono definiti dai seguenti parametri:
+  \begin{itemize}
+    \item JOB1
+    \item JOB2
+    \item JOBML
+  \end{itemize}
+
+  Il comando di lancio del Jar accetta, inoltre altri tre parametri, che permettono di settare le seguenti configurazioni di Spark SQL\@:
+  \begin{itemize}
+    \item \texttt{spark.default.parallelism}: di default settato a 8, è il secondo parametro (dopo la specificazione del Job).
+    \item \texttt{spark.sql.shuffle.partitions}: di default settato a 8, è il terzo parametro.
+    \item \texttt{spark.executor.memory}: di default settato a 11, è il quarto parametro.
+  \end{itemize}
+
+  Infine, è possibile utilizzare tutti i parametri standard ammessi dall'operazione submit di Spark\footnote{\url{https://spark.apache.org/docs/2.1.0/submitting-applications.html}},
+  in quando la configurazione della SparkSession è solamente estesa.
 
   \paragraph{Link all'esecuzione su YARN}\label{par:job2:spark:yarn}
 
@@ -87,16 +106,75 @@
 
   \paragraph{File/Tabelle di Input}\label{par:job2:spark:input}
 
-  \textbf{TODO}
+  Le colonne necessarie al raggiungimento dell'obiettivo dell'analisi sono \texttt{Id}, \texttt{Score}
+  ed \texttt{AnswerCount} per il file \texttt{questions.csv} e \texttt{Id} e \texttt{Tag} per \texttt{question\_tags.csv}.
 
   \paragraph{File/Tabelle di Output}\label{par:job2:spark:output}
+\textbf{TODO: cambiare nome del DB}
+  Il Job genera un DataFrame di output, che viene salvato come tabella (nominata \texttt{FinalTableJob1})
+  sulla piattaforma Hive all'interno del database \texttt{lsemprini\_nmaltoni\_stacklite\_db}.
 
-  \textbf{TODO}
 
   \paragraph{Descrizione dell'implementazione}\label{par:job2:spark:implementation}
 
-  \textbf{TODO}
+  L'implementazione del Job è stata realizzata utilizzando SparkSQL, contenuta all'interno del metodo \texttt{executeJob()}
+  della classe \texttt{it.unibo.bd1819.daysproportion.Job2Main}.
+  Il problema è stato affrontato attraverso diversi steps successivi, descritti di seguito:
+
+  \begin{itemize}
+    \item \textbf{Creazione DataFrame} : Il passo iniziale è equivalente a quello del Job1
+    (\Cref{par:job1:spark:implementation:firststep}).
+    \item \textbf{Taglio delle colonne non necessarie} : Si è proceduto ad selezionare unicamente le colonne \texttt{Id},
+    \texttt{Score} ed \texttt{AnswerCount} per il Data Frame \texttt{questions}, salvando il risultato in un Data Frame,
+    a sua volta salvato in cache, in quanto necessario per l'operazione successiva.
+    \item \textbf{Join con \texttt{question\_tags}, Filter e Mapping} : Il terzo step è composto a sua volta da sotto-step:
+    \begin{itemize}
+      \item Join : Si effettua il Join del Data Frame ottenuto dal secondo step con il Data Frame \texttt{question\_tags}, attraverso
+      la colonna \texttt{Id}, per poi effettuare il drop della stessa, in quanto superflua per le operazioni successive.
+      \item Filtraggio : A questo punto vengono selezionate le colonne \texttt{Tag}, \texttt{Score} ed \texttt{AnswerCount}
+      e viene effettuata una operazione di \texttt{filter} su eventuali valori delle colonne \texttt{Score} ed \texttt{AnswerCount}
+      che andrebbero ad inficiare l'analisi, ovvero, si filtrano le righe contenenti \texttt{Score} ed \texttt{AnswerCount} con valore
+      "NA".
+      \item Mapping : Infine, mantenendo ovviamente la colonna \texttt{Tag},
+      si mappano i valori di \texttt{Score} ed \texttt{AnswerCount}, utilizzandoli come input di una funzione
+      \texttt{getBinFor()} della classe \texttt{Bin}, che, presi i valori di \texttt{Score} ed \texttt{AnswerCount} ed le relative
+      soglie arbitrarie, restituisce una stringa che esprimerà a quale Bin apparterrà ogni occorrenza di \texttt{Tag}.
+    \end{itemize}
+    Il Data Frame risultante viene salvato come tabella temporanea con il nome \texttt{binDF}.
+    \item \textbf{Conteggio e ordinamento} : L'informazione contenuta nel Data Frame \texttt{binDF} viene arricchita dall'aggiunta
+    della colonna \texttt{Count} che rappresenterà il numero di occorrenze delle coppie (\texttt{Tag}, \texttt{Bin}) presenti
+    nel Data Frame; il tutto viene quindi ordinato per \texttt{Bin} e \texttt{Count} in ordine decrescente, per facilitare lo step
+    successivo.
+    Per effettuare l'operazione è stata dunque utilizzata la seguente query:
+    \texttt{SELECT Tag, Bin, COUNT(*) AS Count FROM binDF GROUP BY Tag, Bin ORDER BY Bin, Count DESC}
+
+    Il Data Frame ottenuto viene salvato come tabella temporanea con il nome di \texttt{binCountDF}.
+    \item \textbf{Ottenimento delle liste per ogni Bin} : In questo ultimo step è stata eseguita una query sul Data Frame
+    \texttt{binCountDF} che permette, per ognuno dei quattro Bin di ottenere una lista delle prime dieci coppie
+    (\texttt{Tag}, \texttt{Count}) ordinate per \texttt{Count}.
+    Nella query viene utilizzata la funzione \texttt{COLLECT_LIST}, combinata con la funzione \texttt{CONCAT} per accorpare
+    le due colonne \texttt{Tag} e \texttt{Count} all'interno di una lista.
+    La query usata è la seguente:
+    \texttt{SELECT Bin, COLLECT_LIST(CONCAT(Tag,' - ',Count)) AS ListTagCount FROM binCountDF GROUP BY Bin}
+
+    A questo punto ottengo un Data Frame in cui si va a mappare la seconda colonna (\texttt{ListTagCount}) in modo da ottenere
+    solo le prime dieci coppie (\texttt{Tag}, \texttt{Count}), che sono già state ordinate nello step precedente.
+
+    Il Data Frame ottenuto sarà il risultato finale del Job e viene salvato come tabella su Hive tramite il metodo
+    \texttt{saveAsTable()}.
+  \end{itemize}
+
 
   \paragraph{Considerazioni sulle performance}\label{par:job2:spark:performance}
 
-  \textbf{TODO}
+  Il Job implementato in Spark SQL impiega circa 5 minuti e mezzo per essere portato a compimento.
+  Tempo di esecuzione che è stato pressoché dimezzato da alcuni accorgimenti apportati durante la fase di ottimizzazione.
+  Evitare di salvare in cache eccessivamente i Data Frame ottenuti dalle varie operazioni ha aiutato molto a migliorare
+  le performance complessive.
+  Un altra intuizione è stata quella di accorpare le operazioni descritte nel terzo step in un'unica query, quando inizialmente
+  veniva eseguito a parte il Join dei due Data Frame, cosa che, è stato riscontrato, andava ad aumentare il tempo di esecuzione,
+  in quanto veniva salvata una ulteriore tabella temporanea.
+  L'operazione di \texttt{filter} sui valori "NA" di \texttt{Score} ed \texttt{AnswerCount} è stata, inoltre, spostata al di fuori
+  dalla successiva operazione di \texttt{map}, in quanto si è riscontrato fosse nettamente più conveniente dal punto di vista
+  delle performance stesse: così facendo si va ad alleggerire la tabella, e meno righe verranno computate dalla \texttt{map}.
+
