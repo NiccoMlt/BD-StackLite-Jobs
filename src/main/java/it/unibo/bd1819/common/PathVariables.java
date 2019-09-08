@@ -16,7 +16,7 @@ public final class PathVariables {
 //    public static final String ABSOLUTE_HDFS_PATH = GENERIC_INPUT_PATH;
     public static final String QUESTION_TAGS_PATH = GENERIC_HDFS_PREFIX + ABSOLUTE_HDFS_PATH + "question_tags.csv";
     public static final String QUESTIONS_PATH = GENERIC_HDFS_PREFIX + ABSOLUTE_HDFS_PATH + "questions.csv";
-//    public static final String HIVE_DATABASE = "lsemprini_nmaltoni_stacklite_db";
-    public static final String HIVE_DATABASE = "nmaltoni_stacklite_db";
+    public static final String HIVE_DATABASE = "lsemprini_nmaltoni_stacklite_db5";
+//    public static final String HIVE_DATABASE = "nmaltoni_stacklite_db";
     public static final String JOB_TABLE_NAME = HIVE_DATABASE + ".FinalTableJob";
 }

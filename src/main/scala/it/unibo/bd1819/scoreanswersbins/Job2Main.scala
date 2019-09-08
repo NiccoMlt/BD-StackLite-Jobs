@@ -2,11 +2,11 @@ package it.unibo.bd1819.scoreanswersbins
 
 import it.unibo.bd1819.common.JobMainAbstract
 import org.apache.spark.SparkContext
-import org.apache.spark.sql.{Column, SQLContext}
+import org.apache.spark.sql.{Column, SQLContext, SaveMode}
 
 class Job2Main extends JobMainAbstract {
 
-  // def limitSize(n: Int, arrCol: Column): Column = array( (0 until n).map( arrCol.getItem ): _* )
+  def limitSize(n: Int, arrCol: String): String = Array( (0 until n).map( arrCol ): _* ).mkString(" ")
   
   def executeJob(sc: SparkContext, sqlCont: SQLContext): Unit = {
     this.configureEnvironment(sc, sqlCont)
@@ -36,17 +36,18 @@ class Job2Main extends JobMainAbstract {
     binDF.createOrReplaceTempView("binDF")
     
     /* Add to the previous DF a column representing the amount of the occurrences of (Tag, Bin)
-     * are into the DF itself.
+     * are into the DF itself. And order the table by the count and Bin.
      */
-    val binCountDF = sqlCont.sql("select Tag, Bin, count(*) as Count from binDF group by Tag, Bin")
+    val binCountDF = sqlCont.sql("select Tag, Bin, count(*) as Count from binDF group by Tag, Bin order by Bin, Count desc")
     binCountDF.createOrReplaceTempView("binCountDF")
     
     /* Generate a DF that shows a column with the four bins, and, for each one of them, a list of couples (Tag - Count) */
-    val finalDF = sqlCont.sql("select Bin, collect_list(distinct concat(Tag,' - ',Count)) as ListTagCount " +
+    val finalDF = sqlCont.sql("select Bin, collect_list(concat(Tag,' - ',Count)) as ListTagCount " +
       "from binCountDF group by Bin")
-      // .select($"Bin", limitSize(10, $"ListTagCount").as("ListTagCountLimited"))
-    
-    finalDF.write./*mode(SaveMode.Overwrite).*/saveAsTable(job2FinalTableName)
+        .map(row => (row.getString(0), row.getList(1).toArray.take(Job2Main.topNumberOfTagsForEachBin).mkString(" , ")))
+      .withColumnRenamed("_1", "Bin")
+      .withColumnRenamed("_2", "ListTagCount")
+    finalDF.write.mode(SaveMode.Overwrite).saveAsTable(job2FinalTableName)
   }
 
   override protected def dropTables(sqlCont: SQLContext): Unit = {
@@ -63,6 +64,7 @@ object Job2Main {
   private val IMPROVED_SCORE_THRESHOLD = 10
   private val IMPROVED_ANSWER_THRESHOLD = 5
   
+  private val topNumberOfTagsForEachBin = 10
   /*
   * Circa 1/3 delle domande hanno 0 risposte.
   * Circa 2/5 delle domande hanno meno di 4 come score.
