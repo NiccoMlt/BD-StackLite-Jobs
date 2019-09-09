@@ -61,12 +61,13 @@
       nella fase di Map, il file contenente i tag viene caricato direttamente senza manipolazione delle informazioni caricate,
       mentre il secondo file è mappato su una coppia \textit{key-value} avente come chiave l'ID della domanda
       e come valore un booleano che è \texttt{true} qualora la data di creazione sia un giorno feriale, o altrimenti \texttt{false}.
+
     \item
       nella fase di Reduce, viene effettuato il \textit{join} tra le informazioni caricate dai due file sulla base dell'ID della domanda,
       in modo da avere in output coppie \textit{key-value} aventi come chiave il tag e come valore il booleano di cui sopra.
   \end{itemize}
 
-  Nel secondo passo, invece, si occupa di effettuare i calcoli richiesti per l'analisi:
+  Nel secondo passo, invece, si effettuano i calcoli richiesti per l'analisi:
   \begin{itemize}
     \item
       nella fase di Map, l'output del passo precedente viene caricato, senza manipolazioni particolari;
@@ -103,14 +104,8 @@
 
   La classe \texttt{ScalaMain} è stata costruita in modo tale da permettere all'utente di eseguire tutti i Job implementati tramite
   Spark SQL attraverso un unico jar, avendo la possibilità di specificare, tramite parametro, il Job specifico da lanciare.
-  I differenti Job sono definiti dai seguenti parametri:
-  \begin{itemize}
-    \item JOB1
-    \item JOB2
-    \item JOBML
-  \end{itemize}
 
-  Il comando di lancio del Jar accetta, inoltre altri tre parametri, che permettono di settare le seguenti configurazioni di Spark SQL\@:
+  Il comando di lancio del Jar accetta inoltre altri tre parametri, che permettono di settare le seguenti configurazioni di Spark\@:
   \begin{itemize}
     \item \texttt{spark.default.parallelism}: di default settato a 8, è il secondo parametro (dopo la specificazione del Job).
     \item \texttt{spark.sql.shuffle.partitions}: di default settato a 8, è il terzo parametro.
@@ -132,7 +127,7 @@
   I due file si trovano al percorso specificato nella \Cref{sec:preparation}.
 
   \paragraph{File/Tabelle di Output}\label{par:job1:spark:output}
-\textbf{TODO: cambiare nome del DB}
+  \textbf{TODO: cambiare nome del DB}
   Il Job genera un DataFrame di output, che viene salvato come tabella (nominata \texttt{FinalTableJob1})
   sulla piattaforma Hive all'interno del database \texttt{lsemprini\_nmaltoni\_stacklite\_db}.
 
