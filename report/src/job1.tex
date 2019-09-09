@@ -102,6 +102,11 @@
 
   \textbf{TODO}
 
+  Poiché il risultato finale richiede un'ordinamento \textit{totale} dell'output e la classe \texttt{TotalOrderpartitioner} fornita da Hadoop non supporta l'ordinamento su chiavi composite,
+  è stato necessario implementare un Partitioner custom ed eliminare la parallelizzazione nella fase di Reduce, utilizzando un solo task.
+
+  Siamo consapevoli che questo comporti un calo di prestazioni, ma \textbf{TODO}
+
   \subsubsection{Spark SQL implementation}\label{subsub:job1:spark}
 
   \paragraph{Comando per eseguire il Job}\label{par:job1:spark:cmd}
