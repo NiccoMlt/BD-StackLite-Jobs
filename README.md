@@ -46,3 +46,10 @@ La cartella [./scripts](https://github.com/NiccoMlt/BigData-18-19-scripts) è un
 
 Clonare il repo con `git clone --recursive` invece che con `git clone` per scaricare anch gli script bash.
 
+## Jar
+
+Per generare i jar, utilizzare i seguenti script Gradle:
+
+- `gradle mapreduceJar1` per generare il jar del primo job MapReduce
+- `gradle mapreduceJar2` per generare il jar del secondo job MapReduce
+- `gradle sparkJar` per generare il jar dei job Spark
