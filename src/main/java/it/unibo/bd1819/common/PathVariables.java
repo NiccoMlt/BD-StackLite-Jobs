@@ -12,7 +12,7 @@ public final class PathVariables {
     private PathVariables(){}
 
     public static final String GENERIC_HDFS_PREFIX = "hdfs://";
-    public static final String ABSOLUTE_HDFS_PATH = "/user/lsemprini/bigdata/project/dataset/dataset/";
+    public static final String ABSOLUTE_HDFS_PATH = "/user/lsemprini/bigdata/dataset/";
 //    public static final String ABSOLUTE_HDFS_PATH = GENERIC_INPUT_PATH;
     public static final String QUESTION_TAGS_PATH = GENERIC_HDFS_PREFIX + ABSOLUTE_HDFS_PATH + "question_tags.csv";
     public static final String QUESTIONS_PATH = GENERIC_HDFS_PREFIX + ABSOLUTE_HDFS_PATH + "questions.csv";

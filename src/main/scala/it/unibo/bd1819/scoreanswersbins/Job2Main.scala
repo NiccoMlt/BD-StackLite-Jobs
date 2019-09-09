@@ -1,6 +1,6 @@
 package it.unibo.bd1819.scoreanswersbins
 
-import it.unibo.bd1819.common.JobMainAbstract
+import it.unibo.bd1819.common.{JobMainAbstract, PathVariables}
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.{Column, SQLContext, SaveMode}
 
@@ -38,15 +38,18 @@ class Job2Main extends JobMainAbstract {
     /* Add to the previous DF a column representing the amount of the occurrences of (Tag, Bin)
      * are into the DF itself. And order the table by the count and Bin.
      */
-    val binCountDF = sqlCont.sql("select Tag, Bin, count(*) as Count from binDF group by Tag, Bin order by Bin, Count desc")
+    val binCountDF = sqlCont.sql("select Bin, Tag, count(*) as Count from binDF group by Bin, Tag " +
+      "order by Count desc, Bin desc")
+    binCountDF.write.saveAsTable(PathVariables.HIVE_DATABASE + ".tmpTable")
     binCountDF.createOrReplaceTempView("binCountDF")
     
     /* Generate a DF that shows a column with the four bins, and, for each one of them, a list of couples (Tag - Count) */
-    val finalDF = sqlCont.sql("select Bin, collect_list(concat(Tag,' - ',Count)) as ListTagCount " +
+    val finalDF = sqlCont.sql("select Bin, SUBSTRING_INDEX(group_concat(concat(Tag,' - ',Count)" +
+      " order by desired_col_order_name), ',', 10) as ListTagCount " +
       "from binCountDF group by Bin")
-        .map(row => (row.getString(0), row.getList(1).toArray.take(Job2Main.topNumberOfTagsForEachBin).mkString(" , ")))
-      .withColumnRenamed("_1", "Bin")
-      .withColumnRenamed("_2", "ListTagCount")
+      //  .map(row => (row.getString(0), row.getList(1).toArray.take(Job2Main.topNumberOfTagsForEachBin).mkString(" , ")))
+    // .withColumnRenamed("_1", "Bin")
+      //.withColumnRenamed("_2", "ListTagCount")
     finalDF.write.mode(SaveMode.Overwrite).saveAsTable(job2FinalTableName)
   }
 
