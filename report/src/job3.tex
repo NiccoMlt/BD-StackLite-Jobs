@@ -21,24 +21,13 @@
 
   \paragraph{Comando per eseguire il Job}\label{par:job3:cmd}
 
-  \texttt{spark2-submit bd-stacklite-jobs-1.0.0-spark.jar JOBML}
+  \texttt{spark2-submit bd-stacklite-jobs-1.0.0-spark.jar JOBML 8 8 5}
 
-  La classe \texttt{ScalaMain} è stata costruita in modo tale da permettere all'utente di eseguire tutti i Job implementati tramite
-  Spark SQL attraverso un unico jar, avendo la possibilità di specificare, tramite parametro, il Job specifico da lanciare.
-
-  Il comando di lancio del Jar accetta inoltre altri tre parametri, che permettono di settare le seguenti configurazioni di Spark\@:
-  \begin{itemize}
-    \item \texttt{spark.default.parallelism}: di default settato a 8, è il secondo parametro (dopo la specificazione del Job).
-    \item \texttt{spark.sql.shuffle.partitions}: di default settato a 8, è il terzo parametro.
-    \item \texttt{spark.executor.memory}: di default settato a 5, è il quarto parametro.
-  \end{itemize}
-
-  Infine, è possibile utilizzare tutti i parametri standard ammessi dall'operazione submit di Spark\footnote{\url{https://spark.apache.org/docs/2.1.0/submitting-applications.html}},
-  in quando la configurazione della SparkSession è solamente estesa.
+  I parametri supportati sono i medesimi descritti nella \Cref{par:job1:spark:cmd} relativamente al JAR di Spark del job 1.
 
   \paragraph{Link all'esecuzione su YARN}\label{par:job3:yarn}
 
-  \textbf{TODO}
+  \url{http://isi-vclust0.csr.unibo.it:8088/proxy/application_1560510165054_2125/}
 
   \paragraph{File/Tabelle di Input}\label{par:job3:input}
 
