@@ -100,12 +100,11 @@
 
   \paragraph{Considerazioni sulle performance}\label{par:job1:mapreduce:performance}
 
-  \textbf{TODO}
+  Poiché il risultato finale richiede un'\textit{ordinamento totale} dell'output e la classe \texttt{TotalOrderpartitioner} fornita da Hadoop non supporta l'ordinamento su chiavi composite,
+  è stato necessario implementare un Partitioner custom ed eliminare la parallelizzazione nella fase di Reduce, utilizzando un solo task;
+  in questo modo si riesce a garantire un output completamente ordinato, in parte a scapito delle performance.
 
-  Poiché il risultato finale richiede un'ordinamento \textit{totale} dell'output e la classe \texttt{TotalOrderpartitioner} fornita da Hadoop non supporta l'ordinamento su chiavi composite,
-  è stato necessario implementare un Partitioner custom ed eliminare la parallelizzazione nella fase di Reduce, utilizzando un solo task.
-
-  Siamo consapevoli che questo comporti un calo di prestazioni, ma \textbf{TODO}
+  Il job impiega nel complesso dai 3 ai 4 minuti per completare l'esecuzione.
 
   \subsubsection{Spark SQL implementation}\label{subsub:job1:spark}
 
@@ -116,11 +115,11 @@
   La classe \texttt{ScalaMain} è stata costruita in modo tale da permettere all'utente di eseguire tutti i Job implementati tramite
   Spark SQL attraverso un unico jar, avendo la possibilità di specificare, tramite parametro, il Job specifico da lanciare.
 
-  Il comando di lancio del Jar accetta inoltre altri tre parametri, che permettono di settare le seguenti configurazioni di Spark\@:
+  Il comando di lancio del Jar accetta inoltre altri tre parametri, che permettono di settare le seguenti configurazioni di Spark in formato numerico:
   \begin{itemize}
-    \item \texttt{spark.default.parallelism}: di default settato a 8, è il secondo parametro (dopo la specificazione del Job).
-    \item \texttt{spark.sql.shuffle.partitions}: di default settato a 8, è il terzo parametro.
-    \item \texttt{spark.executor.memory}: di default settato a 5, è il quarto parametro.
+    \item \textit{parallelismo}: di default settato a 8, è il secondo parametro (dopo la specificazione del Job).
+    \item \textit{numero di partizioni}: di default settato a 8, è il terzo parametro.
+    \item \textit{memoria a disposizione}: di default settato a 5, è il quarto parametro.
   \end{itemize}
 
   Infine, è possibile utilizzare tutti i parametri standard ammessi dall'operazione submit di Spark\footnote{\url{https://spark.apache.org/docs/2.1.0/submitting-applications.html}},
@@ -138,59 +137,76 @@
   I due file si trovano al percorso specificato nella \Cref{sec:preparation}.
 
   \paragraph{File/Tabelle di Output}\label{par:job1:spark:output}
-  \textbf{TODO: cambiare nome del DB}
+
+  \textbf{TODO}: cambiare nome del DB
+
   Il Job genera un DataFrame di output, che viene salvato come tabella (nominata \texttt{FinalTableJob1})
   sulla piattaforma Hive all'interno del database \texttt{lsemprini\_nmaltoni\_stacklite\_db}.
 
   \paragraph{Descrizione dell'implementazione}\label{par:job1:spark:implementation}
 
-  L'implementazione del Job è stata realizzata utilizzando SparkSQL, contenuta all'interno del metodo \texttt{executeJob()}
-  della classe \texttt{it.unibo.bd1819.daysproportion.Job1Main}.
+  L'implementazione del Job, contenuta all'interno del metodo \texttt{executeJob()} della classe \texttt{it.unibo.bd1819.daysproportion.Job1Main},
+  è stata realizzata utilizzando SparkSQL\@.
   Il problema è stato affrontato attraverso diversi steps successivi, descritti di seguito:
 
   \begin{itemize}
-    \item \textbf{Creazione DataFrame} \label{par:job1:spark:implementation:firststep} : Come passo iniziale, ovviamente siamo partiti
-    dalla creazione dei Data Frame di base
-    necessari all'ottenimento delle informazioni principali; questa operazione viene svolta interamente da un metodo presente nella
-    classe \texttt{DFBuilder}, che permette di leggere i due file di input del dataset (\texttt{question\_tags.csv} e
-    \texttt{questions.csv}), ricavarne lo schema tramite la prima riga, generando l'RDD e creare il Data Frame definitivo,
-    salvandolo come tabella temporanea.
-    \item \textbf{Mapping delle date di creazione} : Il secondo step consiste nell'ottenere un Data Frame che associ, a partire dalla
-    tabella \texttt{questions} un Id della domanda ad un booleano che mi dica se la data di creazione (campo \texttt{CreationDate})
-    di quella domanda sia feriale o festiva.
-    Inizialmente vengono selezionate dalla tabella \texttt{questions} solo le colonne necessarie, ovvero \texttt{Id} e
-    \texttt{CreationDate}, poi vengono mappate le righe ottenute: il primo field della riga viene lasciato intatto (in quanto gli
-    Id devono essere mantenuti tali), ed il secondo viene dato in pasto ad un metodo della classe \texttt{DateUtils}, che,
-    appoggiandosi alla libreria \textit{Jollyday} trasformerà quel campo in un valore booleano (\texttt{true} se la data è
-    feriale, \texttt{false} se festiva).
-    Il Data Frame risultante da questo primo step viene poi salvato in cache, per ottimizzare le operazioni successive.
-    \item \textbf{Join con \texttt{question\_tags}} : Il Data Frame ottenuto dallo step precedente viene subito messo in join
-    con il Data Frame corrispondente al file \texttt{question\_tags.csv}, in quanto dovrò associare il valore booleano ad ogni
-    campo \texttt{Tag}.
-    A questo punto viene tagliato dal Data Frame risultante il campo \texttt{Id}, in quanto inutile per gli steps successivi, per
-    rendere più leggera la mole di dati da analizzare.
-    Questo Data Frame viene salvato come tabella temporanea dal nome \texttt{dateTagDF}.
-    \item \textbf{Creazione del Data Frame finale} : L'obiettivo di questo step è creare un Data Frame che associ ad ogni tag
-    il rapporto tra quante domande con quel tag sono state postate in giorni feriali e quante nei giorni festivi.
-    Il DF dovrà avere, inoltre, associato ad ogni tag, il conteggio di quante volte quello specifico Tag appare nel dataset.
-    Per effettuare l'operazione è stata dunque utilizzata la seguente query:
-    \texttt{SELECT tag, (ROUND(
-    (CAST(SUM(CASE WHEN IsWorkDay = true THEN 1 ELSE 0 END) AS float)) /
-    (CAST(SUM(CASE WHEN IsWorkDay = false THEN 1 ELSE 0 END) AS float)), 2)
-    ) AS Proportion,
-    COUNT(*) AS Count
-    FROM dateAndTagDF GROUP BY tag}
+    \item
+      \textbf{Creazione DataFrame}\label{par:job1:spark:implementation:firststep}:
+      Come passo iniziale, ovviamente siamo partiti dalla creazione dei DataFrame di base necessari all'ottenimento delle informazioni principali;
+      questa operazione viene svolta interamente da un metodo presente nella classe \texttt{DFBuilder},
+      che permette di leggere i due file di input del dataset (\texttt{question\_tags.csv} e \texttt{questions.csv}),
+      ricavandone lo schema tramite la prima riga e salvandolo come tabella temporanea.
+    \item
+      \textbf{Mapping delle date di creazione}:
+      Il secondo step consiste nell'ottenere un DataFrame che associ, a partire dalla tabella \texttt{questions},
+      un ID della domanda ad un booleano che determina se la data di creazione (campo \texttt{CreationDate}) di quella domanda sia feriale o festiva.
 
-    Il Data Frame ottenuto sarà il risultato finale del Job e viene salvato come tabella su Hive tramite il metodo
-    \texttt{saveAsTable()}.
+      Inizialmente vengono selezionate dalla tabella \texttt{questions} solo le colonne necessarie, ovvero \texttt{Id} e \texttt{CreationDate}, poi vengono mappate le righe ottenute:
+      il primo field della riga viene lasciato intatto (in quanto gli ID devono essere mantenuti tali),
+      ed il secondo viene passato ad un metodo della classe \texttt{DateUtils}, che, appoggiandosi alla libreria \textit{Jollyday}, trasforma quel campo in un valore booleano
+      (\texttt{true} se la data è feriale, \texttt{false} se festiva).
+
+      Il Data Frame risultante da questo primo step viene poi salvato in cache, per ottimizzare le operazioni successive.
+    \item
+      \textbf{Join con \texttt{question\_tags}}:
+      Il Data Frame ottenuto dallo step precedente viene subito messo in join con il DataFrame corrispondente al file \texttt{question\_tags.csv},
+      in quanto il valore booleano deve essere associato ad ogni campo \texttt{Tag}.
+
+      A questo punto viene tagliato dal DataFrame risultante il campo \texttt{Id}, in quanto inutile per gli steps successivi, per rendere più leggera la mole di dati da analizzare.
+      Questo DataFrame viene salvato come tabella temporanea dal nome \texttt{dateTagDF}.
+
+    \item
+      \textbf{Creazione del Data Frame finale}:
+      L'obiettivo di questo step è creare un DataFrame che associ ad ogni tag il rapporto tra quante domande con quel tag sono state postate in giorni feriali e quante nei giorni festivi.
+      Il DF dovrà avere, inoltre, associato ad ogni tag, il conteggio di quante volte quello specifico Tag appare nel dataset.
+
+      Per effettuare l'operazione è stata dunque utilizzata la seguente query:
+
+      \begin{minted}{sql}
+        SELECT tag, (
+          ROUND((CAST(SUM(CASE WHEN IsWorkDay = true
+            THEN 1
+            ELSE 0
+          END) AS float)) /
+          (CAST(SUM(CASE WHEN IsWorkDay = false
+            THEN 1
+            ELSE 0
+          END) AS float)), 2)
+        ) AS Proportion,
+        COUNT(*) AS Count
+        FROM dateAndTagDF GROUP BY tag
+        ORDER BY Proportion DESC, Count DESC
+      \end{minted}
+
+    Il DataFrame ottenuto sarà il risultato finale del Job
+    e viene salvato come tabella su Hive tramite il metodo \texttt{saveAsTable()}.
   \end{itemize}
 
   \paragraph{Considerazioni sulle performance}\label{par:job1:spark:performance}
 
-  Il Job implementato in Spark SQL impiega circa 5 minuti per essere portato a compimento.
-  Tempo di esecuzione che è stato pressoché dimezzato da alcuni accorgimenti apportati durante la fase di ottimizzazione.
-  Evitare di salvare in cache eccessivamente i Data Frame ottenuti dalle varie operazioni ha aiutato molto a migliorare
-  le performance complessive.
-  Un altra intuizione è stata quella di accorpare le operazioni descritte nell' ultimo step in un'unica query, quando inizialmente
-  veniva eseguito a parte il conteggio dei Tag, cosa che, è stato riscontrato, andava ad inficiare le performance di esecuzione.
+  Il Job implementato in SparkSQL impiega circa 5 minuti per essere portato a compimento nell'implementazione consegnata.
 
+  Dalla prima implementazione, il tempo di esecuzione è stato praticamente dimezzato da alcuni accorgimenti apportati durante la fase di ottimizzazione.
+  Ad esempio, evitare di salvare in cache eccessivamente i Data Frame ottenuti dalle varie operazioni ha aiutato molto a migliorare le performance complessive.
+  Un altra intuizione è stata quella di accorpare le operazioni descritte nell'ultimo step in un'unica query, quando inizialmente
+  veniva eseguito a parte il conteggio dei Tag, cosa che, è stato riscontrato, andava ad inficiare le performance di esecuzione.

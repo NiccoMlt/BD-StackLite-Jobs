@@ -37,15 +37,7 @@
 
   \texttt{hadoop jar bd-stacklite-jobs-1.0.0-mr2.jar}
 
-  Essendo la classe \textit{main} eseguita tramite \texttt{ToolRunner} di Hadoop,
-  supporta il parsing di parametri standard di Hadoop\footnote{\url{https://hadoop.apache.org/docs/r2.6.0/hadoop-project-dist/hadoop-common/CommandsManual.html}}, quali ad esempio:
-  \begin{itemize}
-    \item \texttt{-conf} per caricare una configurazione esterna;
-    \item \texttt{-D} per specificare proprietà specifiche per la configurazione;
-    \item \texttt{-h} o \texttt{--help} per stampare le opzioni accettate.
-  \end{itemize}
-
-  Inoltre, è possibile specificare come primo parametro il path della cartella in ingresso e come secondo paramtero quello della cartella in uscita.
+  I parametri supportati sono i medesimi descritti nella \Cref{par:job1:mapreduce:cmd} relativamente al JAR di MapReduce del job 1.
 
   \paragraph{Link all'esecuzione su YARN}\label{par:job2:mapreduce:yarn}
 
@@ -69,42 +61,54 @@
   \paragraph{Descrizione dell'implementazione}\label{par:job2:mapreduce:implementation}
 
   Anche questo job è realizzato con tre passi di MapReduce.
-  Il primo passo prevede il caricamento di entrambi i file:
+  Il \textbf{primo passo} prevede il caricamento di entrambi i file:
   \begin{itemize}
     \item
-      nella fase di Map, il file contenente i tag viene caricato direttamente senza manipolazione delle informazioni caricate,
+    \textbf{Fase di Map}:
+      il file contenente i tag viene caricato direttamente senza manipolazione delle informazioni caricate,
       mentre il secondo file è mappato su una coppia \textit{key-value} avente come chiave l'ID della domanda
       e come valore una coppia contenente il punteggio e il numero di risposte.
 
     \item
-      nella fase di Reduce, viene effettuato il \textit{join} tra le informazioni caricate dai due file sulla base dell'ID della domanda,
+      \textbf{Fase di Reduce}:
+      viene effettuato il \textit{join} tra le informazioni caricate dai due file sulla base dell'ID della domanda,
       in modo da avere in output coppie \textit{key-value} aventi come chiave il tag e come valore la coppia di cui sopra.
   \end{itemize}
 
-  Il secondo passo ci si occupa di effettuare i calcoli richiesti per l'analisi:
+  Il \textbf{secondo passo} ci si occupa di effettuare i calcoli richiesti per l'analisi:
   \begin{itemize}
     \item
-      nella fase di Map, l'output del passo precedente viene caricato mappando la coppia costituita da punteggio e numero di risposte in uno dei 4 bin.
+      \textbf{Fase di Map}:
+      l'output del passo precedente viene caricato mappando la coppia costituita da punteggio e numero di risposte in uno dei 4 bin;
+      in uscita al job, vengono prodotte coppie \textit{key-value} aventi come chiave la coppia di tag e bin e come valore un long di valore 1.
+
+      Per ottimizzare la fase di conto presente nella successiva Reduce, si è aggiunto un \textbf{Combiner} in uscita al Mapper che esegue le medesime operazioni
+      descritte nel punto seguente dal Reducer.
     \item
-      la fase di Reduce riceve dunque in ingresso le coppie chiave-valore che mettono in relazione i singoli tag con il bin di appartenenza, aggregate per tag;
-      in questa fase è stato dunque possibile mantenere, per ogni tag, una mappa che conta il numero di apparizioni di ciascun tag in ciascun bin.
+      \textbf{Fase di Reduce}:
+      in questa fase viene eseguito un semplice \textit{count} delle apparizioni di ciascun tag in ciascun bin.
 
       In output a questa fase sono prodotte coppie \textit{key-value} aventi come chiave la coppia di tag e bin e come valore il contatore.
   \end{itemize}
 
-  Infine, nel terzo passo, i dati vengono raccolti e ordinati:
+  Infine, nel \textbf{terzo passo}, i dati vengono raccolti e ordinati:
   \begin{itemize}
     \item
-      nella fase di Map, le coppie chiave-valore in output alla fase precedente vengono manipolate
+      \textbf{Fase di Map}:
+      le coppie chiave-valore in output alla fase precedente vengono manipolate
       al fine di generare, per ciascuna, nuove coppie aventi come chiave il bin e come valore la coppia di tag e numero di apparizioni.
     \item
-      nella fase di Reduce, per ciascun bin le coppie in uscita dalla fase di Map vengono raccolte in una mappa;
+      \textbf{Fase di Reduce}:
+      per ciascun bin le coppie in uscita dalla fase di Map vengono raccolte in una mappa;
       in questo modo, al termine della riduzione, la lista di \textit{entry} della mappa viene ordinata e vengono emesse in output le prime 10 entry per ogni bin.
   \end{itemize}
 
   \paragraph{Considerazioni sulle performance}\label{par:job2:mapreduce:performance}
 
-  \textbf{TODO}
+  Il job impiega circa 4 minuti per eseguire completamente.
+
+  L'operazione di ottimizzazione principale da noi applicata è l'inserimento di un Combiner in uscita ai Mapper al secondo passo,
+  che ci ha permesso di ridurre il tempo di esecuzione a quello attuale.
 
   \subsubsection{Spark SQL implementation}\label{subsub:job2:spark}
 
@@ -112,18 +116,7 @@
 
   \texttt{spark2-submit bd-stacklite-jobs-1.0.0-spark.jar JOB2}
 
-  La classe \texttt{ScalaMain} è stata costruita in modo tale da permettere all'utente di eseguire tutti i Job implementati tramite
-  Spark SQL attraverso un unico jar, avendo la possibilità di specificare, tramite parametro, il Job specifico da lanciare.
-
-  Il comando di lancio del Jar accetta inoltre altri tre parametri, che permettono di settare le seguenti configurazioni di Spark\@:
-  \begin{itemize}
-    \item \texttt{spark.default.parallelism}: di default settato a 8, è il secondo parametro (dopo la specificazione del Job).
-    \item \texttt{spark.sql.shuffle.partitions}: di default settato a 8, è il terzo parametro.
-    \item \texttt{spark.executor.memory}: di default settato a 5, è il quarto parametro.
-  \end{itemize}
-
-  Infine, è possibile utilizzare tutti i parametri standard ammessi dall'operazione submit di Spark\footnote{\url{https://spark.apache.org/docs/2.1.0/submitting-applications.html}},
-  in quando la configurazione della SparkSession è solamente estesa.
+  I parametri supportati sono i medesimi descritti nella \Cref{par:job1:spark:cmd} relativamente al JAR di Spark del job 1.
 
   \paragraph{Link all'esecuzione su YARN}\label{par:job2:spark:yarn}
 
@@ -131,14 +124,15 @@
 
   \paragraph{File/Tabelle di Input}\label{par:job2:spark:input}
 
-  Le colonne necessarie al raggiungimento dell'obiettivo dell'analisi sono \texttt{Id}, \texttt{Score}
-  ed \texttt{AnswerCount} per il file \texttt{questions.csv} e \texttt{Id} e \texttt{Tag} per \texttt{question\_tags.csv}.
+  Le colonne necessarie al raggiungimento dell'obiettivo dell'analisi sono \texttt{Id} e \texttt{Tag} per il file \texttt{question\_tags.csv}
+  e \texttt{Id}, \texttt{Score} ed \texttt{AnswerCount} per il file \texttt{questions.csv}.
 
   \paragraph{File/Tabelle di Output}\label{par:job2:spark:output}
-\textbf{TODO: cambiare nome del DB}
+
+  \textbf{TODO: cambiare nome del DB}
+
   Il Job genera un DataFrame di output, che viene salvato come tabella (nominata \texttt{FinalTableJob1})
   sulla piattaforma Hive all'interno del database \texttt{lsemprini\_nmaltoni\_stacklite\_db}.
-
 
   \paragraph{Descrizione dell'implementazione}\label{par:job2:spark:implementation}
 
