@@ -1,8 +1,10 @@
 package it.unibo.bd1819.scoreanswersbins
 
 import it.unibo.bd1819.common.JobMainAbstract
+import org.apache.hadoop.hdfs.util.Diff.ListType
 import org.apache.spark.SparkContext
-import org.apache.spark.sql.{Column, SQLContext, SaveMode}
+import org.apache.spark.sql.types.StructType
+import org.apache.spark.sql.{Column, Row, SQLContext, SaveMode}
 
 class Job2Main extends JobMainAbstract {
 
@@ -25,7 +27,7 @@ class Job2Main extends JobMainAbstract {
      * The resulting DF will only have two columns: tag and Bin.
      */
     val binDF = questionTagsDF.join(scoreAnswersDF, "Id").drop("Id")
-      .select("tag", "Score", "AnswerCount")
+      .select("Tag", "Score", "AnswerCount")
       .filter($"Score" notEqual "NA")
       .filter($"AnswerCount" notEqual "NA")
       .map(row => (row.getString(0),
@@ -40,7 +42,7 @@ class Job2Main extends JobMainAbstract {
      */
     val binCountDF = sqlCont.sql("select Tag, Bin, count(*) as Count from binDF group by Tag, Bin order by Bin, Count desc")
     binCountDF.createOrReplaceTempView("binCountDF")
-    
+
     /* Generate a DF that shows a column with the four bins, and, for each one of them, a list of couples (Tag - Count) */
     val finalDF = sqlCont.sql("select Bin, collect_list(concat(Tag,' - ',Count)) as ListTagCount " +
       "from binCountDF group by Bin")

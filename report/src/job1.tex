@@ -55,38 +55,44 @@
   \paragraph{Descrizione dell'implementazione}\label{par:job1:mapreduce:implementation}
 
   Il job è stato realizzato con tre passi di MapReduce.
-  Il primo passo prevede il caricamento di entrambi i file:
+  Il \textbf{primo passo} prevede il caricamento di entrambi i file:
   \begin{itemize}
     \item
-      nella fase di Map, il file contenente i tag viene caricato direttamente senza manipolazione delle informazioni caricate,
+      \textbf{Fase di Map}:
+      il file contenente i tag viene caricato direttamente senza manipolazione delle informazioni caricate,
       mentre il secondo file è mappato su una coppia \textit{key-value} avente come chiave l'ID della domanda
       e come valore un booleano che è \texttt{true} qualora la data di creazione sia un giorno feriale, o altrimenti \texttt{false}.
 
     \item
-      nella fase di Reduce, viene effettuato il \textit{join} tra le informazioni caricate dai due file sulla base dell'ID della domanda,
+      \textbf{Fase di Reduce}:
+      si effettua il \textit{join} tra le informazioni caricate dai due file sulla base dell'ID della domanda,
       in modo da avere in output coppie \textit{key-value} aventi come chiave il tag e come valore il booleano di cui sopra.
   \end{itemize}
 
-  Nel secondo passo, invece, si effettuano i calcoli richiesti per l'analisi:
+  Nel \textbf{secondo passo}, invece, si effettuano i calcoli richiesti per l'analisi:
   \begin{itemize}
     \item
-      nella fase di Map, l'output del passo precedente viene caricato, senza manipolazioni particolari;
-      è infatti sufficiente l'aggregazione per chiave (il tag) effettuata dal \textbf{TODO} in ingresso al Reducer.
+      \textbf{Fase di Map}:
+      l'output del passo precedente viene caricato, senza manipolazioni particolari;
+      è infatti sufficiente l'aggregazione per chiave (il tag) effettuata tra Mapper e Reducer.
 
     \item
-      nella fase di Reduce, per ciascun tag vengono mantenuti due contatori per le apparizioni in giorni feriali e festivi,
+      \textbf{Fase di Reduce}:
+      per ciascun tag vengono mantenuti due contatori per le apparizioni in giorni feriali e festivi,
       in modo da poter generare in output delle coppie \textit{key-value} aventi come chiave il singolo tag e come valore la proporzione tra giorni feriali e festivi e il totale delle apparizioni del tag.
   \end{itemize}
 
-  Il terzo passo costituisce infine il passo di ordinamento secondo le specifiche; per effettuare l'ordinamento, si è realizzato una classe specifica
+  Il \textbf{terzo passo} costituisce infine il passo di ordinamento secondo le specifiche; per effettuare l'ordinamento, si è realizzato una classe specifica
   \begin{itemize}
     \item
-      nella fase di Map, le coppie chiave-valore ottenute dall'output al passo precedente sono invertite, in modo da poter aggregare per proporzione e contatore;
+      \textbf{Fase di Map}:
+      le coppie chiave-valore ottenute dall'output al passo precedente sono invertite, in modo da poter aggregare per proporzione e contatore;
       inoltre, per poter garantire un ordine per quanto riguarda proporzione, contatore, e, in caso di parità, anche alfabetico per tag,
       per l'implementazione pratica, si è realizzato una classe specifica per la chiave composita (\texttt{TextTriplet}) e dei comparatori dedicati per l'ordinamento e il raggruppamento.
 
     \item
-      nella fase di Reduce, la chiave composita viene rimossa e si inverte nuovamente chiave e valore, avendo così coppie tag e valori ordinati per valore;
+      \textbf{Fase di Reduce}:
+      la chiave composita viene rimossa e si inverte nuovamente chiave e valore, avendo così coppie tag e valori ordinati per valore;
       per garantire un singolo file di output ordinato, si utilizza un singolo task di reduce.
   \end{itemize}
 
