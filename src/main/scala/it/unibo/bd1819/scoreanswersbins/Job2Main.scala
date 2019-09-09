@@ -44,7 +44,7 @@ class Job2Main extends JobMainAbstract {
      */
     val binCountDF = sqlCont.sql("select Bin, Tag, count(*) as Count from binDF group by Bin, Tag")
     binCountDF.createOrReplaceTempView("binCountDF")
-    
+
     /* Generate a DF that shows a column with the four bins, and, for each one of them, a list of couples (Tag - Count) */
     val finalDF = sqlCont.sql("select Bin, collect_list(struct(Tag, Count)) as ListTagCount " +
       "from binCountDF group by Bin")

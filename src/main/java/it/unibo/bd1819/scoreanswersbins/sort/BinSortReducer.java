@@ -7,7 +7,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.IOException;
 import java.util.*;
 
-public class OptimizedBinSortReducer extends Reducer<Text, Text, Text, Text> {
+public class BinSortReducer extends Reducer<Text, Text, Text, Text> {
     private final Text key = new Text();
     private final Map<String, Long> map = new HashMap<>();
 

@@ -47,7 +47,7 @@
 
   \paragraph{File/Tabelle di Output}\label{par:job3:output}
 
-  Viene generato un singolo file CSV nella cartella output contenente due linee recanti il nome dell'algoritmo e il relativo valore calcolato separati da virgola.
+  Viene generato un singolo file di testo nella cartella output contenente due linee recanti il nome dell'algoritmo e il relativo valore calcolato contenuti tra parentesi e separati da virgola.
 
   \paragraph{Descrizione dell'implementazione}\label{par:job3:implementation}
 
@@ -76,11 +76,32 @@
     \item
       \textbf{Calcolo dei coefficienti e salvataggio dei risultati}:
       Il calcolo dei coefficienti è immediato tramite metodo \texttt{corr} fornito dalla classe \texttt{Statistics};
-      una volta ottenuti entrambi i valori, viene costruito un DataFrame a partire da una sequenza di tuple
+      una volta ottenuti entrambi i valori, viene costruito un RDD a partire da una sequenza di tuple
       aventi come chiave il nome dell'algoritmo e come valore il rispettivo coefficiente ricavato nei passi precedenti
-      e viene scritto su filesystem HDFS in formato CSV.
+      e viene scritto su filesystem HDFS in formato testuale.
   \end{itemize}
 
   \paragraph{Considerazioni sulle performance}\label{par:job3:performance}
 
-  \textbf{TODO}
+  Nonostante la necessità di impiegare il costrutto RDD per il calcolo dei coefficienti di correlazione con le API fornite,
+  si è deciso di utilizzare le API pensate per i DataFrame per il caricamento del file CSV e la manipolazione dei dati in esso contenuti
+  in quanto maggiormente ottimizzata per questo specifico formato:
+  utilizzando infatti il metodo \texttt{.read.csv()} fornito dall'\texttt{SQLContext}, utilizzando la prima riga come header e evitando l'inferenza automatica della struttura, senza creare una tabella temporanea,
+  si è ottenuto un guadagno di circa 1 minuto.
+
+  L'impiego di tecniche di \textit{caching} è stato difficoltoso in quanto con 1GB di memoria fornita il job falliva per saturazione dell'\textit{heap}.
+  Inizialmente avevamo optato per evitare l'impiego di caching e i tempi si aggiravano intorno ai 9 minuti.
+
+  Aumentando la memoria disponibile a 5GB è invece possibile utilizzare la persistenza degli RDD relativi ai due assi da correlare, ottenendo un guadagno di un terzo in termini di minuti:
+  si è passati infatti da circa 9 minuti a circa 6 minuti.
+
+  \paragraph{Considerazioni sull'output finale}
+
+  I risultati ottenuti sono i seguenti:
+
+  \begin{description}[itemsep=1pt]
+    \item[\textit{Coefficiente di \textbf{Pearson}}] 0.297397690528351
+    \item[\textit{Coefficiente di \textbf{Spearman}}] 0.23110551110424213
+  \end{description}
+
+  Come è possibile vedere, i coefficienti mostrano una bassa correlazione, sia lineare che non, tra i numero di risposte e punteggio.

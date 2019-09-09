@@ -4,11 +4,11 @@ import it.unibo.bd1819.common.JobUtils;
 import it.unibo.bd1819.scoreanswersbins.map.BinMap;
 import it.unibo.bd1819.scoreanswersbins.map.QuestionTagMap;
 import it.unibo.bd1819.scoreanswersbins.map.ScoreCountTagMap;
-import it.unibo.bd1819.scoreanswersbins.reduce.BinCountReduce;
+import it.unibo.bd1819.scoreanswersbins.reduce.BinCountReducer;
 import it.unibo.bd1819.scoreanswersbins.reduce.ScoreCountTagJoin;
 import it.unibo.bd1819.scoreanswersbins.sort.BinPartitioner;
 import it.unibo.bd1819.scoreanswersbins.sort.BinSortMapper;
-import it.unibo.bd1819.scoreanswersbins.sort.OptimizedBinSortReducer;
+import it.unibo.bd1819.scoreanswersbins.sort.BinSortReducer;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -76,8 +76,10 @@ public class JobFactory {
 
         KeyValueTextInputFormat.addInputPath(job, getTaskOutputPath(outputPath, JOB_NAME, FIRST_TASK_NAME));
 
-        JobUtils.configureJobForKeyValue(job, KeyValueTextInputFormat.class, BinMap.class, Text.class, Text.class,
-            BinCountReduce.class, Text.class, LongWritable.class, TextOutputFormat.class);
+        JobUtils.configureJobForKeyValue(job, KeyValueTextInputFormat.class, BinMap.class, Text.class, LongWritable.class,
+            BinCountReducer.class, Text.class, LongWritable.class, TextOutputFormat.class);
+        
+        job.setCombinerClass(BinCountReducer.class);
 
         TextOutputFormat.setOutputPath(job, jobOutputPath);
 
@@ -97,7 +99,7 @@ public class JobFactory {
         KeyValueTextInputFormat.addInputPath(job, getTaskOutputPath(outputPath, JOB_NAME, SECOND_TASK_NAME));
 
         JobUtils.configureJobForKeyValue(job, KeyValueTextInputFormat.class, BinSortMapper.class, Text.class,
-            Text.class, OptimizedBinSortReducer.class, Text.class, Text.class, TextOutputFormat.class);
+            Text.class, BinSortReducer.class, Text.class, Text.class, TextOutputFormat.class);
         
         TextOutputFormat.setOutputPath(job, jobOutputPath);
 
