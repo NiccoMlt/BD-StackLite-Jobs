@@ -160,25 +160,28 @@
       soglie arbitrarie, restituisce una stringa che esprimerà a quale Bin apparterrà ogni occorrenza di \texttt{Tag}.
     \end{itemize}
     Il Data Frame risultante viene salvato come tabella temporanea con il nome \texttt{binDF}.
-    \item \textbf{Conteggio e ordinamento} : L'informazione contenuta nel Data Frame \texttt{binDF} viene arricchita dall'aggiunta
+    \item \textbf{Conteggio} : L'informazione contenuta nel Data Frame \texttt{binDF} viene arricchita dall'aggiunta
     della colonna \texttt{Count} che rappresenterà il numero di occorrenze delle coppie (\texttt{Tag}, \texttt{Bin}) presenti
-    nel Data Frame; il tutto viene quindi ordinato per \texttt{Bin} e \texttt{Count} in ordine decrescente, per facilitare lo step
-    successivo.
+    nel Data Frame.
     Per effettuare l'operazione è stata dunque utilizzata la seguente query:
-    \texttt{SELECT Tag, Bin, COUNT(*) AS Count FROM binDF GROUP BY Tag, Bin ORDER BY Bin, Count DESC}
+    \texttt{SELECT Tag, Bin, COUNT(*) AS Count FROM binDF GROUP BY Tag, Bin}
 
     Il Data Frame ottenuto viene salvato come tabella temporanea con il nome di \texttt{binCountDF}.
     \item \textbf{Ottenimento delle liste per ogni Bin} : In questo ultimo step è stata eseguita una query sul Data Frame
-    \texttt{binCountDF} che permette, per ognuno dei quattro Bin di ottenere una lista delle prime dieci coppie
-    (\texttt{Tag}, \texttt{Count}) ordinate per \texttt{Count}.
-    Nella query viene utilizzata la funzione \texttt{COLLECT\_LIST}, combinata con la funzione \texttt{CONCAT} per accorpare
-    le due colonne \texttt{Tag} e \texttt{Count} all'interno di una lista.
+    \texttt{binCountDF} che permette, per ognuno dei quattro Bin di ottenere una lista delle coppie (\texttt{Tag}, \texttt{Count}).
+    Nella query viene utilizzata la funzione \texttt{COLLECT\_LIST}, combinata con la funzione \texttt{STRUCT} per accorpare
+    le due colonne \texttt{Tag} e \texttt{Count} in un'unica struttura, che va poi a popolare una lista.
     La query usata è la seguente:
-    \texttt{SELECT Bin, COLLECT\_LIST(CONCAT(Tag,' - ',Count)) AS ListTagCount FROM binCountDF GROUP BY Bin}
+    \texttt{SELECT Bin, COLLECT\_LIST(STRUCT(Tag, Count)) AS ListTagCount FROM binCountDF GROUP BY Bin}
 
-    A questo punto ottengo un Data Frame in cui si va a mappare la seconda colonna (\texttt{ListTagCount}) in modo da ottenere
-    solo le prime dieci coppie (\texttt{Tag}, \texttt{Count}), che sono già state ordinate nello step precedente.
-
+    \item \textbf{Ordinamento ed estrazione top ten} : A partire dal Data Frame dello step precedente, viene effettuato un
+    mapping sulle righe del corrispondente RDD, in modo da ottenere la lista di \texttt{struct} \texttt{ListTagCount} sotto forma
+    di lista di tuple formate da \texttt{(String, Long)}, per poterla ordinare in base al secondo campo della tupla, ovvero
+    il valore di Count.
+    Una volta ordinato si prendono le prime dieci tuple per ogni Bin e si va a convertire la lista risultante in un'unica stringa
+    (per facilitare la creazione dello schema del Data Frame finale).
+    A questo punto viene creato lo schema finale, con i nomi delle due colonne \texttt{Bin} e \texttt{ListTagCount} e da questo
+    e l'RDD computato in precedenza viene generato il Data Frame definitivo.
     Il Data Frame ottenuto sarà il risultato finale del Job e viene salvato come tabella su Hive tramite il metodo
     \texttt{saveAsTable()}.
   \end{itemize}
