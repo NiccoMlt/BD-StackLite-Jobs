@@ -129,63 +129,84 @@
 
   \paragraph{File/Tabelle di Output}\label{par:job2:spark:output}
 
-  \textbf{TODO: cambiare nome del DB}
-
   Il Job genera un DataFrame di output, che viene salvato come tabella (nominata \texttt{FinalTableJob1})
-  sulla piattaforma Hive all'interno del database \texttt{lsemprini\_nmaltoni\_stacklite\_db}.
+  sulla piattaforma Hive all'interno del database \texttt{lsemprini\_nmaltoni\_stacklite\_db6}.
 
   \paragraph{Descrizione dell'implementazione}\label{par:job2:spark:implementation}
 
-  L'implementazione del Job è stata realizzata utilizzando SparkSQL, contenuta all'interno del metodo \texttt{executeJob()}
-  della classe \texttt{it.unibo.bd1819.daysproportion.Job2Main}.
+  L'implementazione del Job, contenuta all'interno del metodo \texttt{executeJob()} % chktex 36
+  della classe \texttt{it.unibo.bd1819.daysproportion.Job2Main} è stata realizzata utilizzando SparkSQL\@.
   Il problema è stato affrontato attraverso diversi steps successivi, descritti di seguito:
 
   \begin{itemize}
-    \item \textbf{Creazione DataFrame} : Il passo iniziale è equivalente a quello del Job1
-    (\Cref{par:job1:spark:implementation:firststep}).
-    \item \textbf{Taglio delle colonne non necessarie} : Si è proceduto ad selezionare unicamente le colonne \texttt{Id},
-    \texttt{Score} ed \texttt{AnswerCount} per il Data Frame \texttt{questions}, salvando il risultato in un Data Frame,
-    a sua volta salvato in cache, in quanto necessario per l'operazione successiva.
-    \item \textbf{Join con \texttt{question\_tags}, Filter e Mapping} : Il terzo step è composto a sua volta da sotto-step:
-    \begin{itemize}
-      \item Join : Si effettua il Join del Data Frame ottenuto dal secondo step con il Data Frame \texttt{question\_tags}, attraverso
-      la colonna \texttt{Id}, per poi effettuare il drop della stessa, in quanto superflua per le operazioni successive.
-      \item Filtraggio : A questo punto vengono selezionate le colonne \texttt{Tag}, \texttt{Score} ed \texttt{AnswerCount}
-      e viene effettuata una operazione di \texttt{filter} su eventuali valori delle colonne \texttt{Score} ed \texttt{AnswerCount}
-      che andrebbero ad inficiare l'analisi, ovvero, si filtrano le righe contenenti \texttt{Score} ed \texttt{AnswerCount} con valore
-      "NA".
-      \item Mapping : Infine, mantenendo ovviamente la colonna \texttt{Tag},
-      si mappano i valori di \texttt{Score} ed \texttt{AnswerCount}, utilizzandoli come input di una funzione
-      \texttt{getBinFor()} della classe \texttt{Bin}, che, presi i valori di \texttt{Score} ed \texttt{AnswerCount} ed le relative
-      soglie arbitrarie, restituisce una stringa che esprimerà a quale Bin apparterrà ogni occorrenza di \texttt{Tag}.
+    \item
+      \textbf{Creazione DataFrame}:
+      Il passo iniziale è equivalente a quello del Job1 (\Cref{par:job1:spark:implementation:firststep}).
+    \item
+      \textbf{Taglio delle colonne non necessarie}:
+      Si è proceduto ad selezionare unicamente le colonne \texttt{Id},
+      \texttt{Score} ed \texttt{AnswerCount} per il DataFrame \texttt{questions}, salvando il risultato in un Data Frame,
+      a sua volta salvato in cache, in quanto necessario per l'operazione successiva.
+    \item
+      \textbf{Join con \texttt{question\_tags}, Filter e Mapping}:
+      Il terzo step è composto a sua volta da sotto-step:
+      \begin{itemize}
+        \item
+          \textbf{Join}:
+            Si effettua il \textit{join} del DataFrame ottenuto dal secondo step con il Data Frame \texttt{question\_tags}, attraverso
+            la colonna \texttt{Id}, per poi effettuare il drop della stessa, in quanto superflua per le operazioni successive.
+        \item
+          \textbf{Filtraggio}:
+          A questo punto vengono selezionate le colonne \texttt{Tag}, \texttt{Score} ed \texttt{AnswerCount}
+          e viene effettuata una operazione di \texttt{filter} su eventuali valori delle colonne \texttt{Score} ed \texttt{AnswerCount}
+          che andrebbero ad inficiare l'analisi, ovvero, si filtrano le righe contenenti \texttt{Score} ed \texttt{AnswerCount} con valore ``\texttt{NA}''\@.
+        \item
+          \textbf{Mapping}:
+          Infine, mantenendo ovviamente la colonna \texttt{Tag}, si mappano i valori di \texttt{Score} ed \texttt{AnswerCount}, utilizzandoli come input di una funzione
+          \texttt{getBinFor()} della classe \texttt{Bin}, che, presi i valori di \texttt{Score} ed \texttt{AnswerCount} ed le relative % chktex 36
+          soglie arbitrarie, restituisce una stringa che esprimerà a quale Bin apparterrà ogni occorrenza di \texttt{Tag}.
     \end{itemize}
-    Il Data Frame risultante viene salvato come tabella temporanea con il nome \texttt{binDF}.
-    \item \textbf{Conteggio} : L'informazione contenuta nel Data Frame \texttt{binDF} viene arricchita dall'aggiunta
-    della colonna \texttt{Count} che rappresenterà il numero di occorrenze delle coppie (\texttt{Tag}, \texttt{Bin}) presenti
-    nel Data Frame.
-    Per effettuare l'operazione è stata dunque utilizzata la seguente query:
-    \texttt{SELECT Tag, Bin, COUNT(*) AS Count FROM binDF GROUP BY Tag, Bin}
+    Il DataFrame risultante viene salvato come tabella temporanea con il nome \texttt{binDF}.
+    \item
+      \textbf{Conteggio}:
+      L'informazione contenuta nel DataFrame \texttt{binDF} viene arricchita dall'aggiunta
+      della colonna \texttt{Count} che rappresenterà il numero di occorrenze delle coppie (\texttt{Tag}, \texttt{Bin}) presenti
+      nel DataFrame.
+      Per effettuare l'operazione è stata dunque utilizzata la seguente query:
+      \begin{minted}{sql}
+        SELECT Tag, Bin, COUNT(*) AS Count
+        FROM binDF
+        GROUP BY Tag, Bin
+      \end{minted}
 
-    Il Data Frame ottenuto viene salvato come tabella temporanea con il nome di \texttt{binCountDF}.
-    \item \textbf{Ottenimento delle liste per ogni Bin} : In questo ultimo step è stata eseguita una query sul Data Frame
-    \texttt{binCountDF} che permette, per ognuno dei quattro Bin di ottenere una lista delle coppie (\texttt{Tag}, \texttt{Count}).
-    Nella query viene utilizzata la funzione \texttt{COLLECT\_LIST}, combinata con la funzione \texttt{STRUCT} per accorpare
-    le due colonne \texttt{Tag} e \texttt{Count} in un'unica struttura, che va poi a popolare una lista.
-    La query usata è la seguente:
-    \texttt{SELECT Bin, COLLECT\_LIST(STRUCT(Tag, Count)) AS ListTagCount FROM binCountDF GROUP BY Bin}
+      Il Data Frame ottenuto viene salvato come tabella temporanea con il nome di \texttt{binCountDF}.
+    \item
+      \textbf{Ottenimento delle liste per ogni Bin}:
+      In questo ultimo step è stata eseguita una query sul Data Frame
+      \texttt{binCountDF} che permette, per ognuno dei quattro Bin di ottenere una lista delle coppie (\texttt{Tag}, \texttt{Count}).
+      Nella query viene utilizzata la funzione \texttt{COLLECT\_LIST}, combinata con la funzione \texttt{STRUCT} per accorpare
+      le due colonne \texttt{Tag} e \texttt{Count} in un'unica struttura, che va poi a popolare una lista.
+      La query usata è la seguente:
+      \begin{minted}{sql}
+        SELECT Bin, COLLECT_LIST(STRUCT(Tag, Count))
+          AS ListTagCount
+        FROM binCountDF
+        GROUP BY Bin
+      \end{minted}
 
-    \item \textbf{Ordinamento ed estrazione top ten} : A partire dal Data Frame dello step precedente, viene effettuato un
-    mapping sulle righe del corrispondente RDD, in modo da ottenere la lista di \texttt{struct} \texttt{ListTagCount} sotto forma
-    di lista di tuple formate da \texttt{(String, Long)}, per poterla ordinare in base al secondo campo della tupla, ovvero
-    il valore di Count.
-    Una volta ordinato si prendono le prime dieci tuple per ogni Bin e si va a convertire la lista risultante in un'unica stringa
-    (per facilitare la creazione dello schema del Data Frame finale).
-    A questo punto viene creato lo schema finale, con i nomi delle due colonne \texttt{Bin} e \texttt{ListTagCount} e da questo
-    e l'RDD computato in precedenza viene generato il Data Frame definitivo.
-    Il Data Frame ottenuto sarà il risultato finale del Job e viene salvato come tabella su Hive tramite il metodo
-    \texttt{saveAsTable()}.
+    \item
+      \textbf{Ordinamento ed estrazione top ten}:
+      A partire dal Data Frame dello step precedente, viene effettuato un
+      mapping sulle righe del corrispondente RDD, in modo da ottenere la lista di \texttt{struct} \texttt{ListTagCount} sotto forma
+      di lista di tuple formate da \texttt{(String, Long)}, per poterla ordinare in base al secondo campo della tupla, ovvero
+      il valore di Count.
+      Una volta ordinato si prendono le prime dieci tuple per ogni Bin e si va a convertire la lista risultante in un'unica stringa
+      (per facilitare la creazione dello schema del Data Frame finale).
+      A questo punto viene creato lo schema finale, con i nomi delle due colonne \texttt{Bin} e \texttt{ListTagCount} e da questo
+      e l'RDD computato in precedenza viene generato il Data Frame definitivo.
+      Il Data Frame ottenuto sarà il risultato finale del Job e viene salvato come tabella su Hive tramite il metodo
+      \texttt{saveAsTable()}. % chktex 36
   \end{itemize}
-
 
   \paragraph{Considerazioni sulle performance}\label{par:job2:spark:performance}
 
@@ -196,7 +217,7 @@
   Un altra intuizione è stata quella di accorpare le operazioni descritte nel terzo step in un'unica query, quando inizialmente
   veniva eseguito a parte il Join dei due Data Frame, cosa che, è stato riscontrato, andava ad aumentare il tempo di esecuzione,
   in quanto veniva salvata una ulteriore tabella temporanea.
-  L'operazione di \texttt{filter} sui valori "NA" di \texttt{Score} ed \texttt{AnswerCount} è stata, inoltre, spostata al di fuori
+  L'operazione di \texttt{filter} sui valori ``\texttt{NA}'' di \texttt{Score} ed \texttt{AnswerCount} è stata, inoltre, spostata al di fuori
   dalla successiva operazione di \texttt{map}, in quanto si è riscontrato fosse nettamente più conveniente dal punto di vista
   delle performance stesse: così facendo si va ad alleggerire la tabella, e meno righe verranno computate dalla \texttt{map}.
 

@@ -121,7 +121,7 @@
   Il dataset che abbiamo scelto di utilizzare per questo elaborato di progetto è una versione ridotta ed adattata del dump di StackOverflow che StackExchange ha reso disponibile sulla piattaforma Kaggle.
   Il dataset, disponibile all'indirizzo \url{https://www.kaggle.com/stackoverflow/stacklite}, si presenta suddiviso in due file CSV formattati in UTF-8.
   Ciascun file contiene nella prima riga la descrizione delle colonne in cui sono suddivisi i dati;
-  i dati mancanti sono contraddistinti dal valore ``NA''.
+  i dati mancanti sono contraddistinti dal valore ``\texttt{NA}''.
 
   \subsubsection{Descrizione dei file}\label{subsub:dataset:files}
 
@@ -169,7 +169,7 @@
   i due file che costituiscono il dataset in input sono memorizzati al percorso \texttt{hdfs://user/lsemprini/bigdata/dataset/};
   trattando dell'output, invece, i risultati parziali dell'implementazione Map-Reduce sono salvati in cartelle all'indirizzo \texttt{hdfs://user/lsemprini/mapreduce/}
   e i risultati finali sono disponibili dentro la sottocartella \texttt{output};
-  i job implementati in SparkSQL producono come output tabelle che sono salvate sulla piattaforma HIVE nel database \texttt{lsemprini\_nmaltoni\_stacklite\_db}.
+  i job implementati in SparkSQL producono come output tabelle che sono salvate sulla piattaforma HIVE nel database \texttt{lsemprini\_nmaltoni\_stacklite\_db6}.
 
   \subsection{Pre-processing dei dati}\label{subsec:preprocessing}
 
@@ -206,6 +206,8 @@
 
   \section{Miscellanea}\label{sec:miscellaneous}
 
-  \textbf{TODO}
+  Nel job 1 è stata riscontrata una leggera discrepanza tra i valori di proporzione e conteggio ottenuti dall'implementazione in MapReduce e quelli ottenuti con SparkSQL\@;
+  considerando che i valori di count sono leggermente inferiori (circa 5 in meno per i valori top) e che la proporzione sembra differire in modo coerente con la differente quantità considreata,
+  riteniamo plausibile che nell'implementazione MapReduce vengano ignorati dati ``sporchi'' che invece vengono mantenuti nell'implementazione in Spark, generando una leggera differenza.
 
 \end{document}

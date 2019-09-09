@@ -138,14 +138,12 @@
 
   \paragraph{File/Tabelle di Output}\label{par:job1:spark:output}
 
-  \textbf{TODO}: cambiare nome del DB
-
   Il Job genera un DataFrame di output, che viene salvato come tabella (nominata \texttt{FinalTableJob1})
-  sulla piattaforma Hive all'interno del database \texttt{lsemprini\_nmaltoni\_stacklite\_db}.
+  sulla piattaforma Hive all'interno del database \texttt{lsemprini\_nmaltoni\_stacklite\_db6}.
 
   \paragraph{Descrizione dell'implementazione}\label{par:job1:spark:implementation}
 
-  L'implementazione del Job, contenuta all'interno del metodo \texttt{executeJob()} della classe \texttt{it.unibo.bd1819.daysproportion.Job1Main},
+  L'implementazione del Job, contenuta all'interno del metodo \texttt{executeJob()} della classe \texttt{it.unibo.bd1819.daysproportion.Job1Main}, % chktex 36
   è stata realizzata utilizzando SparkSQL\@.
   Il problema è stato affrontato attraverso diversi steps successivi, descritti di seguito:
 
@@ -166,17 +164,18 @@
       ed il secondo viene passato ad un metodo della classe \texttt{DateUtils}, che, appoggiandosi alla libreria \textit{Jollyday}, trasforma quel campo in un valore booleano
       (\texttt{true} se la data è feriale, \texttt{false} se festiva).
 
-      Il Data Frame risultante da questo primo step viene poi salvato in cache, per ottimizzare le operazioni successive.
+      Il DataFrame risultante da questo primo step viene poi salvato in cache, per ottimizzare le operazioni successive.
+
     \item
       \textbf{Join con \texttt{question\_tags}}:
-      Il Data Frame ottenuto dallo step precedente viene subito messo in join con il DataFrame corrispondente al file \texttt{question\_tags.csv},
+      Il DataFrame ottenuto dallo step precedente viene subito messo in join con il DataFrame corrispondente al file \texttt{question\_tags.csv},
       in quanto il valore booleano deve essere associato ad ogni campo \texttt{Tag}.
 
       A questo punto viene tagliato dal DataFrame risultante il campo \texttt{Id}, in quanto inutile per gli steps successivi, per rendere più leggera la mole di dati da analizzare.
       Questo DataFrame viene salvato come tabella temporanea dal nome \texttt{dateTagDF}.
 
     \item
-      \textbf{Creazione del Data Frame finale}:
+      \textbf{Creazione del DataFrame finale}:
       L'obiettivo di questo step è creare un DataFrame che associ ad ogni tag il rapporto tra quante domande con quel tag sono state postate in giorni feriali e quante nei giorni festivi.
       Il DF dovrà avere, inoltre, associato ad ogni tag, il conteggio di quante volte quello specifico Tag appare nel dataset.
 
@@ -199,7 +198,7 @@
       \end{minted}
 
     Il DataFrame ottenuto sarà il risultato finale del Job
-    e viene salvato come tabella su Hive tramite il metodo \texttt{saveAsTable()}.
+    e viene salvato come tabella su Hive tramite il metodo \texttt{saveAsTable()}. % chktex 36
   \end{itemize}
 
   \paragraph{Considerazioni sulle performance}\label{par:job1:spark:performance}
@@ -207,6 +206,6 @@
   Il Job implementato in SparkSQL impiega circa 4 minuti per essere portato a compimento nell'implementazione consegnata.
 
   Dalla prima implementazione, il tempo di esecuzione è stato praticamente dimezzato da alcuni accorgimenti apportati durante la fase di ottimizzazione.
-  Ad esempio, evitare di salvare in cache eccessivamente i Data Frame ottenuti dalle varie operazioni ha aiutato molto a migliorare le performance complessive.
+  Ad esempio, evitare di salvare in cache eccessivamente i DataFrame ottenuti dalle varie operazioni ha aiutato molto a migliorare le performance complessive.
   Un altra intuizione è stata quella di accorpare le operazioni descritte nell'ultimo step in un'unica query, quando inizialmente
   veniva eseguito a parte il conteggio dei Tag, cosa che, è stato riscontrato, andava ad inficiare le performance di esecuzione.
