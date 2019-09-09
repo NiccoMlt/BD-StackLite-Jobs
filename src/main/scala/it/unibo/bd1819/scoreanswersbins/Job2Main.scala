@@ -1,8 +1,11 @@
 package it.unibo.bd1819.scoreanswersbins
 
-import it.unibo.bd1819.common.{JobMainAbstract, PathVariables}
+import java.sql.Struct
+
+import it.unibo.bd1819.common.JobMainAbstract
 import org.apache.spark.SparkContext
-import org.apache.spark.sql.{Column, SQLContext, SaveMode}
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.{Row, SQLContext, SaveMode}
 
 class Job2Main extends JobMainAbstract {
 
@@ -14,6 +17,8 @@ class Job2Main extends JobMainAbstract {
 
     /* Select only Id and Score and AnswerCount columns from the questions DF */
     val scoreAnswersDF = sqlCont.sql("select Id, Score, AnswerCount from questions")
+      .filter($"Score" notEqual "NA")
+      .filter($"AnswerCount" notEqual "NA")
     scoreAnswersDF.cache()
     
     /* Join the previously obtained DF to the question_tags DF, dropping the useless column containing the Ids.
@@ -26,8 +31,6 @@ class Job2Main extends JobMainAbstract {
      */
     val binDF = questionTagsDF.join(scoreAnswersDF, "Id").drop("Id")
       .select("tag", "Score", "AnswerCount")
-      .filter($"Score" notEqual "NA")
-      .filter($"AnswerCount" notEqual "NA")
       .map(row => (row.getString(0),
         Bin.getBinFor(Integer.parseInt(row.getString(1)), Job2Main.IMPROVED_SCORE_THRESHOLD,
           Integer.parseInt(row.getString(2)), Job2Main.IMPROVED_ANSWER_THRESHOLD).toString))
@@ -38,21 +41,53 @@ class Job2Main extends JobMainAbstract {
     /* Add to the previous DF a column representing the amount of the occurrences of (Tag, Bin)
      * are into the DF itself. And order the table by the count and Bin.
      */
-    val binCountDF = sqlCont.sql("select Bin, Tag, count(*) as Count from binDF group by Bin, Tag " +
-      "order by Count desc, Bin desc")
-    binCountDF.write.saveAsTable(PathVariables.HIVE_DATABASE + ".tmpTable")
+    val binCountDF = sqlCont.sql("select Bin, Tag, count(*) as Count from binDF group by Bin, Tag")
     binCountDF.createOrReplaceTempView("binCountDF")
     
     /* Generate a DF that shows a column with the four bins, and, for each one of them, a list of couples (Tag - Count) */
-    val finalDF = sqlCont.sql("select Bin, SUBSTRING_INDEX(group_concat(concat(Tag,' - ',Count)" +
-      " order by desired_col_order_name), ',', 10) as ListTagCount " +
+    val finalDF = sqlCont.sql("select Bin, collect_list(struct(Tag, Count)) as ListTagCount " +
       "from binCountDF group by Bin")
-      //  .map(row => (row.getString(0), row.getList(1).toArray.take(Job2Main.topNumberOfTagsForEachBin).mkString(" , ")))
-    // .withColumnRenamed("_1", "Bin")
-      //.withColumnRenamed("_2", "ListTagCount")
-    finalDF.write.mode(SaveMode.Overwrite).saveAsTable(job2FinalTableName)
+    val content = finalDF.rdd
+      .map(row => (row.getString(0), row.getSeq[Row](1)))
+      .map(r => (r._1, r._2.map( row => (
+        row.getAs[String]("Tag"),
+        row.getAs[Long]("Count")
+      ))))
+      .map(row => (row._1, row._2
+        .sortBy(x => x._2)(Ordering.Long.reverse)
+        .take(Job2Main.topNumberOfTagsForEachBin)))
+    val finalContent = content.map(keyValueRow => Row(keyValueRow._1, Row(keyValueRow._2)))
+      /*
+       val tryDF = finalDF
+         
+         .map(row => (row.getString(0), row.getList(1)
+           .asInstanceOf[List[(String, BigInt)]]
+           .sortBy(x => x._2)(Ordering.BigInt.reverse)
+           .take(Job2Main.topNumberOfTagsForEachBin)
+           .mkString(" , ")))
+           
+      .map(row => (row.getAs[String]("Bin"), row.getAs[List[(String, BigInt)]]("ListTagCount")))
+      .map(row => (row._1, row._2.sortBy(x => x._2)(Ordering.BigInt.reverse)
+        .take(Job2Main.topNumberOfTagsForEachBin)
+        .mkString(" , ")))
+        */
+       
+     //   .map(row => (row.getString(0), row.getList(1).toArray.take(Job2Main.topNumberOfTagsForEachBin).mkString(" , ")))
+     // .withColumnRenamed("_1", "Bin")
+     // .withColumnRenamed("_2", "ListTagCount")
+   /*
+    val tmpRDD = finalDF.rdd
+    tmpRDD
+      .map(row => (row.getAs[String]("Bin"), row.getAs[mutable.WrappedArray[Struct]]("ListTagCount")))
+      .map{
+      case (bin, list) => (bin, List())
+    }.map(keyvaluerow => Row(keyvaluerow._1, keyvaluerow._2))
+    */
+    val hopeDF = sqlCont.createDataFrame(finalContent, finalDF.schema)
+    hopeDF.write.mode(SaveMode.Overwrite).saveAsTable(job2FinalTableName)
+    //tryDF.write.mode(SaveMode.Overwrite).saveAsTable(job2FinalTableName)
   }
-
+  
   override protected def dropTables(sqlCont: SQLContext): Unit = {
     sqlCont.sql("drop table if exists " + job2FinalTableName)
   }
