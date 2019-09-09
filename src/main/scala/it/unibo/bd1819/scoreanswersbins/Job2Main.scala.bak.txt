@@ -1,10 +1,10 @@
 package it.unibo.bd1819.scoreanswersbins
 
 import it.unibo.bd1819.common.JobMainAbstract
+import org.apache.hadoop.hdfs.util.Diff.ListType
 import org.apache.spark.SparkContext
-import org.apache.spark.sql.{Column, Dataset, Row, SQLContext, SaveMode, expressions}
-import org.apache.spark.sql.functions._
-import org.apache.spark.sql.expressions._
+import org.apache.spark.sql.types.StructType
+import org.apache.spark.sql.{Column, Row, SQLContext, SaveMode}
 
 class Job2Main extends JobMainAbstract {
 
@@ -37,60 +37,19 @@ class Job2Main extends JobMainAbstract {
       .withColumnRenamed("_2", "Bin")
     binDF.createOrReplaceTempView("binDF")
     
-//    binDF.show()
+    /* Add to the previous DF a column representing the amount of the occurrences of (Tag, Bin)
+     * are into the DF itself. And order the table by the count and Bin.
+     */
+    val binCountDF = sqlCont.sql("select Tag, Bin, count(*) as Count from binDF group by Tag, Bin order by Bin, Count desc")
+    binCountDF.createOrReplaceTempView("binCountDF")
     
-//    sqlCont
-//      .sql("SELECT Tag, Bin, COUNT(*) AS Count FROM binDF")
-//      .orderBy("Count")
-//      .groupBy("Tag", "Bin")
-//      .agg(
-//        sort_array(collect_list("Count")), 
-//        collect_list("Bin"))
-//      .show()
-
-//    binDF.groupBy("Tag", "Bin").count()
-    
-    
-    /*binDF
-      .groupBy("Tag", "Bin")
-      .count()
-      .withColumnRenamed("count", "Count")
-      .orderBy("Count")
-      .groupBy("Bin", "Tag")
-      .agg(sort_array(collect_list(struct($"Tag", $"Count")), asc = true).as("Tag"))
-      .show()*/
-
-    binDF
-      .groupBy("Tag", "Bin")
-      .count()
-      .withColumnRenamed("count", "Count")
-//      .withColumn("Combo", struct("Tag", "Count"))
-//      .drop("Tag", "Count")
-      .groupBy("Bin")
-      .agg(collect_list(struct($"Count", $"Tag")).as("Tag"))
-      .show()
-
-    /*example.orderBy(“hour”)
-    .groupBy(“id”)
-    .agg(functions.sort_array(
-      functions.collect_list(
-        functions.struct(dataRow.col(“hour”),
-    dataRow.col(“count”))),false)
-    .as(“hourly_count”));*/
-    
-//    /* Add to the previous DF a column representing the amount of the occurrences of (Tag, Bin)
-//     * are into the DF itself. And order the table by the count and Bin.
-//     */
-//    val binCountDF = sqlCont.sql("select Tag, Bin, count(*) as Count from binDF group by Tag, Bin order by Bin, Count desc")
-//    binCountDF.createOrReplaceTempView("binCountDF")
-//    
-//    /* Generate a DF that shows a column with the four bins, and, for each one of them, a list of couples (Tag - Count) */
-//    val finalDF = sqlCont.sql("select Bin, collect_list(concat(Tag,' - ',Count)) as ListTagCount " +
-//      "from binCountDF group by Bin")
-//        .map(row => (row.getString(0), row.getList(1).toArray.take(Job2Main.topNumberOfTagsForEachBin).mkString(" , ")))
-//      .withColumnRenamed("_1", "Bin")
-//      .withColumnRenamed("_2", "ListTagCount")
-//    finalDF.write.mode(SaveMode.Overwrite).saveAsTable(job2FinalTableName)
+    Bin
+      .values()
+      .foreach(bin => sqlCont
+        .sql(s"SELECT * FROM binCountDF WHERE Bin = '${bin.toString}' order by Count desc")
+        .write
+        .mode(SaveMode.Overwrite)
+        .saveAsTable(bin.toString))
   }
 
   override protected def dropTables(sqlCont: SQLContext): Unit = {
