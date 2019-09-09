@@ -32,10 +32,10 @@ public abstract class AbstractMain extends Configured implements Tool {
 
         final String inputPath = filteredArgs.size() > 0
             ? PathVariables.PERSONAL_HOME_PATH + filteredArgs.get(0)
-            : PathVariables.GENERIC_INPUT_PATH;
+            : PathVariables.ABSOLUTE_HDFS_PATH;
         final String outputPath = filteredArgs.size() > 0
             ? PathVariables.PERSONAL_HOME_PATH + filteredArgs.get(1)
-            : PathVariables.GENERIC_OUTPUT_PATH;
+            : PathVariables.PERSONAL_HOME_PATH + "mapreduce" ;
 
         final List<Job> jobs = getMainJobs(inputPath, outputPath, conf);
 
