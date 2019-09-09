@@ -4,6 +4,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.util.Tool;
+import org.apache.hadoop.util.ToolRunner;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -22,14 +23,19 @@ public abstract class AbstractMain extends Configured implements Tool {
             if (!arg.equals(this.getClass().getName())) {
                 filteredArgs.add(arg);
             }
+            
+            if (arg.equals("-h") || arg.equals("--help")) {
+                ToolRunner.printGenericCommandUsage(System.out);
+                System.exit(0);
+            }
         }
 
         final String inputPath = filteredArgs.size() > 0
-            ? JobUtils.PERSONAL_HOME_PATH + filteredArgs.get(0)
-            : JobUtils.GENERIC_INPUT_PATH;
+            ? PathVariables.PERSONAL_HOME_PATH + filteredArgs.get(0)
+            : PathVariables.ABSOLUTE_HDFS_PATH;
         final String outputPath = filteredArgs.size() > 0
-            ? JobUtils.PERSONAL_HOME_PATH + filteredArgs.get(1)
-            : JobUtils.GENERIC_OUTPUT_PATH;
+            ? PathVariables.PERSONAL_HOME_PATH + filteredArgs.get(1)
+            : PathVariables.PERSONAL_HOME_PATH + "mapreduce" ;
 
         final List<Job> jobs = getMainJobs(inputPath, outputPath, conf);
 

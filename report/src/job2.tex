@@ -1,0 +1,227 @@
+%% Direttive TeXworks:
+% !TeX root = ../report.tex
+% !TEX encoding = UTF-8 Unicode
+% !TeX spellcheck = it-IT
+
+% arara: pdflatex: { synctex: yes, shell: yes, interaction: nonstopmode }
+% arara: pdflatex: { synctex: yes, shell: yes, interaction: nonstopmode }
+
+\subsection[%
+    Job 2: Suddividere tag in base a score e risposte%
+  ]{%
+    Job 2: Suddividere i tag in 4 bin per score e risposte e ottenere i top 10 per ciascun bin%
+  }\label{subsec:job2}
+
+  Il secondo job concordato consiste nella suddivisione dei tag in 4 sulla base dei valori di score e numero di risposte:
+
+  \begin{itemize}
+    \item score basso, numero di risposte basso
+    \item score basso, numero di risposte alto
+    \item score alto, numero di risposte basso
+    \item score alto, numero di risposte alto
+  \end{itemize}
+
+  Per ogni bin è richiesto visualizzare la lista dei primi 10 tag per numero di apparizioni.
+
+  Durante la fase di studio del dataset, è risultato subito evidente l'esigenza di utilizzare entrambi i file,
+  effettuando un \textit{join} per ID della domanda in modo da poter mettere in relazioni i singoli tag con punteggio e numero di risposte.
+
+  Una volta messo in relazione ciascuna apparizione di ogni tag con il punteggio e il numero di risposte ottenuto (che permettono la scelta del bin di appartenenza),
+  è sufficiente raggruppare per tag e per bin per poter effettuare un conteggio.
+
+  Infine, raggruppando unicamente per bin è possibile ottenere una lista di tag con relativo numero di apparizioni.
+
+  \subsubsection{MapReduce implementation}\label{subsub:job2:mapreduce}
+
+  \paragraph{Comando per eseguire il Job}\label{par:job2:mapreduce:cmd}
+
+  \texttt{hadoop jar bd-stacklite-jobs-1.0.0-mr2.jar}
+
+  I parametri supportati sono i medesimi descritti nella \Cref{par:job1:mapreduce:cmd} relativamente al JAR di MapReduce del job 1.
+
+  \paragraph{Link all'esecuzione su YARN}\label{par:job2:mapreduce:yarn}
+
+  \begin{itemize}
+    \item \url{http://isi-vclust0.csr.unibo.it:19888/jobhistory/job/job_1560510165054_2120}
+    \item \url{http://isi-vclust0.csr.unibo.it:19888/jobhistory/job/job_1560510165054_2121}
+    \item \url{http://isi-vclust0.csr.unibo.it:19888/jobhistory/job/job_1560510165054_2122}
+  \end{itemize}
+
+  \paragraph{File/Tabelle di Input}\label{par:job2:mapreduce:input}
+
+  Le colonne necessarie per l'analisi sono \texttt{Id}, \texttt{Score} e \texttt{AnswerCount} per il file \texttt{questions.csv}
+  e \texttt{Id} e \texttt{Tag} per \texttt{question\_tags.csv}.
+
+  Se non si effettua override dei percorsi tramite parametri di lancio, i file si trovano al percorso specificato nella \Cref{sec:preparation}.
+
+  \paragraph{File/Tabelle di Output}\label{par:job2:mapreduce:output}
+
+  Viene generato un output per ogni passo di MapReduce che viene concluso;
+  se non si effettua override dei percorsi tramite parametri di lancio, i file si trovano al percorso specificato nella \Cref{sec:preparation}.
+
+  L'output finale è composto da 4 file nella cartella di output, ciascuno contenente i top 10 tag per numero di apparizioni in quel bin;
+  ciascuna riga del file contiene il nome del bin separata con un tab dal nome del tag e il relativo contatore, separati tra loro da virgola.
+
+  \paragraph{Descrizione dell'implementazione}\label{par:job2:mapreduce:implementation}
+
+  Anche questo job è realizzato con tre passi di MapReduce.
+  Il \textbf{primo passo} prevede il caricamento di entrambi i file:
+  \begin{itemize}
+    \item
+    \textbf{Fase di Map}:
+      il file contenente i tag viene caricato direttamente senza manipolazione delle informazioni caricate,
+      mentre il secondo file è mappato su una coppia \textit{key-value} avente come chiave l'ID della domanda
+      e come valore una coppia contenente il punteggio e il numero di risposte.
+
+    \item
+      \textbf{Fase di Reduce}:
+      viene effettuato il \textit{join} tra le informazioni caricate dai due file sulla base dell'ID della domanda,
+      in modo da avere in output coppie \textit{key-value} aventi come chiave il tag e come valore la coppia di cui sopra.
+  \end{itemize}
+
+  Il \textbf{secondo passo} ci si occupa di effettuare i calcoli richiesti per l'analisi:
+  \begin{itemize}
+    \item
+      \textbf{Fase di Map}:
+      l'output del passo precedente viene caricato mappando la coppia costituita da punteggio e numero di risposte in uno dei 4 bin;
+      in uscita al job, vengono prodotte coppie \textit{key-value} aventi come chiave la coppia di tag e bin e come valore un long di valore 1.
+
+      Per ottimizzare la fase di conto presente nella successiva Reduce, si è aggiunto un \textbf{Combiner} in uscita al Mapper che esegue le medesime operazioni
+      descritte nel punto seguente dal Reducer.
+    \item
+      \textbf{Fase di Reduce}:
+      in questa fase viene eseguito un semplice \textit{count} delle apparizioni di ciascun tag in ciascun bin.
+
+      In output a questa fase sono prodotte coppie \textit{key-value} aventi come chiave la coppia di tag e bin e come valore il contatore.
+  \end{itemize}
+
+  Infine, nel \textbf{terzo passo}, i dati vengono raccolti e ordinati:
+  \begin{itemize}
+    \item
+      \textbf{Fase di Map}:
+      le coppie chiave-valore in output alla fase precedente vengono manipolate
+      al fine di generare, per ciascuna, nuove coppie aventi come chiave il bin e come valore la coppia di tag e numero di apparizioni.
+    \item
+      \textbf{Fase di Reduce}:
+      per ciascun bin le coppie in uscita dalla fase di Map vengono raccolte in una mappa;
+      in questo modo, al termine della riduzione, la lista di \textit{entry} della mappa viene ordinata e vengono emesse in output le prime 10 entry per ogni bin.
+  \end{itemize}
+
+  \paragraph{Considerazioni sulle performance}\label{par:job2:mapreduce:performance}
+
+  Il job impiega circa 4 minuti per eseguire completamente.
+
+  L'operazione di ottimizzazione principale da noi applicata è l'inserimento di un Combiner in uscita ai Mapper al secondo passo,
+  che ci ha permesso di ridurre il tempo di esecuzione a quello attuale.
+
+  \subsubsection{Spark SQL implementation}\label{subsub:job2:spark}
+
+  \paragraph{Comando per eseguire il Job}\label{par:job2:spark:cmd}
+
+  \texttt{spark2-submit bd-stacklite-jobs-1.0.0-spark.jar JOB2}
+
+  I parametri supportati sono i medesimi descritti nella \Cref{par:job1:spark:cmd} relativamente al JAR di Spark del job 1.
+
+  \paragraph{Link all'esecuzione su YARN}\label{par:job2:spark:yarn}
+
+  \url{http://isi-vclust0.csr.unibo.it:8088/proxy/application_1560510165054_2115/}
+
+  \paragraph{File/Tabelle di Input}\label{par:job2:spark:input}
+
+  Le colonne necessarie al raggiungimento dell'obiettivo dell'analisi sono \texttt{Id} e \texttt{Tag} per il file \texttt{question\_tags.csv}
+  e \texttt{Id}, \texttt{Score} ed \texttt{AnswerCount} per il file \texttt{questions.csv}.
+
+  \paragraph{File/Tabelle di Output}\label{par:job2:spark:output}
+
+  Il Job genera un DataFrame di output, che viene salvato come tabella (nominata \texttt{FinalTableJob1})
+  sulla piattaforma Hive all'interno del database \texttt{lsemprini\_nmaltoni\_stacklite\_db6}.
+
+  \paragraph{Descrizione dell'implementazione}\label{par:job2:spark:implementation}
+
+  L'implementazione del Job, contenuta nel metodo \texttt{executeJob()} % chktex 36
+  della classe \texttt{it.unibo.bd1819.daysproportion.Job2Main}, è stata realizzata utilizzando SparkSQL\@.
+  Il problema è stato affrontato attraverso diversi steps successivi, descritti di seguito:
+
+  \begin{itemize}
+    \item
+      \textbf{Creazione DataFrame}:
+      Il passo iniziale è equivalente a quello del Job1 (\Cref{par:job1:spark:implementation:firststep}).
+    \item
+      \textbf{Taglio delle colonne non necessarie}:
+      Si è proceduto ad selezionare unicamente le colonne \texttt{Id},
+      \texttt{Score} ed \texttt{AnswerCount} per il DataFrame \texttt{questions}, salvando il risultato in un Data Frame,
+      a sua volta salvato in cache, in quanto necessario per l'operazione successiva.
+    \item
+      \textbf{Join con \texttt{question\_tags}, Filter e Mapping}:
+      Il terzo step è composto a sua volta da sotto-step:
+      \begin{itemize}
+        \item
+          \textbf{Join}:
+            Si effettua il \textit{join} del DataFrame ottenuto dal secondo step con il Data Frame \texttt{question\_tags}, attraverso
+            la colonna \texttt{Id}, per poi effettuare il drop della stessa, in quanto superflua per le operazioni successive.
+        \item
+          \textbf{Filtraggio}:
+          A questo punto vengono selezionate le colonne \texttt{Tag}, \texttt{Score} ed \texttt{AnswerCount}
+          e viene effettuata una operazione di \texttt{filter} su eventuali valori delle colonne \texttt{Score} ed \texttt{AnswerCount}
+          che andrebbero ad inficiare l'analisi, ovvero, si filtrano le righe contenenti \texttt{Score} ed \texttt{AnswerCount} con valore ``\texttt{NA}''\@.
+        \item
+          \textbf{Mapping}:
+          Infine, mantenendo ovviamente la colonna \texttt{Tag}, si mappano i valori di \texttt{Score} ed \texttt{AnswerCount}, utilizzandoli come input di una funzione
+          \texttt{getBinFor()} della classe \texttt{Bin}, che, presi i valori di \texttt{Score} ed \texttt{AnswerCount} ed le relative % chktex 36
+          soglie arbitrarie, restituisce una stringa che esprimerà a quale Bin apparterrà ogni occorrenza di \texttt{Tag}.
+    \end{itemize}
+    Il DataFrame risultante viene salvato come tabella temporanea con il nome \texttt{binDF}.
+    \item
+      \textbf{Conteggio}:
+      L'informazione contenuta nel DataFrame \texttt{binDF} viene arricchita dall'aggiunta
+      della colonna \texttt{Count} che rappresenterà il numero di occorrenze delle coppie (\texttt{Tag}, \texttt{Bin}) presenti
+      nel DataFrame.
+      Per effettuare l'operazione è stata dunque utilizzata la seguente query:
+      \begin{minted}{sql}
+        SELECT Tag, Bin, COUNT(*) AS Count
+        FROM binDF
+        GROUP BY Tag, Bin
+      \end{minted}
+
+      Il Data Frame ottenuto viene salvato come tabella temporanea con il nome di \texttt{binCountDF}.
+    \item
+      \textbf{Ottenimento delle liste per ogni Bin}:
+      In questo ultimo step è stata eseguita una query sul Data Frame
+      \texttt{binCountDF} che permette, per ognuno dei quattro Bin di ottenere una lista delle coppie (\texttt{Tag}, \texttt{Count}).
+      Nella query viene utilizzata la funzione \texttt{COLLECT\_LIST}, combinata con la funzione \texttt{STRUCT} per accorpare
+      le due colonne \texttt{Tag} e \texttt{Count} in un'unica struttura, che va poi a popolare una lista.
+      La query usata è la seguente:
+      \begin{minted}{sql}
+        SELECT Bin, COLLECT_LIST(STRUCT(Tag, Count))
+          AS ListTagCount
+        FROM binCountDF
+        GROUP BY Bin
+      \end{minted}
+
+    \item
+      \textbf{Ordinamento ed estrazione top ten}:
+      A partire dal Data Frame dello step precedente, viene effettuato un
+      mapping sulle righe del corrispondente RDD, in modo da ottenere la lista di \texttt{struct} \texttt{ListTagCount} sotto forma
+      di lista di tuple formate da \texttt{(String, Long)}, per poterla ordinare in base al secondo campo della tupla, ovvero
+      il valore di Count.
+      Una volta ordinato si prendono le prime dieci tuple per ogni Bin e si va a convertire la lista risultante in un'unica stringa
+      (per facilitare la creazione dello schema del Data Frame finale).
+      A questo punto viene creato lo schema finale, con i nomi delle due colonne \texttt{Bin} e \texttt{ListTagCount} e da questo
+      e l'RDD computato in precedenza viene generato il Data Frame definitivo.
+      Il Data Frame ottenuto sarà il risultato finale del Job e viene salvato come tabella su Hive tramite il metodo
+      \texttt{saveAsTable()}. % chktex 36
+  \end{itemize}
+
+  \paragraph{Considerazioni sulle performance}\label{par:job2:spark:performance}
+
+  Il Job implementato in Spark SQL impiega circa 4 minuti per essere portato a compimento.
+  Tempo di esecuzione che è stato pressoché dimezzato da alcuni accorgimenti apportati durante la fase di ottimizzazione.
+  Evitare di salvare in cache eccessivamente i Data Frame ottenuti dalle varie operazioni ha aiutato molto a migliorare
+  le performance complessive.
+  Un altra intuizione è stata quella di accorpare le operazioni descritte nel terzo step in un'unica query, quando inizialmente
+  veniva eseguito a parte il Join dei due Data Frame, cosa che, è stato riscontrato, andava ad aumentare il tempo di esecuzione,
+  in quanto veniva salvata una ulteriore tabella temporanea.
+  L'operazione di \texttt{filter} sui valori ``\texttt{NA}'' di \texttt{Score} ed \texttt{AnswerCount} è stata, inoltre, spostata al di fuori
+  dalla successiva operazione di \texttt{map}, in quanto si è riscontrato fosse nettamente più conveniente dal punto di vista
+  delle performance stesse: così facendo si va ad alleggerire la tabella, e meno righe verranno computate dalla \texttt{map}.
+

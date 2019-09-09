@@ -127,7 +127,7 @@ public class JobFactory {
         job.setReducerClass(SortReducer.class);
 
         FileOutputFormat.setOutputPath(job, jobOutputPath);
-
+        
         return job;
     }
 }

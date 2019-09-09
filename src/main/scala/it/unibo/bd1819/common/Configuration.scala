@@ -1,29 +1,13 @@
 package it.unibo.bd1819.common
 
-class Configuration {
+case class Configuration(var partitions: Int = 8, var parallelism: Int = 8, var memorySize: Int = 1) // max threshold (8192 MB)
 
-  var partitions : Int = 0
-  var parallelism: Int = 0
-  var memorySize : Int = 0
-
-}
-
-object Configuration{
+object Configuration {
   def apply(args: List[String]): Configuration = {
-    var c = new Configuration()
+    val c = new Configuration()
     c.partitions = args(1).toInt
     c.parallelism = args(2).toInt
     c.memorySize = args(3).toInt
-    c
-  }
-
-  def apply(): Configuration = new Configuration()
-
-  def apply(partitions : Int, parallelism: Int, memory: Int): Configuration = {
-    val c =new Configuration()
-    c.partitions = partitions
-    c.parallelism = parallelism
-    c.memorySize = memory
     c
   }
 }

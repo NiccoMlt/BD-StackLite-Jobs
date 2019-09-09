@@ -1,0 +1,215 @@
+%% Direttive TeXworks:
+% !TeX root = ../report.tex
+% !TEX encoding = UTF-8 Unicode
+% !TeX spellcheck = it-IT
+
+% arara: pdflatex: { synctex: yes, shell: yes, interaction: nonstopmode }
+% arara: pdflatex: { synctex: yes, shell: yes, interaction: nonstopmode }
+
+\subsection{Job 1: Proporzione giorni feriali/festivi per tag}\label{subsec:job1}
+  Il primo job concordato consiste nel calcolo, per ciascun tag, della proporzione tra la quantità di post che lo utilizzano creati in giorni feriali e giorni festivi, tenendo traccia della quantità totale ai fini dell'ordinamento.
+
+  Durante la fase di studio del dataset, è risultato subito evidente l'esigenza di utilizzare entrambi i file,
+  effettuando un \textit{join} per ID della domanda in modo da poter mettere in relazioni i singoli tag con le informazioni relative ai giorni di apparizione;
+  il passo logico successivo è il raggruppamento per tag ai fini del calcolo del numero di apparizioni e della proporzione.
+
+  Si è inoltre ritenuto non necessario mantenere la data di creazione come stringa nella pipeline, in quanto più che sufficiente un booleano che modellasse la festività o meno del giorno di creazione;
+  per verificare se un giorno è festivo o meno si è deciso di appoggiarsi alla libreria \textit{Jollyday}\footnote{\url{http://jollyday.sourceforge.net/}} utilizzando il calendario italiano come riferimento per le festività.
+
+  \subsubsection{MapReduce implementation}\label{subsub:job1:mapreduce}
+
+  \paragraph{Comando per eseguire il Job}\label{par:job1:mapreduce:cmd}
+
+  \texttt{hadoop jar bd-stacklite-jobs-1.0.0-mr1.jar}
+
+  Essendo la classe \textit{main} eseguita tramite \texttt{ToolRunner} di Hadoop,
+  supporta il parsing di parametri standard di Hadoop\footnote{\url{https://hadoop.apache.org/docs/r2.6.0/hadoop-project-dist/hadoop-common/CommandsManual.html}}, quali ad esempio:
+  \begin{itemize}
+    \item \texttt{-conf} per caricare una configurazione esterna;
+    \item \texttt{-D} per specificare proprietà specifiche per la configurazione;
+    \item \texttt{-h} o \texttt{--help} per stampare le opzioni accettate.
+  \end{itemize}
+
+  Inoltre, è possibile specificare come primo parametro il path della cartella in ingresso e come secondo paramtero quello della cartella in uscita.
+
+  \paragraph{Link all'esecuzione su YARN}\label{par:job1:mapreduce:yarn}
+
+  \begin{itemize}
+    \item \url{http://isi-vclust0.csr.unibo.it:19888/jobhistory/job/job_1560510165054_2117}
+    \item \url{http://isi-vclust0.csr.unibo.it:19888/jobhistory/job/job_1560510165054_2118}
+    \item \url{http://isi-vclust0.csr.unibo.it:19888/jobhistory/job/job_1560510165054_2119}
+  \end{itemize}
+
+  \paragraph{File/Tabelle di Input}\label{par:job1:mapreduce:input}
+
+  Le colonne necessarie al raggiungimento dell'obiettivo dell'analisi sono \texttt{Id} e \texttt{CreationDate} per il file \texttt{questions.csv}
+  e \texttt{Id} e \texttt{Tag} per \texttt{question\_tags.csv}.
+
+  Se non si effettua override dei percorsi tramite parametri di lancio, i file si trovano al percorso specificato nella \Cref{sec:preparation}.
+
+  \paragraph{File/Tabelle di Output}\label{par:job1:mapreduce:output}
+
+  Viene generato un output per ogni passo di MapReduce che viene concluso;
+  se non si effettua override dei percorsi tramite parametri di lancio, i file si trovano al percorso specificato nella \Cref{sec:preparation}.
+
+  L'output finale è composto da un singolo file nella cartella output contenente, per ogni linea, un tag separato con un tab da proporzione e numero di apparizioni separate da virgola.
+
+  Qualora il tag appaia solo in giorni feriali, la proporzione avrà valore \texttt{0.0}, mentre se appare solo in giorni festivi, essa ha valore \texttt{Infinity}.
+
+  \paragraph{Descrizione dell'implementazione}\label{par:job1:mapreduce:implementation}
+
+  Il job è stato realizzato con tre passi di MapReduce.
+  Il \textbf{primo passo} prevede il caricamento di entrambi i file:
+  \begin{itemize}
+    \item
+      \textbf{Fase di Map}:
+      il file contenente i tag viene caricato direttamente senza manipolarne le informazioni,
+      mentre il secondo file è mappato su una coppia \textit{key-value} avente come chiave l'ID della domanda
+      e come valore un booleano che è \texttt{true} qualora la data di creazione sia un giorno feriale, o altrimenti \texttt{false}.
+
+    \item
+      \textbf{Fase di Reduce}:
+      si effettua il \textit{join} tra le informazioni caricate dai due file sulla base dell'ID della domanda,
+      in modo da avere in output coppie \textit{key-value} aventi come chiave il tag e come valore il booleano di cui sopra.
+  \end{itemize}
+
+  Nel \textbf{secondo passo}, invece, si effettuano i calcoli richiesti per l'analisi:
+  \begin{itemize}
+    \item
+      \textbf{Fase di Map}:
+      l'output del passo precedente viene caricato, senza manipolazioni particolari;
+      è infatti sufficiente l'aggregazione per chiave (il tag) effettuata tra Mapper e Reducer.
+
+    \item
+      \textbf{Fase di Reduce}:
+      per ciascun tag vengono mantenuti due contatori per le apparizioni in giorni feriali e festivi,
+      in modo da poter generare in output delle coppie \textit{key-value} aventi come chiave il singolo tag e come valore la proporzione tra giorni feriali e festivi e il totale delle apparizioni del tag.
+  \end{itemize}
+
+  Il \textbf{terzo passo} costituisce infine il passo di ordinamento secondo le specifiche; per effettuare l'ordinamento, si è realizzato una classe specifica
+  \begin{itemize}
+    \item
+      \textbf{Fase di Map}:
+      le coppie chiave-valore ottenute dall'output al passo precedente sono invertite, in modo da poter aggregare per proporzione e contatore;
+      inoltre, per poter garantire un ordine per quanto riguarda proporzione, contatore, e, in caso di parità, anche alfabetico per tag,
+      per l'implementazione pratica, si è realizzato una classe specifica per la chiave composita (\texttt{TextTriplet}) e dei comparatori dedicati per l'ordinamento e il raggruppamento.
+
+    \item
+      \textbf{Fase di Reduce}:
+      la chiave composita viene rimossa e si inverte nuovamente chiave e valore, avendo così coppie tag e valori ordinati per valore;
+      per garantire un singolo file di output ordinato, si utilizza un singolo task di reduce.
+  \end{itemize}
+
+  I job leggono e producono dati formattati secondo il paradigma chiave-valore utilizzando come formato la classe \texttt{Text} tranne per quanto riguarda l'output del Map nel job di ordinamento.
+
+  \paragraph{Considerazioni sulle performance}\label{par:job1:mapreduce:performance}
+
+  Poiché il risultato finale richiede un'\textit{ordinamento totale} dell'output e la classe \texttt{TotalOrderpartitioner} fornita da Hadoop non supporta l'ordinamento su chiavi composite,
+  è stato necessario implementare un Partitioner custom ed eliminare la parallelizzazione nella fase di Reduce, utilizzando un solo task;
+  in questo modo si riesce a garantire un output completamente ordinato, in parte a scapito delle performance.
+
+  Il job impiega nel complesso dai 3 ai 4 minuti per completare l'esecuzione.
+
+  \subsubsection{Spark SQL implementation}\label{subsub:job1:spark}
+
+  \paragraph{Comando per eseguire il Job}\label{par:job1:spark:cmd}
+
+  \texttt{spark2-submit bd-stacklite-jobs-1.0.0-spark.jar JOB1}
+
+  La classe \texttt{ScalaMain} è stata costruita in modo tale da permettere all'utente di eseguire tutti i Job implementati tramite
+  Spark SQL attraverso un unico jar, avendo la possibilità di specificare, tramite parametro, il Job specifico da lanciare.
+
+  Il comando di lancio del Jar accetta inoltre altri tre parametri, che permettono di settare le seguenti configurazioni di Spark in formato numerico:
+  \begin{itemize}
+    \item \textit{parallelismo}: di default settato a 8, è il secondo parametro (dopo la specificazione del Job).
+    \item \textit{numero di partizioni}: di default settato a 8, è il terzo parametro.
+    \item \textit{memoria a disposizione}: di default settato a 5, è il quarto parametro.
+  \end{itemize}
+
+  Infine, è possibile utilizzare tutti i parametri standard ammessi dall'operazione submit di Spark\footnote{\url{https://spark.apache.org/docs/2.1.0/submitting-applications.html}},
+  in quando la configurazione della SparkSession è solamente estesa.
+
+  \paragraph{Link all'esecuzione su YARN}\label{par:job1:spark:yarn}
+
+  \url{http://isi-vclust0.csr.unibo.it:8088/proxy/application_1560510165054_2116/}
+
+  \paragraph{File/Tabelle di Input}\label{par:job1:spark:input}
+
+  Le colonne necessarie al raggiungimento dell'obiettivo dell'analisi sono \texttt{Id} e \texttt{CreationDate} per il file \texttt{questions.csv}
+  e \texttt{Id} e \texttt{Tag} per \texttt{question\_tags.csv}.
+
+  I due file si trovano al percorso specificato nella \Cref{sec:preparation}.
+
+  \paragraph{File/Tabelle di Output}\label{par:job1:spark:output}
+
+  Il Job genera un DataFrame di output, che viene salvato come tabella (nominata \texttt{FinalTableJob1})
+  sulla piattaforma Hive all'interno del database \texttt{lsemprini\_nmaltoni\_stacklite\_db6}.
+
+  \paragraph{Descrizione dell'implementazione}\label{par:job1:spark:implementation}
+
+  L'implementazione del Job, contenuta all'interno del metodo \texttt{executeJob()} della classe \texttt{it.unibo.bd1819.daysproportion.Job1Main}, % chktex 36
+  è stata realizzata utilizzando SparkSQL\@.
+  Il problema è stato affrontato attraverso diversi steps successivi, descritti di seguito:
+
+  \begin{itemize}
+    \item
+      \textbf{Creazione DataFrame}\label{par:job1:spark:implementation:firststep}:
+      Come passo iniziale, ovviamente siamo partiti dalla creazione dei DataFrame di base necessari all'ottenimento delle informazioni principali;
+      questa operazione viene svolta interamente da un metodo presente nella classe \texttt{DFBuilder},
+      che permette di leggere i due file di input del dataset (\texttt{question\_tags.csv} e \texttt{questions.csv}),
+      ricavandone lo schema tramite la prima riga e salvandolo come tabella temporanea.
+    \item
+      \textbf{Mapping delle date di creazione}:
+      Il secondo step consiste nell'ottenere un DataFrame che associ, a partire dalla tabella \texttt{questions},
+      un ID della domanda ad un booleano che determina se la data di creazione (campo \texttt{CreationDate}) di quella domanda sia feriale o festiva.
+
+      Inizialmente vengono selezionate dalla tabella \texttt{questions} solo le colonne necessarie, ovvero \texttt{Id} e \texttt{CreationDate}, poi vengono mappate le righe ottenute:
+      il primo field della riga viene lasciato intatto (in quanto gli ID devono essere mantenuti tali),
+      ed il secondo viene passato ad un metodo della classe \texttt{DateUtils}, che, appoggiandosi alla libreria \textit{Jollyday}, trasforma quel campo in un valore booleano
+      (\texttt{true} se la data è feriale, \texttt{false} se festiva).
+
+      Il DataFrame risultante da questo primo step viene poi salvato in cache, per ottimizzare le operazioni successive.
+
+    \item
+      \textbf{Join con \texttt{question\_tags}}:
+      Il DataFrame ottenuto dallo step precedente viene subito messo in join con il DataFrame corrispondente al file \texttt{question\_tags.csv},
+      in quanto il valore booleano deve essere associato ad ogni campo \texttt{Tag}.
+
+      A questo punto viene tagliato dal DataFrame risultante il campo \texttt{Id}, in quanto inutile per gli steps successivi, per rendere più leggera la mole di dati da analizzare.
+      Questo DataFrame viene salvato come tabella temporanea dal nome \texttt{dateTagDF}.
+
+    \item
+      \textbf{Creazione del DataFrame finale}:
+      L'obiettivo di questo step è creare un DataFrame che associ ad ogni tag il rapporto tra quante domande con quel tag sono state postate in giorni feriali e quante nei giorni festivi.
+      Il DF dovrà avere, inoltre, associato ad ogni tag, il conteggio di quante volte quello specifico Tag appare nel dataset.
+
+      Per effettuare l'operazione è stata dunque utilizzata la seguente query:
+
+      \begin{minted}{sql}
+        SELECT tag, (
+          ROUND((CAST(SUM(CASE WHEN IsWorkDay = true
+            THEN 1
+            ELSE 0
+          END) AS float)) /
+          (CAST(SUM(CASE WHEN IsWorkDay = false
+            THEN 1
+            ELSE 0
+          END) AS float)), 2)
+        ) AS Proportion,
+        COUNT(*) AS Count
+        FROM dateAndTagDF GROUP BY tag
+        ORDER BY Proportion DESC, Count DESC
+      \end{minted}
+
+    Il DataFrame ottenuto sarà il risultato finale del Job
+    e viene salvato come tabella su Hive tramite il metodo \texttt{saveAsTable()}. % chktex 36
+  \end{itemize}
+
+  \paragraph{Considerazioni sulle performance}\label{par:job1:spark:performance}
+
+  Il Job implementato in SparkSQL impiega circa 4 minuti per essere portato a compimento nell'implementazione consegnata.
+
+  Dalla prima implementazione, il tempo di esecuzione è stato praticamente dimezzato da alcuni accorgimenti apportati durante la fase di ottimizzazione.
+  Ad esempio, evitare di salvare in cache eccessivamente i DataFrame ottenuti dalle varie operazioni ha aiutato molto a migliorare le performance complessive.
+  Un altra intuizione è stata quella di accorpare le operazioni descritte nell'ultimo step in un'unica query, quando inizialmente
+  veniva eseguito a parte il conteggio dei Tag, cosa che, è stato riscontrato, andava ad inficiare le performance di esecuzione.

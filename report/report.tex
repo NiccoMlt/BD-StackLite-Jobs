@@ -1,18 +1,10 @@
 %% Direttive TeXworks:
 % !TeX root = ./report.tex
 % !TEX encoding = UTF-8 Unicode
-% !TEX program = arara
-% !TEX TS-program = arara
 % !TeX spellcheck = it-IT
 
-% arara: pdflatex: { synctex: yes, shell: yes }
-% arara: pdflatex: { synctex: yes, shell: yes }
-
-%% Genera un file report.xmpdata con i dati di titolo e autore per il formato PDF/A %%
-\begin{filecontents*}{\jobname.xmpdata}
-\Title{Big Data - Tema finale: StackLite}
-\Author{Niccolò Maltoni\sep Luca Semprini}
-\end{filecontents*}
+% arara: pdflatex: { synctex: yes, shell: yes, interaction: nonstopmode }
+% arara: pdflatex: { synctex: yes, shell: yes, interaction: nonstopmode }
 
 \documentclass[
   a4paper,            % specifica il formato A4 (default: letter)
@@ -32,6 +24,7 @@
   varioref                    % introduce il comando \vref da usarsi nello stesso modo del comune \ref per i riferimenti
 }
 \usepackage{lmodern}            % carica una variante Latin Modern prodotto dal GUST
+\usepackage{minted}
 \usepackage[%
   strict,             % rende tutti gli warning degli errori
   autostyle,          % imposta lo stile in base al linguaggio specificato in babel
@@ -40,6 +33,17 @@
 ]{csquotes}                     % serve a impostare lo stile delle virgolette
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\usepackage{filecontents}       % permette di definire ambienti filecontents (senza * finale) per sovrascrivere il file
+\usepackage{silence}            % silenzia warning attesi
+\WarningFilter{latex}{Writing file}
+\WarningFilter{latex}{Overwriting file}
+
+%% Genera un file report.xmpdata con i dati di titolo e autore per il formato PDF/A %%
+\begin{filecontents}{\jobname.xmpdata}
+  \Title{Big Data - Tema finale: StackLite}
+  \Author{Niccolò Maltoni\sep Luca Semprini}
+\end{filecontents}
+
 \usepackage{indentfirst}        % serve per avere l'indentazione nel primo paragrafo
 \usepackage{setspace}           % serve a fornire comandi di interlinea standard
 \usepackage{xcolor}             % serve per la gestione dei colori nel testo
@@ -47,47 +51,58 @@
 
 \onehalfspacing%                % Imposta interlinea a 1,5 ed equivale a \linespread{1,5}
 
-\setcounter{secnumdepth}{2}     % Numera fino alla sottosezione nel corpo del testo
+\setcounter{secnumdepth}{3}     % Numera fino alla sottosezione nel corpo del testo
 \setcounter{tocdepth}{3}        % Numera fino alla sotto-sottosezione nell'indice
 
 % Rende \paragraph simile alle sezioni
-\usepackage{titlesec}
+\usepackage[explicit]{titlesec}
+
+\titleformat{\paragraph}[hang]{\normalfont\normalsize\bfseries}{\theparagraph}{1em}{#1}
+\titlespacing*{\paragraph}{0pt}{3.25ex plus 1ex minus .2ex}{0.5em}
+
+\usepackage{enumitem}
+\setlist[itemize]{itemsep=3pt,topsep=3pt}
+\setlist[enumerate]{itemsep=3pt,topsep=3pt}
+
+\usepackage{xurl}
+\usepackage[a-1b]{pdfx}         % permette di generare PDF/A; importa anche hyperref
 
 \usepackage[%
   depth=3,              % equivale a bookmarksdepth di hyperref
   open=false,           % equivale a bookmarksopen di hyperref
   numbered=true         % equivale a bookmarksnumbered di hyperref
 ]{bookmark}                     % Gestisce i segnalibri meglio di hyperref
-\usepackage{hyperref}           % Gestisce tutte le cose ipertestuali del pdf
+
 \hypersetup{%
   pdfpagemode={UseNone},
   hidelinks,            % nasconde i collegamenti (non vengono quadrettati)
   hypertexnames=false,
   linktoc=all,          % inserisce i link nell'indice
-  unicode=true,         % only Latin characters in Acrobat’s bookmarks
-  pdftoolbar=false,     % show Acrobat’s toolbar?
-  pdfmenubar=false,     % show Acrobat’s menu?
+  unicode=true,         % only Latin characters in Acrobat's bookmarks
+  pdftoolbar=false,     % show Acrobat's toolbar?
+  pdfmenubar=false,     % show Acrobat's menu?
   plainpages=false,
   breaklinks,
   pdfstartview={Fit},
-  pdfauthor={Niccolò Maltoni, Luca Semprini},
-  pdfcreator={Niccolò Maltoni, Luca Semprini},
-  pdftitle={Big Data - Tema finale: StackLite}, % chktex 8
   pdflang={it}
 }
 
-\usepackage[a-1b]{pdfx}
 \usepackage[%
   italian,            % definizione delle lingue da usare
   nameinlink          % inserisce i link nei riferimenti
 ]{cleveref}                     % permette di usare riferimenti migliori dei \ref e dei varioref
+\Crefname{subsection}{Sottosezione}{Sottosezioni}
+\Crefname{subsubsection}{Sottosezione}{Sottosezioni}
+\Crefname{paragraph}{Sottosezione}{Sottosezioni}
+\crefname{subsection}{sottosezione}{sottosezioni}
+\crefname{subsubsection}{sottosezione}{sottosezioni}
+\crefname{paragraph}{sottosezione}{sottosezioni}
 
-
-\title{\textbf{Report on Big Data project: \\(StackLite-Jobs)}}
+\title{\textbf{Report on Big Data project: \\StackLite-Jobs}}
 
 \author{
-  Niccolò~Maltoni - Mat. 000000840825\\%
-  Luca~Semprini - Mat. ????????????
+  Niccolò~Maltoni --- Mat. 000000840825\\%
+  Luca~Semprini --- Mat. 000000854447
 }
 
 \date{\today}
@@ -103,60 +118,97 @@
   \section{Introduzione}\label{sec:intro}
   \subsection{Descrizione del dataset}\label{subsec:dataset}
 
-  TODO
+  Il dataset che abbiamo scelto di utilizzare per questo elaborato di progetto è una versione ridotta ed adattata del dump di StackOverflow che StackExchange ha reso disponibile sulla piattaforma Kaggle.
+  Il dataset, disponibile all'indirizzo \url{https://www.kaggle.com/stackoverflow/stacklite}, si presenta suddiviso in due file CSV formattati in UTF-8.
+  Ciascun file contiene nella prima riga la descrizione delle colonne in cui sono suddivisi i dati;
+  i dati mancanti sono contraddistinti dal valore ``\texttt{NA}''.
 
   \subsubsection{Descrizione dei file}\label{subsub:dataset:files}
 
-  TODO
+  Il dataset è composto dai seguenti file:
+
+  \begin{itemize}
+    \item
+      \texttt{questions.csv}\footnote{\url{https://www.kaggle.com/stackoverflow/stacklite/downloads/questions.csv}} contiene, per ogni domanda:
+      \begin{itemize}
+        \item un ID univoco (\texttt{Id}),
+        \item la data di creazione (\texttt{CreationDate}),
+        \item l'eventuale data di chiusura (\texttt{ClosedDate}),
+        \item l'eventuale data di cancellazione (\texttt{DeletionDate}),
+        \item il punteggio ottenuto (\texttt{Score}),
+        \item l'eventuale ID utente creatore della domanda (\texttt{OwnerUserId}) (se la domanda non è stata cancellata)
+        \item il numero di risposte ricevute (\texttt{AnswerCount}).
+      \end{itemize}
+    \item
+      \texttt{question\_tags.csv}\footnote{\url{https://www.kaggle.com/stackoverflow/stacklite/downloads/question_tags.csv}}
+      contiene coppie che mettono in relazione l'ID domanda (\texttt{Id}) con un tag (\texttt{Tag}) assegnato alla domanda.
+      Ogni domanda può avere assegnati più tag; in tal caso, l'ID sarà presente più volte, una per ogni tag assegnato.
+
+  \end{itemize}
 
   \section{Preparazione dei dati}\label{sec:preparation}
 
-  TODO
+  Il referente del gruppo è Luca Semprini.
+  Tutti i file necessari alla consegna si trovano nella sua home.
+  I file jar eseguibili sono presenti nella cartella \texttt{exam} nel nodo \texttt{isi-vclust8} nella home di \texttt{lsemprini} e sono i seguenti:
+  \begin{itemize}
+    \item
+      \texttt{bd-stacklite-jobs-1.0.0-mr1.jar} permette il lancio del Job 1 con MapReduce (\Cref{subsub:job1:mapreduce})
+    \item
+      \texttt{bd-stacklite-jobs-1.0.0-mr2.jar} permette il lancio del Job 2 con MapReduce (\Cref{subsub:job2:mapreduce})
+    \item
+      \texttt{bd-stacklite-jobs-1.0.0-spark2.jar} permette il lancio dei Job Spark tramite l'ausilio di parametri per la selezione:
+      \begin{itemize}
+        \item il parametro \texttt{JOB1} permette il lancio del Job 1 (\Cref{subsub:job1:spark})
+        \item il parametro \texttt{JOB2} permette il lancio del Job 2 (\Cref{subsub:job2:spark})
+        \item il parametro \texttt{JOBML} permette il lancio del Job 3 (\Cref{subsec:job3})
+      \end{itemize}
+  \end{itemize}
+
+  Per quanto riguarda invece i singoli file di input-output, essi sono memorizzati su HDFS\@:
+  i due file che costituiscono il dataset in input sono memorizzati al percorso \texttt{hdfs://user/lsemprini/bigdata/dataset/};
+  trattando dell'output, invece, i risultati parziali dell'implementazione Map-Reduce sono salvati in cartelle all'indirizzo \texttt{hdfs://user/lsemprini/mapreduce/}
+  e i risultati finali sono disponibili dentro la sottocartella \texttt{output};
+  i job implementati in SparkSQL producono come output tabelle che sono salvate sulla piattaforma HIVE nel database \texttt{lsemprini\_nmaltoni\_stacklite\_db6}.
+  Il job di Machine Learning produce l'output all'indirizzo \texttt{hdfs://user/lsemprini/spark/}.
+
+  \subsection{Pre-processing dei dati}\label{subsec:preprocessing}
+
+  Essendo il dataset già una versione ridotta e pulita del dump principale del network StackExchange, non è stata necessaria alcuna pulizia da parte nostra.
 
   \section{Job}\label{sec:job}
 
-  \subsection[%
-    Job 1: Proporzione giorni feriali/festivi per tag%
-  ]{%
-    Job 1: Effettuare la proporzione tra post realizzati in giorni feriali e in giorni festivi per ciascun tag%
-  }\label{subsec:job1}
+  L'obiettivo del progetto è realizzare 2 job utilizzando sia \textbf{Hadoop MapReduce} che \textbf{Spark} (nel nostro caso si è scelto di utilizzare \textit{SparkSQL})
+  e un job di correlazione tramite la libreria \textbf{MLlib} di Spark.
+  Di seguito sono esposti i singoli job assegnati:
 
-  TODO
+  \begin{enumerate}
+    \item
+      effettuare la proporzione tra la quantità di post realizzati in giorni feriali e la quantità di post realizzati in giorni festivi in relazione a ciascun tag;
+      ordinare i risultati per valore della proporzione e per quantità di post.
 
-  \subsubsection{MapReduce implementation}\label{subsub:job1:mapreduce}
+    \item
+      suddividere i dati in 4 bin in base a valori di soglia arbitrari su score e numero di risposte; i 4 bin saranno:
+      \begin{itemize}
+        \item score basso, numero di risposte basso,
+        \item score basso, numero di risposte alto,
+        \item score alto, numero di risposte basso,
+        \item score alto, numero di risposte alto.
+      \end{itemize}
+      Per ogni coppia visualizzare i primi 10 tag più utilizzati.
 
-  TODO
+    \item
+      utilizzare la libreria di Machine Learning per studiare la correlazione tra score e numero di risposte, avendo cura di escludere le domande cancellate.
+  \end{enumerate}
 
-  \subsubsection{Spark SQL implementation}\label{subsub:job1:spark}
-
-  TODO
-
-  \subsection[%
-    Job 2: Suddividere tag in base a score e risposte%
-  ]{%
-    Job 2: Suddividere i tag in 4 bin per score e risposte e ottenere i top 10 per ciascun bin%
-  }\label{subsec:job2}
-
-  TODO
-
-  \subsubsection{MapReduce implementation}\label{subsub:job2:mapreduce}
-
-  TODO
-
-  \subsubsection{Spark SQL implementation}\label{subsub:job2:spark}
-
-  TODO
-
-  \subsection[%
-    Job 3: Machine learning%
-  ]{%
-    Job 3: Machine learning TODO%
-  }\label{subsec:job3}
-
-  TODO
+  \input{src/job1.tex}
+  \input{src/job2.tex}
+  \input{src/job3.tex}
 
   \section{Miscellanea}\label{sec:miscellaneous}
 
-  TODO
+  Nel job 1 è stata riscontrata una leggera discrepanza tra i valori di proporzione e conteggio ottenuti dall'implementazione in MapReduce e quelli ottenuti con SparkSQL\@;
+  considerando che i valori di count sono leggermente inferiori (circa 5 in meno per i valori top) e che la proporzione sembra differire in modo coerente con la differente quantità considreata,
+  riteniamo plausibile che nell'implementazione MapReduce vengano ignorati dati ``sporchi'' che invece vengono mantenuti nell'implementazione in Spark, generando una leggera differenza.
 
 \end{document}

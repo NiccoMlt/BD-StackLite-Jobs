@@ -1,0 +1,96 @@
+%% Direttive TeXworks:
+% !TeX root = ../report.tex
+% !TEX encoding = UTF-8 Unicode
+% !TeX spellcheck = it-IT
+
+% arara: pdflatex: { synctex: yes, shell: yes, interaction: nonstopmode }
+% arara: pdflatex: { synctex: yes, shell: yes, interaction: nonstopmode }
+
+\subsection[%
+    Job 3: Correlazione tra punteggio e risposte%
+  ]{%
+    Job 3: Correlazione tra punteggio e risposte tramite Machine Learning%
+  }\label{subsec:job3}
+
+  Il terzo e ultimo job concordato richiede l'utilizzo della libreria MLlib di Spark per il calcolo del coefficiente di correlazione
+  tra punteggio e numero di risposte utilizzando tecniche di Machine Learning, ignorando le domande cancellate.
+
+  I coefficienti di correlazione supportati da Spark sono il \textit{coefficiente di correlazione lineare di \textbf{Pearson}} e il \textit{coefficiente di correlazione per ranghi di \textbf{Spearman}}.
+
+  Analizzando il dataset, appare chiaro come sia sufficiente caricare solamente il file contenente le domande, in quanto le informazioni relative ai tag non sono necessarie.
+
+  \paragraph{Comando per eseguire il Job}\label{par:job3:cmd}
+
+  \texttt{spark2-submit bd-stacklite-jobs-1.0.0-spark.jar JOBML 8 8 5}
+
+  I parametri supportati sono i medesimi descritti nella \Cref{par:job1:spark:cmd} relativamente al JAR di Spark del job 1.
+
+  \paragraph{Link all'esecuzione su YARN}\label{par:job3:yarn}
+
+  \url{http://isi-vclust0.csr.unibo.it:8088/proxy/application_1560510165054_2125/}
+
+  \paragraph{File/Tabelle di Input}\label{par:job3:input}
+
+  Le colonne necessarie al raggiungimento dell'obiettivo dell'analisi sono \texttt{Score} ed \texttt{AnswerCount} per il file \texttt{questions.csv};
+  durante l'elaborazione, è necessario mantenere anche la colonna \texttt{DeletionDate} per poter ignorare le risposte cancellate
+
+  \paragraph{File/Tabelle di Output}\label{par:job3:output}
+
+  Viene generato un singolo file di testo nella cartella output contenente due linee recanti il nome dell'algoritmo e il relativo valore calcolato contenuti tra parentesi e separati da virgola.
+
+  \paragraph{Descrizione dell'implementazione}\label{par:job3:implementation}
+
+  La libreria MLlib fornita nel classpath sul server è aggiornata alla versione 2.1.0 e non supporta le Correlation API del package \texttt{org.apache.spark.ml} (il cui supporto è stato introdotto solo dalla versione 2.2.0);
+  di conseguenza, si è deciso di utilizzare le Statistics API fornite nel package \texttt{org.apache.spark.mllib}, per quanto consci che sia in via di deprecazione nelle versioni successive.
+
+  \begin{itemize}
+    \item
+      \textbf{Creazione DataFrame}:
+      Come passo iniziale, si è creato il DataFrame caricando il file \texttt{questions.csv} utilizzando la
+      classe \texttt{DFBuilder}, che si occupa anche di ricavare lo schema tramite la prima riga e costruire una tabella temporanea.
+
+    \item
+      \textbf{Taglio delle colonne non necessarie e rimozione dei valori non validi}:
+      Inizialmente, si è proceduto a selezionare le colonne \texttt{DeletionDate}, \texttt{Score} ed \texttt{AnswerCount}, salvando il risultato in un DataFrame.
+      Una volta pulito il DataFrame da ogni entry che presentasse un valore differente da ``\texttt{NA}'' come data di eliminazione tramite un'operazione di filtro,
+      si è proceduto al drop anche della colonna \texttt{DeletionDate}.
+
+      Successivamente, si è provveduto a rimuovere anche le entry con numero di risposte ``\texttt{NA}'' o negativo.
+
+    \item
+      \textbf{Suddivisione del DataFrame in RDD colonna}:
+      Per poter effettuare il calcolo della correlazione, si è proceduto a suddividere il DataFrame in due RDD ciascuno riportante i dati da una delle due colonne;
+      per fare ciò, è stato sufficiente selezionare la colonna e mappare la stringa contenuta in ciascuna \texttt{Row} in un valore \texttt{Double}.
+
+    \item
+      \textbf{Calcolo dei coefficienti e salvataggio dei risultati}:
+      Il calcolo dei coefficienti è immediato tramite metodo \texttt{corr} fornito dalla classe \texttt{Statistics};
+      una volta ottenuti entrambi i valori, viene costruito un RDD a partire da una sequenza di tuple
+      aventi come chiave il nome dell'algoritmo e come valore il rispettivo coefficiente ricavato nei passi precedenti
+      e viene scritto su filesystem HDFS in formato testuale.
+  \end{itemize}
+
+  \paragraph{Considerazioni sulle performance}\label{par:job3:performance}
+
+  Nonostante la necessità di impiegare il costrutto RDD per il calcolo dei coefficienti di correlazione con le API fornite,
+  si è deciso di utilizzare le API pensate per i DataFrame per il caricamento del file CSV e la manipolazione dei dati in esso contenuti
+  in quanto maggiormente ottimizzata per questo specifico formato:
+  utilizzando infatti il metodo \texttt{.read.csv()} fornito dall'\texttt{SQLContext}, utilizzando la prima riga come header e evitando l'inferenza automatica della struttura, senza creare una tabella temporanea, % chktex 36
+  si è ottenuto un guadagno di circa 1 minuto.
+
+  L'impiego di tecniche di \textit{caching} è stato difficoltoso in quanto con 1GB di memoria fornita il job falliva per saturazione dell'\textit{heap}.
+  Inizialmente avevamo optato per evitare l'impiego di caching e i tempi si aggiravano intorno ai 9 minuti.
+
+  Aumentando la memoria disponibile a 5GB è invece possibile utilizzare la persistenza degli RDD relativi ai due assi da correlare, ottenendo un guadagno di un terzo in termini di minuti:
+  si è passati infatti da circa 9 minuti a circa 6 minuti.
+
+  \paragraph{Considerazioni sull'output finale}
+
+  I risultati ottenuti sono i seguenti:
+
+  \begin{description}[itemsep=1pt]
+    \item[\textit{Coefficiente di \textbf{Pearson}}] 0.297397690528351
+    \item[\textit{Coefficiente di \textbf{Spearman}}] 0.23110551110424213
+  \end{description}
+
+  Come è possibile vedere, i coefficienti mostrano una bassa correlazione, sia lineare che non, tra i numero di risposte e punteggio.
